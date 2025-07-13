@@ -1,0 +1,289 @@
+2025-07-07 12:31:40,858 - __main__ - INFO - Generating code for prompt: Buy 2 DAI using POL every 30 minutes...
+2025-07-07 12:31:42,270 - __main__ - ERROR - Error generating code: cannot import name 'PREDEFINED_PARAMETERS' from 'variables' (/Users/anshumantekriwal/Desktop/Xade/evm-agents/code-generation/variables.py)
+Traceback (most recent call last):
+  File "/Users/anshumantekriwal/Desktop/Xade/evm-agents/code-generation/api.py", line 89, in generate_code
+    from coder import code
+  File "/Users/anshumantekriwal/Desktop/Xade/evm-agents/code-generation/coder.py", line 15, in <module>
+    from variables import TRANSACTIONS_CODE, TRANSACTIONS_USAGE, TOKENS, BASELINE_JS, PREDEFINED_PARAMETERS, CODER_PROMPT
+ImportError: cannot import name 'PREDEFINED_PARAMETERS' from 'variables' (/Users/anshumantekriwal/Desktop/Xade/evm-agents/code-generation/variables.py)
+2025-07-07 12:31:59,051 - __main__ - INFO - Generating code for prompt: Buy 2 DAI using POL every 30 minutes...
+2025-07-07 12:31:59,152 - __main__ - ERROR - Error generating code: 'PREDEFINED_PARAMETERS'
+Traceback (most recent call last):
+  File "/Users/anshumantekriwal/Desktop/Xade/evm-agents/code-generation/api.py", line 90, in generate_code
+    result = code(prompt=request.prompt)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/Desktop/Xade/evm-agents/code-generation/coder.py", line 135, in code
+    formatted_prompt = prompt_template.format(
+                       ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 703, in format
+    return self.format_prompt(**kwargs).to_string()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 726, in format_prompt
+    messages = self.format_messages(**kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 1187, in format_messages
+    message = message_template.format_messages(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 559, in format_messages
+    return [self.format(**kwargs)]
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 592, in format
+    text = self.prompt.format(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/prompt.py", line 186, in format
+    return DEFAULT_FORMATTER_MAPPING[self.template_format](self.template, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.0/lib/python3.11/string.py", line 190, in format
+    return self.vformat(format_string, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/utils/formatting.py", line 33, in vformat
+    return super().vformat(format_string, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.0/lib/python3.11/string.py", line 194, in vformat
+    result, _ = self._vformat(format_string, args, kwargs, used_args, 2)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.0/lib/python3.11/string.py", line 234, in _vformat
+    obj, arg_used = self.get_field(field_name, args, kwargs)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.0/lib/python3.11/string.py", line 299, in get_field
+    obj = self.get_value(first, args, kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.0/lib/python3.11/string.py", line 256, in get_value
+    return kwargs[key]
+           ~~~~~~^^^^^
+KeyError: 'PREDEFINED_PARAMETERS'
+2025-07-07 12:32:14,165 - __main__ - INFO - Generating code for prompt: Buy 2 DAI using POL every 30 minutes...
+2025-07-07 12:32:14,206 - __main__ - ERROR - Error generating code: 'PREDEFINED_PARAMETERS'
+Traceback (most recent call last):
+  File "/Users/anshumantekriwal/Desktop/Xade/evm-agents/code-generation/api.py", line 90, in generate_code
+    result = code(prompt=request.prompt)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/Desktop/Xade/evm-agents/code-generation/coder.py", line 135, in code
+    formatted_prompt = prompt_template.format(
+                       ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 703, in format
+    return self.format_prompt(**kwargs).to_string()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 726, in format_prompt
+    messages = self.format_messages(**kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 1187, in format_messages
+    message = message_template.format_messages(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 559, in format_messages
+    return [self.format(**kwargs)]
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 592, in format
+    text = self.prompt.format(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/prompt.py", line 186, in format
+    return DEFAULT_FORMATTER_MAPPING[self.template_format](self.template, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.0/lib/python3.11/string.py", line 190, in format
+    return self.vformat(format_string, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/utils/formatting.py", line 33, in vformat
+    return super().vformat(format_string, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.0/lib/python3.11/string.py", line 194, in vformat
+    result, _ = self._vformat(format_string, args, kwargs, used_args, 2)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.0/lib/python3.11/string.py", line 234, in _vformat
+    obj, arg_used = self.get_field(field_name, args, kwargs)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.0/lib/python3.11/string.py", line 299, in get_field
+    obj = self.get_value(first, args, kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.0/lib/python3.11/string.py", line 256, in get_value
+    return kwargs[key]
+           ~~~~~~^^^^^
+KeyError: 'PREDEFINED_PARAMETERS'
+2025-07-07 12:32:19,955 - __main__ - INFO - Generating code for prompt: Buy 2 DAI using POL every 30 minutes...
+2025-07-07 12:32:23,491 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2025-07-07 12:32:23,512 - __main__ - ERROR - Error generating code: Error code: 400 - {'error': {'message': "This model's maximum context length is 200000 tokens. However, your messages resulted in 204234 tokens. Please reduce the length of the messages.", 'type': 'invalid_request_error', 'param': 'messages', 'code': 'context_length_exceeded'}}
+Traceback (most recent call last):
+  File "/Users/anshumantekriwal/Desktop/Xade/evm-agents/code-generation/api.py", line 90, in generate_code
+    result = code(prompt=request.prompt)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/Desktop/Xade/evm-agents/code-generation/coder.py", line 143, in code
+    response = model.invoke(formatted_prompt).content
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/language_models/chat_models.py", line 372, in invoke
+    self.generate_prompt(
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/language_models/chat_models.py", line 957, in generate_prompt
+    return self.generate(prompt_messages, stop=stop, callbacks=callbacks, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/language_models/chat_models.py", line 776, in generate
+    self._generate_with_cache(
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/language_models/chat_models.py", line 1022, in _generate_with_cache
+    result = self._generate(
+             ^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_openai/chat_models/base.py", line 991, in _generate
+    response = self.client.create(**payload)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/openai/_utils/_utils.py", line 287, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/openai/resources/chat/completions/completions.py", line 925, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/openai/_base_client.py", line 1239, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/openai/_base_client.py", line 1034, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.BadRequestError: Error code: 400 - {'error': {'message': "This model's maximum context length is 200000 tokens. However, your messages resulted in 204234 tokens. Please reduce the length of the messages.", 'type': 'invalid_request_error', 'param': 'messages', 'code': 'context_length_exceeded'}}
+2025-07-07 12:33:24,652 - __main__ - INFO - Generating code for prompt: Buy 2 DAI using POL every 30 minutes...
+2025-07-07 12:33:27,401 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2025-07-07 12:33:27,412 - __main__ - ERROR - Error generating code: Error code: 400 - {'error': {'message': "This model's maximum context length is 200000 tokens. However, your messages resulted in 204234 tokens. Please reduce the length of the messages.", 'type': 'invalid_request_error', 'param': 'messages', 'code': 'context_length_exceeded'}}
+Traceback (most recent call last):
+  File "/Users/anshumantekriwal/Desktop/Xade/evm-agents/code-generation/api.py", line 90, in generate_code
+    result = code(prompt=request.prompt)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/Desktop/Xade/evm-agents/code-generation/coder.py", line 143, in code
+    response = model.invoke(formatted_prompt).content
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/language_models/chat_models.py", line 372, in invoke
+    self.generate_prompt(
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/language_models/chat_models.py", line 957, in generate_prompt
+    return self.generate(prompt_messages, stop=stop, callbacks=callbacks, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/language_models/chat_models.py", line 776, in generate
+    self._generate_with_cache(
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/language_models/chat_models.py", line 1022, in _generate_with_cache
+    result = self._generate(
+             ^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_openai/chat_models/base.py", line 991, in _generate
+    response = self.client.create(**payload)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/openai/_utils/_utils.py", line 287, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/openai/resources/chat/completions/completions.py", line 925, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/openai/_base_client.py", line 1239, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/openai/_base_client.py", line 1034, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.BadRequestError: Error code: 400 - {'error': {'message': "This model's maximum context length is 200000 tokens. However, your messages resulted in 204234 tokens. Please reduce the length of the messages.", 'type': 'invalid_request_error', 'param': 'messages', 'code': 'context_length_exceeded'}}
+2025-07-07 12:33:36,267 - __main__ - INFO - Generating code for prompt: Buy 2 DAI using POL every 30 minutes...
+2025-07-07 12:34:13,979 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-07 12:34:22,166 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-07 12:34:22,174 - __main__ - INFO - Code generation completed successfully
+2025-07-12 20:34:34,267 - __main__ - INFO - Generating code for prompt: Buy 2 DAI using POL every 30 minutes...
+2025-07-12 20:34:58,223 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-12 20:35:07,417 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-12 20:35:07,433 - __main__ - INFO - Code generation completed successfully
+2025-07-13 02:02:03,722 - __main__ - INFO - Generating code for prompt: Buy 2 DAI using POL every 30 minutes...
+2025-07-13 02:02:38,792 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-13 02:02:45,930 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-13 02:02:45,933 - __main__ - INFO - Code generation completed successfully
+2025-07-13 11:32:43,442 - __main__ - INFO - Generating code for prompt: Buy 2 DAI using POL every 30 minutes if Bitcoin, Ethereum and Arbitrum have all fallen in the past 2...
+2025-07-13 11:32:44,907 - __main__ - ERROR - Error generating code: ' phase, lastMessage, error, '
+Traceback (most recent call last):
+  File "/Users/anshumantekriwal/Desktop/Xade/evm-agents/code-generation/api.py", line 90, in generate_code
+    result = code(prompt=request.prompt)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/Desktop/Xade/evm-agents/code-generation/coder.py", line 192, in code
+    formatted_prompt = prompt_template.format(
+                       ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 703, in format
+    return self.format_prompt(**kwargs).to_string()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 726, in format_prompt
+    messages = self.format_messages(**kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 1187, in format_messages
+    message = message_template.format_messages(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 559, in format_messages
+    return [self.format(**kwargs)]
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 592, in format
+    text = self.prompt.format(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/prompt.py", line 186, in format
+    return DEFAULT_FORMATTER_MAPPING[self.template_format](self.template, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.0/lib/python3.11/string.py", line 190, in format
+    return self.vformat(format_string, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/utils/formatting.py", line 33, in vformat
+    return super().vformat(format_string, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.0/lib/python3.11/string.py", line 194, in vformat
+    result, _ = self._vformat(format_string, args, kwargs, used_args, 2)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.0/lib/python3.11/string.py", line 234, in _vformat
+    obj, arg_used = self.get_field(field_name, args, kwargs)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.0/lib/python3.11/string.py", line 299, in get_field
+    obj = self.get_value(first, args, kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.0/lib/python3.11/string.py", line 256, in get_value
+    return kwargs[key]
+           ~~~~~~^^^^^
+KeyError: ' phase, lastMessage, error, '
+2025-07-13 11:33:10,529 - __main__ - INFO - Generating code for prompt: Buy 2 DAI using POL every 30 minutes if Bitcoin, Ethereum and Arbitrum have all fallen in the past 2...
+2025-07-13 11:33:10,559 - __main__ - ERROR - Error generating code: ' phase, lastMessage, error, '
+Traceback (most recent call last):
+  File "/Users/anshumantekriwal/Desktop/Xade/evm-agents/code-generation/api.py", line 90, in generate_code
+    result = code(prompt=request.prompt)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/Desktop/Xade/evm-agents/code-generation/coder.py", line 192, in code
+    formatted_prompt = prompt_template.format(
+                       ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 703, in format
+    return self.format_prompt(**kwargs).to_string()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 726, in format_prompt
+    messages = self.format_messages(**kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 1187, in format_messages
+    message = message_template.format_messages(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 559, in format_messages
+    return [self.format(**kwargs)]
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 592, in format
+    text = self.prompt.format(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/prompt.py", line 186, in format
+    return DEFAULT_FORMATTER_MAPPING[self.template_format](self.template, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.0/lib/python3.11/string.py", line 190, in format
+    return self.vformat(format_string, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/utils/formatting.py", line 33, in vformat
+    return super().vformat(format_string, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.0/lib/python3.11/string.py", line 194, in vformat
+    result, _ = self._vformat(format_string, args, kwargs, used_args, 2)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.0/lib/python3.11/string.py", line 234, in _vformat
+    obj, arg_used = self.get_field(field_name, args, kwargs)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.0/lib/python3.11/string.py", line 299, in get_field
+    obj = self.get_value(first, args, kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.0/lib/python3.11/string.py", line 256, in get_value
+    return kwargs[key]
+           ~~~~~~^^^^^
+KeyError: ' phase, lastMessage, error, '
+2025-07-13 11:33:16,659 - __main__ - INFO - Generating code for prompt: Buy 2 DAI using POL every 30 minutes if Bitcoin, Ethereum and Arbitrum have all fallen in the past 2...
+2025-07-13 11:33:56,107 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-13 11:34:10,719 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-13 11:34:10,723 - __main__ - INFO - Code generation completed successfully
+2025-07-13 11:43:59,090 - __main__ - INFO - Generating code for prompt: Buy 0.002 DAI using POL every 30 minutes if the crypto market has fallen in the past 24 hours. (Use ...
+2025-07-13 11:44:46,945 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-13 11:44:55,921 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-13 11:44:55,924 - __main__ - INFO - Code generation completed successfully
+2025-07-13 20:58:54,350 - __main__ - INFO - Generating code for prompt: Buy 0.0002 USDT using POL every 1 minute if bitcoin is above 100,000 usd...
+2025-07-13 20:59:52,210 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-13 20:59:52,245 - __main__ - INFO - Code generation completed successfully
+2025-07-13 21:02:41,287 - __main__ - INFO - Generating code for prompt: Buy 0.0002 USDT using POL every 1 minute if bitcoin is above 100,000 usd...
+2025-07-13 21:03:16,736 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-13 21:03:27,721 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-13 21:03:27,729 - __main__ - INFO - Code generation completed successfully

@@ -1,0 +1,26 @@
+{
+  "name": "baseline",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@lifi/sdk": "^3.7.9",
+    "@privy-io/server-auth": "^1.27.4",
+    "axios": "^1.10.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "ethers": "^6.14.4",
+    "express": "^5.1.0",
+    "node-cron": "^4.1.1",
+    "privy": "^0.4.1",
+    "ws": "^8.18.0"
+  }
+}

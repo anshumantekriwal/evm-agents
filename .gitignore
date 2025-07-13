@@ -1,0 +1,11 @@
+agent-deployer/.env
+/agent-deployer/baseline/node_modules
+agent-deployer/baseline/pnpm-lock.yaml
+/agent-deployer/node_modules
+/baseline/node_modules
+/code-generation/__pycache__
+agent-deployer/pnpm-lock.yaml
+/agent-launchpad-starter-kit-main
+baseline/.env
+code-generation/.env
+baseline/pnpm-lock.yaml
