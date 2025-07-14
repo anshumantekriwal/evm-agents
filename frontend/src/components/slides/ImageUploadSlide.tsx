@@ -1,77 +1,85 @@
-import React, { useRef } from "react";
+import { useRef } from "react";
 
-const ImageUploadSlide = ({ formState, handleFileUpload, onNext }) => {
-  const fileInputRef = useRef(null);
+interface ImageUploadSlideProps {
+  formState: {
+    agentImage: File | null;
+  };
+  handleFileUpload: (file: File) => void;
+  onNext: () => void;
+}
+
+const ImageUploadSlide = ({
+  formState,
+  handleFileUpload,
+  onNext,
+}: ImageUploadSlideProps) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageClick = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && file.type.startsWith("image/")) {
+    if (file) {
       handleFileUpload(file);
     }
   };
 
   return (
-    <>
-      <p style={{ marginBottom: "2rem", letterSpacing: "-0.02em" }}>
-        Upload a profile picture for {formState.agentName || "your agent"}
-      </p>
-
+    <div>
       <div
+        className="image-upload-container"
         onClick={handleImageClick}
         style={{
-          width: "350px",
-          height: "350px",
           border: "2px dashed #333333",
-          borderRadius: "50%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          borderRadius: "8px",
+          padding: "2rem",
+          textAlign: "center" as const,
           cursor: "pointer",
-          margin: "0 auto 2rem auto",
-          backgroundColor: formState.agentImage
-            ? "transparent"
-            : "var(--surface-light)",
-          transition: "all 0.2s",
-          overflow: "hidden",
+          backgroundColor: "var(--surface)",
+          transition: "all 0.3s ease",
         }}
         onMouseEnter={(e) => {
-          if (!formState.agentImage) {
-            e.target.style.borderColor = "#666666";
-            e.target.style.backgroundColor = "#333333";
-          }
+          const target = e.target as HTMLElement;
+          target.style.borderColor = "#666666";
+          target.style.backgroundColor = "#333333";
         }}
         onMouseLeave={(e) => {
-          if (!formState.agentImage) {
-            e.target.style.borderColor = "#333333";
-            e.target.style.backgroundColor = "var(--surface-light)";
-          }
+          const target = e.target as HTMLElement;
+          target.style.borderColor = "#333333";
+          target.style.backgroundColor = "var(--surface-light)";
         }}
       >
         {formState.agentImage ? (
-          <img
-            src={URL.createObjectURL(formState.agentImage)}
-            alt="Agent profile"
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              borderRadius: "50%",
-            }}
-          />
+          <div>
+            <img
+              src={URL.createObjectURL(formState.agentImage)}
+              alt="Agent preview"
+              style={{
+                maxWidth: "200px",
+                maxHeight: "200px",
+                borderRadius: "8px",
+              }}
+            />
+            <p style={{ marginTop: "1rem", color: "var(--text-secondary)" }}>
+              Click to change image
+            </p>
+          </div>
         ) : (
-          <div
-            style={{
-              textAlign: "center",
-              color: "var(--text-secondary)",
-              letterSpacing: "-0.02em",
-            }}
-          >
-            <div style={{ fontSize: "3rem", marginBottom: "0.5rem" }}>📷</div>
-            <div style={{ fontSize: "0.9rem" }}>Click to upload</div>
+          <div>
+            <div
+              style={{
+                fontSize: "3rem",
+                marginBottom: "1rem",
+                color: "var(--text-secondary)",
+              }}
+            >
+              📸
+            </div>
+            <p style={{ color: "var(--text-secondary)" }}>
+              Click to upload an image for your agent
+            </p>
           </div>
         )}
       </div>
@@ -84,29 +92,14 @@ const ImageUploadSlide = ({ formState, handleFileUpload, onNext }) => {
         style={{ display: "none" }}
       />
 
-      <p
-        style={{
-          fontSize: "0.9rem",
-          color: "var(--text-secondary)",
-          marginBottom: "2rem",
-          textAlign: "center",
-          letterSpacing: "-0.02em",
-        }}
-      >
-        Recommended: Square image, at least 400x400px
-      </p>
-
       <button
-        className="next-button"
         onClick={onNext}
-        style={{
-          backgroundColor: "white",
-          cursor: "pointer",
-        }}
+        className="next-button"
+        style={{ marginTop: "2rem" }}
       >
         Continue
       </button>
-    </>
+    </div>
   );
 };
 

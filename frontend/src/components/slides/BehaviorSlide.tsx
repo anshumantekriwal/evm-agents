@@ -1,4 +1,30 @@
-import React from "react";
+import { useState } from "react";
+
+interface Chain {
+  name: string;
+  logo: string;
+}
+
+interface FormState {
+  agentBehavior: string;
+  selectedChains: string[];
+  selectedStrategy: string;
+}
+
+interface UIState {
+  isGeneratingQuestions: boolean;
+  aiRating: number | null;
+  followUpQuestions: string[];
+}
+
+interface BehaviorSlideProps {
+  formState: FormState;
+  uiState: UIState;
+  updateForm: (field: string, value: any) => void;
+  handleAIRating: () => void;
+  onNext: () => void;
+  chains: Chain[];
+}
 
 const BehaviorSlide = ({
   formState,
@@ -7,188 +33,120 @@ const BehaviorSlide = ({
   handleAIRating,
   onNext,
   chains,
-}) => {
-  const sampleStrategies = [
-    {
-      title: "DCA Strategy",
-      description:
-        "Execute dollar-cost averaging on blue-chip tokens like WETH and WMATIC every 24 hours. Invest $50 per transaction with 2% slippage tolerance. Monitor for major market crashes and pause during 30%+ drops.",
-    },
-    {
-      title: "Momentum Trading",
-      description:
-        "Monitor trending tokens on Polygon with 24h volume >$1M. Buy when RSI <30 and price breaks above 20-period MA. Set stop-loss at 5% and take profit at 15%. Maximum 3 positions simultaneously.",
-    },
-    {
-      title: "Arbitrage Bot",
-      description:
-        "Find price differences between DEXs (Uniswap, SushiSwap, QuickSwap) for the same token pairs. Execute trades when spread >2% after gas costs. Focus on USDC/USDT, WETH/WMATIC pairs with high liquidity.",
-    },
-    {
-      title: "Yield Farming",
-      description:
-        "Automatically compound rewards from AAVE, Compound, and other DeFi protocols on Polygon. Reinvest rewards daily when gas costs <1% of rewards. Monitor APY changes and migrate to higher-yield opportunities.",
-    },
-    {
-      title: "Grid Trading",
-      description:
-        "Set up grid orders for WMATIC/USDC pair between $0.80-$1.20 range. Place 10 buy and 10 sell orders with 2% spacing. Rebalance grid when price moves outside range. Target 0.5% profit per trade.",
-    },
-  ];
+}: BehaviorSlideProps) => {
+  const [isExpanded, setIsExpanded] = useState(false);
 
-  const toggleChain = (chainName) => {
+  const toggleExpansion = () => {
+    setIsExpanded(!isExpanded);
+  };
+
+  const toggleChain = (chainName: string) => {
     const currentChains = formState.selectedChains || [];
-    const newChains = currentChains.includes(chainName)
-      ? currentChains.filter((c) => c !== chainName)
+    const updatedChains = currentChains.includes(chainName)
+      ? currentChains.filter((c: string) => c !== chainName)
       : [...currentChains, chainName];
-    updateForm("selectedChains", newChains);
+    updateForm("selectedChains", updatedChains);
   };
 
-  const handleStrategyClick = (strategy) => {
-    updateForm("agentBehavior", strategy.description);
+  const handleStrategyClick = (strategy: string) => {
+    updateForm("selectedStrategy", strategy);
   };
+
+  const canContinue = formState.agentBehavior.trim();
 
   return (
-    <div style={{ width: "100%" }}>
-      <p style={{ marginBottom: "1.5rem", letterSpacing: "-0.02em" }}>
-        Describe your agent's behavior and capabilities
-      </p>
+    <div>
+      <div className="input-group">
+        <label htmlFor="agentBehavior">Describe your agent's behavior</label>
+        <textarea
+          id="agentBehavior"
+          value={formState.agentBehavior}
+          onChange={(e) => updateForm("agentBehavior", e.target.value)}
+          placeholder="Describe what you want your agent to do..."
+          className="form-textarea"
+          rows={6}
+        />
+      </div>
 
-      <div style={{ marginBottom: "1.5rem" }}>
-        <p
-          style={{
-            marginBottom: "1rem",
-            fontSize: "0.9rem",
-            color: "#666",
-            letterSpacing: "-0.02em",
-          }}
-        >
-          Sample Strategies (click to use):
-        </p>
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "0.5rem",
-            marginBottom: "1rem",
-          }}
-        >
-          {sampleStrategies.map((strategy, index) => (
-            <button
-              key={index}
-              onClick={() => handleStrategyClick(strategy)}
-              style={{
-                padding: "0.5rem 1rem",
-                backgroundColor: "#333333",
-                color: "white",
-                border: "1px solid #555555",
-                borderRadius: "20px",
-                cursor: "pointer",
-                fontSize: "0.85rem",
-                fontFamily: "TikTok Sans, sans-serif",
-                letterSpacing: "-0.02em",
-                transition: "all 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = "#555555";
-                e.target.style.borderColor = "#777777";
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = "#333333";
-                e.target.style.borderColor = "#555555";
-              }}
+      <div className="strategy-section">
+        <h3>Trading Strategy</h3>
+        <div className="strategy-options">
+          <button
+            className={`strategy-button ${
+              formState.selectedStrategy === "trading" ? "selected" : ""
+            }`}
+            onClick={() => handleStrategyClick("trading")}
+            onMouseEnter={(e) => {
+              const target = e.target as HTMLElement;
+              target.style.backgroundColor = "#555555";
+              target.style.borderColor = "#777777";
+            }}
+            onMouseLeave={(e) => {
+              const target = e.target as HTMLElement;
+              target.style.backgroundColor = "#333333";
+              target.style.borderColor = "#555555";
+            }}
+          >
+            EVM Trading Agent
+          </button>
+        </div>
+      </div>
+
+      <div className="chains-section">
+        <div className="chains-header">
+          <h3>Select Chains</h3>
+          <button
+            onClick={toggleExpansion}
+            className="expand-button"
+            style={{
+              background: "none",
+              border: "none",
+              color: "var(--text-secondary)",
+              cursor: "pointer",
+              fontSize: "0.9rem",
+            }}
+          >
+            {isExpanded ? "Show Less" : "Show All"}
+          </button>
+        </div>
+        <div className="chains-grid">
+          {chains.map((chain: Chain) => (
+            <div
+              key={chain.name}
+              className={`chain-option ${
+                formState.selectedChains?.includes(chain.name) ? "selected" : ""
+              }`}
+              onClick={() => toggleChain(chain.name)}
             >
-              {strategy.title}
-            </button>
+              <img
+                src={chain.logo}
+                alt={chain.name}
+                className="chain-logo"
+                style={{ width: "24px", height: "24px" }}
+              />
+              <span>{chain.name}</span>
+            </div>
           ))}
         </div>
       </div>
 
-      <textarea
-        value={formState.agentBehavior}
-        onChange={(e) => updateForm("agentBehavior", e.target.value)}
-        placeholder="Describe what you want your agent to do. Be specific about its trading strategies, risk management, and decision-making process."
-        className="form-textarea"
-        style={{
-          fontSize: "1rem",
-          letterSpacing: "-0.02em",
-          minHeight: "150px",
-          marginBottom: "1.5rem",
-        }}
-      />
-
-      <p style={{ marginBottom: "1rem", letterSpacing: "-0.02em" }}>
-        Select the chains your agent should operate on:
-      </p>
-
-      <div className="chain-grid">
-        {chains.map((chain) => (
-          <div
-            key={chain.name}
-            className={`chain-item ${
-              formState.selectedChains?.includes(chain.name) ? "selected" : ""
-            }`}
-            onClick={() => toggleChain(chain.name)}
+      {formState.agentBehavior.trim() && (
+        <div className="ai-rating-section">
+          <button
+            onClick={handleAIRating}
+            disabled={uiState.isGeneratingQuestions}
+            className="ai-rating-button"
           >
-            <img src={chain.logo} alt={chain.name} className="chain-logo" />
-            <span className="chain-name">{chain.name}</span>
-          </div>
-        ))}
-      </div>
+            {uiState.isGeneratingQuestions
+              ? "Analyzing Strategy..."
+              : "Get AI Rating"}
+          </button>
 
-      <button
-        onClick={handleAIRating}
-        disabled={
-          !formState.agentBehavior.trim() || uiState.isGeneratingQuestions
-        }
-        className="next-button"
-        style={{
-          backgroundColor:
-            !formState.agentBehavior.trim() || uiState.isGeneratingQuestions
-              ? "#666"
-              : "white",
-          cursor:
-            !formState.agentBehavior.trim() || uiState.isGeneratingQuestions
-              ? "not-allowed"
-              : "pointer",
-          marginBottom: "1rem",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "0.5rem",
-        }}
-      >
-        {uiState.isGeneratingQuestions ? (
-          <>
-            Analyzing...
-            <div className="loading-animation" />
-          </>
-        ) : (
-          "Review Strategy"
-        )}
-      </button>
-
-      <button
-        onClick={onNext}
-        disabled={!uiState.reviewEnabled}
-        className="next-button"
-        style={{
-          backgroundColor: !uiState.reviewEnabled ? "#666" : "#333333",
-          color: "white",
-          cursor: !uiState.reviewEnabled ? "not-allowed" : "pointer",
-          marginBottom: "2rem",
-        }}
-      >
-        Continue
-      </button>
-
-      {uiState.aiRating !== null && (
-        <div className="ai-rating">
-          AI Rating:{" "}
-          <span className="ai-rating-value">{uiState.aiRating} / 10</span>
-          {uiState.aiJustification && (
-            <div className="ai-justification">
-              <strong>Justification:</strong> {uiState.aiJustification}
+          {uiState.aiRating && (
+            <div className="ai-rating-result">
+              <div className="rating-score">
+                AI Rating: {uiState.aiRating}/10
+              </div>
             </div>
           )}
         </div>
@@ -196,14 +154,20 @@ const BehaviorSlide = ({
 
       {uiState.followUpQuestions.length > 0 && (
         <div className="follow-up-questions">
-          <h4>Follow-up questions:</h4>
+          <h4>Follow-up Questions:</h4>
           <ul>
-            {uiState.followUpQuestions.map((question, index) => (
-              <li key={index}>{question}</li>
-            ))}
+            {uiState.followUpQuestions.map(
+              (question: string, index: number) => (
+                <li key={index}>{question}</li>
+              )
+            )}
           </ul>
         </div>
       )}
+
+      <button onClick={onNext} disabled={!canContinue} className="next-button">
+        Continue to Review
+      </button>
     </div>
   );
 };

@@ -1,5 +1,3 @@
-import React from "react";
-
 interface FormState {
   agentImage: File | null;
   agentName: string;

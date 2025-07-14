@@ -1,54 +1,50 @@
-import React from "react";
+interface BasicInfoSlideProps {
+  formState: {
+    agentName: string;
+    agentDescription: string;
+  };
+  updateForm: (field: string, value: string) => void;
+  onNext: () => void;
+}
 
-const BasicInfoSlide = ({ formState, updateForm, onNext }) => {
+const BasicInfoSlide = ({
+  formState,
+  updateForm,
+  onNext,
+}: BasicInfoSlideProps) => {
+  const canContinue =
+    formState.agentName.trim() && formState.agentDescription.trim();
+
   return (
-    <>
-      <p style={{ marginBottom: "1.5rem", letterSpacing: "-0.02em" }}>
-        How should we call your EVM Agent?
-      </p>
+    <div>
+      <div className="input-group">
+        <label htmlFor="agentName">Agent Name</label>
+        <input
+          id="agentName"
+          type="text"
+          placeholder="Enter your agent's name"
+          value={formState.agentName}
+          onChange={(e) => updateForm("agentName", e.target.value)}
+          className="form-input"
+        />
+      </div>
 
-      <input
-        type="text"
-        value={formState.agentName}
-        onChange={(e) => updateForm("agentName", e.target.value)}
-        placeholder="Enter agent name"
-        className="form-input"
-        style={{
-          fontSize: "1rem",
-          letterSpacing: "-0.02em",
-        }}
-      />
+      <div className="input-group">
+        <label htmlFor="agentDescription">Agent Description</label>
+        <textarea
+          id="agentDescription"
+          placeholder="Describe what your agent does"
+          value={formState.agentDescription}
+          onChange={(e) => updateForm("agentDescription", e.target.value)}
+          className="form-textarea"
+          rows={4}
+        />
+      </div>
 
-      <p style={{ marginBottom: "1rem", letterSpacing: "-0.02em" }}>
-        {`What should people know about ${
-          formState.agentName || "your agent"
-        }?`}
-      </p>
-
-      <textarea
-        value={formState.agentDescription}
-        onChange={(e) => updateForm("agentDescription", e.target.value)}
-        placeholder="Add some description about the agent that everyone will see"
-        className="form-textarea"
-        style={{
-          fontSize: "1rem",
-          letterSpacing: "-0.02em",
-          minHeight: "120px",
-        }}
-      />
-
-      <button
-        className="next-button"
-        onClick={onNext}
-        disabled={!formState.agentName.trim()}
-        style={{
-          backgroundColor: !formState.agentName.trim() ? "#666" : "white",
-          cursor: !formState.agentName.trim() ? "not-allowed" : "pointer",
-        }}
-      >
+      <button onClick={onNext} disabled={!canContinue} className="next-button">
         Continue
       </button>
-    </>
+    </div>
   );
 };
 

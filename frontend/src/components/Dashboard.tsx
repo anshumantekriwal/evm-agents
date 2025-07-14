@@ -1,32 +1,37 @@
-import { useAuth0 } from "@auth0/auth0-react";
 import { useState } from "react";
-import "./Dashboard.css";
 import TradingAgentLauncher from "./TradingAgentLauncher";
+import "./Dashboard.css";
 
 export const Dashboard = () => {
-  const { user } = useAuth0();
-  const [showLauncher, setShowLauncher] = useState(false);
+  const [currentView, setCurrentView] = useState("dashboard");
 
-  const handleDeployAgent = () => {
-    setShowLauncher(true);
+  const handleCreateAgent = () => {
+    setCurrentView("create-agent");
   };
 
-  if (showLauncher) {
-    return <TradingAgentLauncher />;
+  const handleBackToDashboard = () => {
+    setCurrentView("dashboard");
+  };
+
+  if (currentView === "create-agent") {
+    return <TradingAgentLauncher onBack={handleBackToDashboard} />;
   }
 
   return (
     <div className="dashboard">
-      <nav className="navbar">
-        <div className="navbar-content">
-          <h1>EVM Agents</h1>
-        </div>
-      </nav>
+      <div className="dashboard-header">
+        <h1>EVM Agent Dashboard</h1>
+        <p>Manage your autonomous EVM trading agents</p>
+      </div>
 
       <div className="dashboard-content">
-        <button className="deploy-agent-btn" onClick={handleDeployAgent}>
-          Deploy Agent
-        </button>
+        <div className="agent-grid">
+          <div className="create-agent-card" onClick={handleCreateAgent}>
+            <div className="create-icon">+</div>
+            <h3>Create New Agent</h3>
+            <p>Launch a new EVM trading agent</p>
+          </div>
+        </div>
       </div>
     </div>
   );

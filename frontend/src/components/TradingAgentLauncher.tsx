@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import "./TradingAgentLauncher.css";
 
@@ -9,7 +9,6 @@ import ImageUploadSlide from "./slides/ImageUploadSlide";
 import BehaviorSlide from "./slides/BehaviorSlide";
 import ReviewSlide from "./slides/ReviewSlide";
 import AgentSuccess from "./AgentSuccess";
-import { supabase } from "../lib/supabase";
 
 // Types
 interface FormState {
@@ -45,7 +44,11 @@ interface Chain {
   logo: string;
 }
 
-const TradingAgentLauncher = () => {
+interface TradingAgentLauncherProps {
+  onBack?: () => void;
+}
+
+const TradingAgentLauncher = ({ onBack }: TradingAgentLauncherProps = {}) => {
   const { user } = useAuth0();
 
   // Consolidated form state
@@ -77,8 +80,6 @@ const TradingAgentLauncher = () => {
     aiJustification: "",
     aiCode: "",
   });
-
-  const containerRef = useRef(null);
 
   // Static data
   const slides = [
@@ -147,11 +148,11 @@ const TradingAgentLauncher = () => {
   }, []);
 
   // State update helpers
-  const updateForm = (field: keyof FormState, value: any) => {
+  const updateForm = (field: string, value: any) => {
     setFormState((prev) => ({ ...prev, [field]: value }));
   };
 
-  const updateUI = (field: keyof UIState, value: any) => {
+  const updateUI = (field: string, value: any) => {
     setUIState((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -264,6 +265,11 @@ const TradingAgentLauncher = () => {
       aiJustification: "",
       aiCode: "",
     });
+
+    // Call the onBack prop if provided
+    if (onBack) {
+      onBack();
+    }
   };
 
   // Show success page if deployment completed
