@@ -1,0 +1,177 @@
+:root {
+  /* Colors */
+  --surface-solid: var(--surface);
+  --surface-light: #222222;
+
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+}
+
+/* Card Styles */
+.card {
+  background: var(--surface-solid);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  border: 1px solid #333333;
+}
+
+.card-header {
+  margin: 0 0 var(--space-lg);
+  color: var(--text-primary);
+  font-size: 1.4rem;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+/* Button Styles */
+.button {
+  background: var(--surface-light);
+  border: 1px solid #333333;
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  color: var(--text-primary);
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.button:hover {
+  background: #333333;
+  border-color: #444444;
+}
+
+.button-primary {
+  background: var(--primary);
+  color: var(--background);
+  border: 1px solid var(--primary);
+}
+
+.button-primary:hover {
+  background: var(--primary-variant);
+  border-color: var(--primary-variant);
+}
+
+/* Input Styles */
+.input {
+  background: var(--surface-light);
+  border: 1px solid #333333;
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  width: 100%;
+  transition: all 0.2s;
+}
+
+.input:focus {
+  border-color: var(--primary);
+  outline: none;
+}
+
+/* Loading States */
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #333333;
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Grid Layout */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-md);
+}
+
+/* List Styles */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.list-item {
+  background: var(--surface-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  border: 1px solid #333333;
+  transition: all 0.2s;
+}
+
+.list-item:hover {
+  background: #333333;
+  border-color: #444444;
+}
+
+/* Text Styles */
+.label {
+  font-weight: 400;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.value {
+  font-family: "SF Mono", Monaco, monospace;
+  word-break: break-all;
+  background-color: var(--surface-light);
+  padding: var(--space-sm);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  border: 1px solid #333333;
+}
+
+/* Error States */
+.error {
+  color: var(--error);
+  background-color: #1a0000;
+  border: 1px solid #330000;
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  margin: var(--space-md) 0;
+}
+
+/* Copy Button */
+.copy-button {
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  cursor: pointer;
+  padding: var(--space-xs);
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.copy-button:hover {
+  opacity: 1;
+}

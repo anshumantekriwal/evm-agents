@@ -9,3 +9,5 @@ agent-deployer/pnpm-lock.yaml
 baseline/.env
 code-generation/.env
 baseline/pnpm-lock.yaml
+frontend/.env
+/kadena-chat-app

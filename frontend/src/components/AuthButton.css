@@ -1,0 +1,56 @@
+.auth-loading {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-family: "TikTok Sans", sans-serif;
+}
+
+.auth-user {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--surface-light);
+  border: 1px solid #333333;
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+}
+
+.auth-welcome {
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  font-family: "TikTok Sans", sans-serif;
+}
+
+.auth-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+  min-width: 80px;
+  font-family: "TikTok Sans", sans-serif;
+}
+
+.auth-btn.login {
+  background: var(--primary);
+  color: var(--background);
+  border: 1px solid var(--primary);
+}
+
+.auth-btn.login:hover {
+  background: var(--primary-variant);
+  border-color: var(--primary-variant);
+}
+
+.auth-btn.logout {
+  background: #ff0000;
+  color: white;
+  border: 1px solid #ff0000;
+}
+
+.auth-btn.logout:hover {
+  background: #cc0000;
+  border-color: #cc0000;
+}

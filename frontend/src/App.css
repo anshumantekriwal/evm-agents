@@ -1,0 +1,133 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "TikTok Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+    "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--text-primary);
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: var(--background);
+  font-size: 1.2rem;
+  color: var(--primary);
+}
+
+.app {
+  min-height: 100vh;
+  background-color: var(--background);
+}
+
+.auth-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+}
+
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background-color: var(--background);
+}
+
+.login-content {
+  text-align: center;
+  padding: 3rem;
+  max-width: 800px;
+  width: 100%;
+}
+
+.login-image {
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  margin-bottom: 2rem;
+  border-radius: 20px;
+  border-bottom-right-radius: 0px;
+  border-bottom-left-radius: 0px;
+}
+
+.login-content h1 {
+  font-size: 3rem;
+  font-weight: 600;
+  letter-spacing: -0.07em;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  font-family: "TikTok Sans", sans-serif;
+}
+
+.login-content p {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  font-family: "TikTok Sans", sans-serif;
+}
+
+/* General UI components */
+button {
+  background-color: var(--primary);
+  color: var(--background);
+  border: 1px solid var(--primary);
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-family: "TikTok Sans", sans-serif;
+}
+
+button:hover {
+  background-color: var(--primary-variant);
+  border-color: var(--primary-variant);
+}
+
+input,
+textarea,
+select {
+  background-color: var(--surface-light);
+  color: var(--text-primary);
+  border: 1px solid #333333;
+  padding: 10px;
+  border-radius: 4px;
+  font-family: "TikTok Sans", sans-serif;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+@media (max-width: 768px) {
+  .login-content {
+    padding: 2rem 1rem;
+  }
+
+  .login-image {
+    max-width: 100%;
+    margin-bottom: 1.5rem;
+  }
+
+  .login-content h1 {
+    font-size: 2.5rem;
+  }
+
+  .login-content p {
+    font-size: 1rem;
+  }
+}
