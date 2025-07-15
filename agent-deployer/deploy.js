@@ -193,14 +193,29 @@ CMD ["npm", "start"]
   // Push image
   console.log("⬆️  Pushing Docker image to ECR...");
   const image = docker.getImage(imageUri);
-  await image.push({
+  const pushStream = await image.push({
     authconfig: {
       username: username,
       password: password,
       serveraddress: `${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com`,
     },
   });
-  console.log("✅ Docker image pushed to ECR");
+
+  // Wait for push to complete
+  await new Promise((resolve, reject) => {
+    docker.modem.followProgress(pushStream, (err, res) => {
+      if (err) {
+        console.error("❌ Docker push failed:", err);
+        reject(err);
+      } else {
+        console.log("✅ Docker image pushed to ECR");
+        resolve(res);
+      }
+    });
+  });
+
+  // Small delay to ensure ECR propagation
+  await new Promise((resolve) => setTimeout(resolve, 3000));
 
   // Deploy to App Runner
   console.log("🚀 Deploying to AWS App Runner...");
@@ -222,7 +237,7 @@ CMD ["npm", "start"]
             TATUM_API_KEY: process.env.TATUM_API_KEY || "",
             VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL || "",
             VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || "",
-            AGENT_ID: agentId || "",
+            AGENT_ID: String(agentId) || "",
             NODE_ENV: "production",
             PORT: "3000",
           },
