@@ -1,34 +1,43 @@
 import "./App.css";
-import { AuthButton } from "./components/AuthButton.tsx";
-import { Dashboard } from "./components/Dashboard.tsx";
-import { useAuth0 } from "@auth0/auth0-react";
+import { Routes, Route } from "react-router-dom";
+import { Navbar } from "./components/Navbar";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { HomePage } from "./pages/HomePage";
+import { DashboardPage } from "./pages/DashboardPage";
+import { CreateAgentPage } from "./pages/CreateAgentPage";
+import { AgentPage } from "./pages/AgentPage";
 
 function App() {
-  const { isAuthenticated } = useAuth0();
-
   return (
     <div className="app">
-      {isAuthenticated ? (
-        <>
-          <div className="auth-container">
-            <AuthButton />
-          </div>
-          <Dashboard />
-        </>
-      ) : (
-        <div className="login-container">
-          <div className="login-content">
-            <img
-              src="/login.png"
-              alt="XADE Agent Launcher"
-              className="login-image"
-            />
-            <h1>Xade No-Code Agent Launcher</h1>
-            <p>Please sign in to access your dashboard</p>
-            <AuthButton />
-          </div>
-        </div>
-      )}
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/create-agent"
+          element={
+            <ProtectedRoute>
+              <CreateAgentPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/agent/:id"
+          element={
+            <ProtectedRoute>
+              <AgentPage />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
     </div>
   );
 }

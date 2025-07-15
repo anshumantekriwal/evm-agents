@@ -12,6 +12,14 @@ import { PrivyClient } from "@privy-io/server-auth";
 import axios from "axios";
 import dotenv from "dotenv";
 import { ethers } from "ethers";
+import { log, updateStatus as loggerUpdateStatus } from "./logging.js";
+import { createClient } from "@supabase/supabase-js";
+
+// Initialize Supabase client
+const supabase = createClient(
+  process.env.VITE_SUPABASE_URL,
+  process.env.VITE_SUPABASE_ANON_KEY
+);
 
 dotenv.config();
 
@@ -21,6 +29,7 @@ let currentStatus = {
   walletAddress: null,
   polBalance: 0,
   lastMessage: "Starting...",
+  nextStep: "Creating wallet",
   trades: [],
   error: null,
   isRunning: false,
@@ -28,22 +37,47 @@ let currentStatus = {
 
 // Optional callbacks
 let onStatusUpdate = (status) => {};
-let onLog = (message) => console.log(message);
 
 export function setOnStatusUpdate(callback) {
   onStatusUpdate = callback;
 }
 
 export function setOnLog(callback) {
-  onLog = callback;
+  // Override default logging behavior if needed
+  log.callback = callback;
 }
 
+// Function to update agent wallet address in database
+async function updateAgentWalletAddress(walletAddress) {
+  try {
+    const agentId = process.env.AGENT_ID;
+    if (!agentId) {
+      log("AGENT_ID not set in environment", "error");
+      return;
+    }
+
+    const { error } = await supabase
+      .from("evm-agents")
+      .update({
+        agent_wallet: walletAddress,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", parseInt(agentId));
+
+    if (error) {
+      log(`Failed to update agent wallet address: ${error.message}`, "error");
+    } else {
+      log(`Agent wallet address updated: ${walletAddress}`, "success");
+    }
+  } catch (error) {
+    log(`Error updating agent wallet address: ${error.message}`, "error");
+  }
+}
+
+// Status update wrapper
 function updateStatus(newStatus) {
-  currentStatus = { ...currentStatus, ...newStatus };
+  currentStatus = loggerUpdateStatus(currentStatus, newStatus);
   onStatusUpdate(currentStatus);
-  onLog(
-    `Status updated: ${newStatus.phase || ""} - ${newStatus.lastMessage || ""}`
-  );
 }
 
 export function getCurrentStatus() {
@@ -54,7 +88,11 @@ export async function withdrawToOwner(tokenAddress, amount) {
   const ownerAddress = process.env.OWNER_ADDRESS;
   if (!ownerAddress) throw new Error("OWNER_ADDRESS not set");
 
-  updateStatus({ lastMessage: "Preparing withdrawal..." });
+  updateStatus({
+    phase: "withdrawing",
+    lastMessage: "Preparing withdrawal...",
+    nextStep: "Executing withdrawal transaction",
+  });
 
   let txRequest;
   if (
@@ -64,9 +102,7 @@ export async function withdrawToOwner(tokenAddress, amount) {
     const amountWei = toWei(amount, 18);
     txRequest = {
       to: ownerAddress,
-      value: amountWei,
-      gasLimit: "21000",
-      gasPrice: "30000000000",
+      value: weiToHex(amountWei),
     };
   } else {
     const decimals = getTokenDecimals(POLYGON_CHAIN_ID, tokenAddress);
@@ -79,8 +115,6 @@ export async function withdrawToOwner(tokenAddress, amount) {
       to: tokenAddress,
       data,
       value: "0",
-      gasLimit: "60000",
-      gasPrice: "30000000000",
     };
   }
 
@@ -91,10 +125,19 @@ export async function withdrawToOwner(tokenAddress, amount) {
       type: "withdrawal",
       details: `Withdrew ${amount} from ${tokenAddress} - Hash: ${hash}`,
     });
-    updateStatus({ lastMessage: `Withdrawal complete: ${hash}` });
+    updateStatus({
+      phase: "withdrawal_complete",
+      lastMessage: `Withdrawal complete: ${hash}`,
+      nextStep: "Returning to normal operations",
+    });
     return { success: true, hash };
   } catch (error) {
-    updateStatus({ error: error.message, lastMessage: "Withdrawal failed" });
+    updateStatus({
+      phase: "error",
+      error: error.message,
+      lastMessage: "Withdrawal failed",
+      nextStep: "Attempting to retry withdrawal",
+    });
     throw error;
   }
 }
@@ -145,20 +188,26 @@ export async function createWallet(ownerAddress) {
       process.env.WALLET_ID = id;
       process.env.WALLET_ADDRESS = address;
 
-      console.log(`Wallet created`);
+      // Update the evm-agents table with the wallet address
+      await updateAgentWalletAddress(address);
+
+      log(`Wallet created: ${address}`, "success");
 
       return {
         id,
         address,
       };
     } catch (error) {
-      console.error("Error creating wallet:", error);
+      log(`Error creating wallet: ${error.message}`, "error");
       throw new Error(`Failed to create wallet: ${error.message}`);
     }
   } else {
-    console.log(`Wallet already exists`);
+    log(`Wallet already exists: ${process.env.WALLET_ADDRESS}`, "info");
     const id = process.env.WALLET_ID;
     const address = process.env.WALLET_ADDRESS;
+
+    // Ensure the wallet address is updated in the database (in case it wasn't before)
+    await updateAgentWalletAddress(address);
 
     return {
       id,
@@ -187,23 +236,26 @@ export async function swap(
 ) {
   try {
     const tokenDecimals = getTokenDecimals(fromChain, fromToken);
-    const amount = toWei(fromAmount, tokenDecimals);
+    const roundedAmount = Number(Number(fromAmount).toFixed(18));
+    const amount = toWei(roundedAmount, tokenDecimals);
+    const params = {
+      fromChain,
+      toChain,
+      fromToken,
+      toToken,
+      fromAddress,
+      fromAmount: amount,
+    };
+    log(`Params: ${JSON.stringify(params)}`, "info");
     const response = await axios.get(`${LIFI_API_BASE}/quote`, {
-      params: {
-        fromChain,
-        toChain,
-        fromToken,
-        toToken,
-        fromAddress,
-        fromAmount: amount,
-      },
+      params,
     });
 
-    console.log("Quote: ", response.data.estimate);
+    log(`Quote received: ${JSON.stringify(response.data.estimate)}`, "info");
 
     return response.data;
   } catch (error) {
-    console.error("Error fetching LiFi quote:", error.message);
+    log(`Error fetching LiFi quote: ${error}`, "error");
     throw new Error(`Swap quote failed: ${error.message}`);
   }
 }
@@ -218,159 +270,172 @@ export async function sendTransaction(transaction) {
   return { hash, caip2 };
 }
 
-export async function baselineFunction(ownerAddress) {
-  // Initialization
-  updateStatus({
-    phase: "initializing",
-    lastMessage: "Creating wallet",
-    isRunning: true,
-  });
-  onLog("Initializing baselineFunction");
-  const wallet = await createWallet(ownerAddress);
-  onLog(`Wallet created: ${wallet.address}`);
-  updateStatus({
-    phase: "checking_balance",
-    walletAddress: wallet.address,
-    lastMessage: "Awaiting minimum balance of 0.01 POL",
-  });
+// export async function baselineFunction(ownerAddress) {
+//   // Initialization phase
+//   updateStatus({
+//     phase: "initializing",
+//     lastMessage: "Creating wallet",
+//     nextStep: "Setting up wallet and checking balance",
+//     isRunning: true,
+//   });
 
-  // Keep checking balance until threshold reached
-  while (true) {
-    try {
-      updateStatus({
-        phase: "checking_balance",
-        lastMessage: "Checking wallet balance",
-      });
-      onLog("Checking balance for wallet", wallet.address);
-      const result = await checkBalance(wallet.address, 0.01);
-      onLog("Balance check result:", result);
+//   try {
+//     const wallet = await createWallet(ownerAddress);
+//     log(`Wallet address: ${wallet.address}`, "info");
 
-      if (result.success) {
-        onLog("✅ Target balance achieved!");
-        updateStatus({
-          phase: "initializing",
-          lastMessage: "Target balance achieved, initializing trading strategy",
-        });
+//     updateStatus({
+//       phase: "checking_balance",
+//       walletAddress: wallet.address,
+//       lastMessage: "Wallet created successfully",
+//       nextStep: "Checking for 0.01 POL balance threshold",
+//     });
 
-        // ======= AI CODE START =======
+//     // Loop until the wallet has at least 0.01 POL
+//     while (true) {
+//       try {
+//         const result = await checkBalance(wallet.address, 0.01);
+//         log(`Balance check result: ${JSON.stringify(result)}`, "info");
 
-        // 1. Fetch DAI contract address on Polygon
-        updateStatus({
-          phase: "initializing",
-          lastMessage: "Fetching DAI contract address for Polygon network",
-        });
-        onLog("Fetching DAI contract address for Polygon");
-        const daiMarketData = await getTokenMarketData("DAI");
-        let daiAddress = null;
-        for (const contract of daiMarketData.contracts) {
-          if (Number(contract.blockchainId) === 137) {
-            daiAddress = contract.address;
-            break;
-          }
-        }
-        if (!daiAddress) {
-          throw new Error("DAI contract address not found on Polygon");
-        }
-        onLog(`DAI address on Polygon: ${daiAddress}`);
-        updateStatus({
-          phase: "initializing",
-          lastMessage: `DAI address set to ${daiAddress}`,
-        });
+//         if (result.success) {
+//           // Threshold reached: start trading strategy
+//           updateStatus({
+//             phase: "monitoring",
+//             lastMessage: "Target balance reached, launching trading strategy",
+//             nextStep: "Fetching BTC market data for analysis",
+//           });
+//           log(
+//             "✅ Target balance achieved! Starting trading strategy",
+//             "success"
+//           );
 
-        // 2. Prepare scheduled trading every 30 minutes
-        const trades = [];
-        const intervalMs = 30 * 1000;
-        onLog("Scheduling trading task every 30 minutes");
-        updateStatus({
-          phase: "waiting",
-          lastMessage: "Scheduled trading every 30 minutes",
-        });
+//           try {
+//             // Get USDT contract address for Polygon
+//             const usdtMarketData = await getTokenMarketData("USDT");
+//             const usdtContractObj = usdtMarketData.contracts.find(
+//               (c) => c.blockchainId === 137 || c.blockchainId === "137"
+//             );
+//             if (!usdtContractObj) {
+//               throw new Error("USDT contract for Polygon not found");
+//             }
+//             const usdtContract = usdtContractObj.address;
+//             log(`USDT contract address: ${usdtContract}`, "info");
 
-        setInterval(async () => {
-          try {
-            updateStatus({
-              phase: "analyzing_market",
-              lastMessage: "Fetching BTC market data",
-            });
-            onLog("Fetching market data for BTC");
-            const btcData = await getTokenMarketData("BTC");
-            const change24h = btcData.price_change_24h;
-            onLog(`BTC 24h price change: ${change24h}%`);
+//             log("Scheduling trade check every 1 minute", "info");
 
-            if (change24h < 0) {
-              // Market has fallen, execute trade
-              updateStatus({
-                phase: "executing_trade",
-                lastMessage: "Market down, executing buy of 0.002 DAI",
-              });
-              onLog("Market down detected, executing swap: 0.002 POL -> DAI");
+//             setInterval(async () => {
+//               try {
+//                 updateStatus({
+//                   phase: "monitoring",
+//                   lastMessage: "Fetching BTC price",
+//                   nextStep: "Evaluate trade condition",
+//                 });
 
-              const swapQuote = await swap(
-                "0x0000000000000000000000000000000000000000", // POL as native token
-                daiAddress,
-                wallet.address,
-                "0.002"
-              );
-              const txRequest = swapQuote.transactionRequest;
-              onLog("Swap quote generated", txRequest);
+//                 const btcData = await getTokenMarketData("BTC");
+//                 const btcPrice = parseFloat(btcData.price);
+//                 log(`BTC price: $${btcPrice}`, "info");
 
-              const { hash, caip2 } = await sendTransaction(txRequest);
-              onLog(`Transaction sent. Hash: ${hash}, CAIP2: ${caip2}`);
+//                 if (btcPrice > 100000) {
+//                   updateStatus({
+//                     phase: "executing_trade",
+//                     lastMessage: "BTC above $100k, executing trade",
+//                     nextStep: "Swapping POL for USDT",
+//                   });
 
-              trades.push({
-                timestamp: new Date().toISOString(),
-                hash,
-                amount: "0.002",
-                from: "POL",
-                to: "DAI",
-              });
+//                   const polData = await getTokenMarketData("MATIC");
+//                   const polPrice = parseFloat(polData.price);
 
-              updateStatus({
-                phase: "completed",
-                trades,
-                lastMessage: `Trade executed. Hash: ${hash}`,
-              });
-            } else {
-              // Market did not fall, skip trade
-              updateStatus({
-                phase: "waiting",
-                lastMessage:
-                  "Market condition not met, next check in 30 minutes",
-              });
-              onLog("Market not down; skipping trade");
-            }
-          } catch (err) {
-            onLog("Error in scheduled task:", err.message);
-            updateStatus({
-              phase: "error",
-              error: err.message,
-              lastMessage: "Error during scheduled trade check",
-            });
-          }
-        }, intervalMs);
+//                   const amountUSDT = 0.0002;
+//                   const amountPOL = (amountUSDT / polPrice).toString();
+//                   log(
+//                     `Swapping ${amountPOL} POL for ${amountUSDT} USDT`,
+//                     "info"
+//                   );
 
-        // ======= AI CODE END =======
+//                   const swapQuote = await swap(
+//                     "0x0000000000000000000000000000000000000000",
+//                     usdtContract,
+//                     wallet.address,
+//                     amountPOL
+//                   );
+//                   const txData = swapQuote.transactionRequest;
+//                   const { hash } = await sendTransaction(txData);
 
-        // Exit balance loop; scheduled tasks will run independently
-        break;
-      } else {
-        onLog("❌ Target not reached yet, retrying in 30 seconds");
-        updateStatus({
-          phase: "checking_balance",
-          lastMessage: "Target not reached, retrying in 30 seconds",
-        });
-        await new Promise((resolve) => setTimeout(resolve, 30000));
-      }
-    } catch (error) {
-      onLog("Error checking balance:", error.message);
-      updateStatus({
-        phase: "error",
-        error: error.message,
-        lastMessage: "Error checking balance, retrying in 30 seconds",
-      });
-      await new Promise((resolve) => setTimeout(resolve, 30000));
-    }
-  }
-}
+//                   log(`Trade executed: txHash ${hash}`, "success");
+//                   updateStatus({
+//                     phase: "completed_trade",
+//                     lastMessage: "Trade executed successfully",
+//                     trades: [
+//                       {
+//                         hash,
+//                         fromAmount: amountPOL,
+//                         toAmount: amountUSDT,
+//                       },
+//                     ],
+//                     nextStep: "Waiting for next scheduled trade",
+//                   });
+//                 } else {
+//                   log("BTC below $100k, skipping trade", "info");
+//                   updateStatus({
+//                     phase: "monitoring",
+//                     lastMessage: "No trade executed, BTC price below threshold",
+//                     nextStep: "Waiting for next scheduled trade",
+//                   });
+//                 }
+//               } catch (innerErr) {
+//                 log(
+//                   `Error during scheduled trade: ${innerErr.message}`,
+//                   "error"
+//                 );
+//                 updateStatus({
+//                   phase: "error",
+//                   error: innerErr.message,
+//                   lastMessage: "Error in scheduled trade execution",
+//                   nextStep: "Continuing scheduled trades",
+//                 });
+//               }
+//             }, 10000);
+//           } catch (setupErr) {
+//             log(
+//               `Error setting up trading strategy: ${setupErr.message}`,
+//               "error"
+//             );
+//             updateStatus({
+//               phase: "error",
+//               error: setupErr.message,
+//               lastMessage: "Failed to set up trading strategy",
+//               nextStep: "Terminating",
+//             });
+//           }
+//           break; // Exit balance-check loop once strategy is running
+//         }
+
+//         updateStatus({
+//           phase: "checking_balance",
+//           lastMessage: "Target not reached, retrying in 30 seconds",
+//           nextStep: "Checking balance again in 30 seconds",
+//         });
+//         log("❌ Target not reached yet. Retrying in 30 seconds.", "warning");
+//         await new Promise((resolve) => setTimeout(resolve, 30000));
+//       } catch (error) {
+//         log(`Error checking balance: ${error.message}`, "error");
+//         updateStatus({
+//           phase: "error",
+//           error: error.message,
+//           lastMessage: "Error checking balance, retrying",
+//           nextStep: "Retrying balance check in 30 seconds",
+//         });
+//         await new Promise((resolve) => setTimeout(resolve, 30000));
+//       }
+//     }
+//   } catch (fatalErr) {
+//     log(`Fatal error in baselineFunction: ${fatalErr.message}`, "error");
+//     updateStatus({
+//       phase: "error",
+//       error: fatalErr.message,
+//       lastMessage: "Fatal error in baseline function",
+//       nextStep: "Terminating",
+//     });
+//   }
+// }
 
 // baselineFunction("0x9864bB6d8359A7eeA4Ea112Dd82C6134BfD0c611");

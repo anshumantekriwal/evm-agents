@@ -2,34 +2,28 @@ import { useAuth0 } from "@auth0/auth0-react";
 import "./AuthButton.css";
 
 export const AuthButton = () => {
-  const { isAuthenticated, loginWithRedirect, logout, user, isLoading } =
-    useAuth0();
+  const { isAuthenticated, loginWithRedirect, logout, isLoading } = useAuth0();
 
   if (isLoading) {
-    return <div className="auth-loading">Loading...</div>;
+    return null;
   }
 
   if (isAuthenticated) {
     return (
-      <div className="auth-user">
-        <span className="auth-welcome">
-          Welcome, {user?.name || user?.email}!
-        </span>
-        <button
-          onClick={() =>
-            logout({ logoutParams: { returnTo: window.location.origin } })
-          }
-          className="auth-btn logout"
-        >
-          Log Out
-        </button>
-      </div>
+      <button
+        onClick={() =>
+          logout({ logoutParams: { returnTo: window.location.origin } })
+        }
+        className="navbar-logout-btn"
+      >
+        Log Out
+      </button>
+    );
+  } else {
+    return (
+      <button onClick={() => loginWithRedirect()} className="login-btn">
+        Log In
+      </button>
     );
   }
-
-  return (
-    <button onClick={() => loginWithRedirect()} className="auth-btn login">
-      Log In
-    </button>
-  );
 };

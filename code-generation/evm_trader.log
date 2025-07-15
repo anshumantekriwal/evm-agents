@@ -287,3 +287,53 @@ KeyError: ' phase, lastMessage, error, '
 2025-07-13 21:03:16,736 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
 2025-07-13 21:03:27,721 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
 2025-07-13 21:03:27,729 - __main__ - INFO - Code generation completed successfully
+2025-07-15 23:09:51,565 - __main__ - INFO - Generating code for prompt: Buy 0.0002 USDT using POL every 1 minute if bitcoin is above 100,000 usd...
+2025-07-15 23:09:53,396 - __main__ - ERROR - Error generating code: ' phase, '
+Traceback (most recent call last):
+  File "/Users/anshumantekriwal/Desktop/Xade/evm-agents/code-generation/api.py", line 90, in generate_code
+    result = code(prompt=request.prompt)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/Desktop/Xade/evm-agents/code-generation/coder.py", line 192, in code
+    formatted_prompt = prompt_template.format(
+                       ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 703, in format
+    return self.format_prompt(**kwargs).to_string()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 726, in format_prompt
+    messages = self.format_messages(**kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 1187, in format_messages
+    message = message_template.format_messages(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 559, in format_messages
+    return [self.format(**kwargs)]
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 592, in format
+    text = self.prompt.format(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/prompts/prompt.py", line 186, in format
+    return DEFAULT_FORMATTER_MAPPING[self.template_format](self.template, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.0/lib/python3.11/string.py", line 190, in format
+    return self.vformat(format_string, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/xade-ai/lib/python3.11/site-packages/langchain_core/utils/formatting.py", line 33, in vformat
+    return super().vformat(format_string, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.0/lib/python3.11/string.py", line 194, in vformat
+    result, _ = self._vformat(format_string, args, kwargs, used_args, 2)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.0/lib/python3.11/string.py", line 234, in _vformat
+    obj, arg_used = self.get_field(field_name, args, kwargs)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.0/lib/python3.11/string.py", line 299, in get_field
+    obj = self.get_value(first, args, kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.0/lib/python3.11/string.py", line 256, in get_value
+    return kwargs[key]
+           ~~~~~~^^^^^
+KeyError: ' phase, '
+2025-07-15 23:10:36,095 - __main__ - INFO - Generating code for prompt: Buy 0.0002 USDT using POL every 1 minute if bitcoin is above 100,000 usd...
+2025-07-15 23:11:37,067 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 23:11:51,267 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-15 23:11:51,274 - __main__ - INFO - Code generation completed successfully

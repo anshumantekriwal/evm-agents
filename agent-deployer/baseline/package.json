@@ -14,6 +14,7 @@
   "dependencies": {
     "@lifi/sdk": "^3.7.9",
     "@privy-io/server-auth": "^1.27.4",
+    "@supabase/supabase-js": "^2.51.0",
     "axios": "^1.10.0",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",

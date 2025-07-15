@@ -70,5 +70,1330 @@
   {
     "timestamp": "2025-07-13T15:34:41.697Z",
     "message": "Status updated: checking_balance - Target not reached, retrying in 30 seconds"
+  },
+  {
+    "timestamp": "2025-07-15T15:58:23.461Z",
+    "level": "info",
+    "message": "Status updated: initializing - Creating wallet | Next: Setting up wallet and checking balance"
+  },
+  {
+    "timestamp": "2025-07-15T15:58:23.462Z",
+    "level": "info",
+    "message": "Wallet already exists: 0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe"
+  },
+  {
+    "timestamp": "2025-07-15T15:58:24.181Z",
+    "level": "success",
+    "message": "Agent wallet address updated: 0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe"
+  },
+  {
+    "timestamp": "2025-07-15T15:58:24.181Z",
+    "level": "info",
+    "message": "Wallet address: 0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe"
+  },
+  {
+    "timestamp": "2025-07-15T15:58:24.182Z",
+    "level": "info",
+    "message": "Status updated: checking_balance - Wallet created successfully | Next: Checking for 0.01 POL balance threshold"
+  },
+  {
+    "timestamp": "2025-07-15T15:58:35.010Z",
+    "level": "info",
+    "message": "Balance check result: {\"success\":false,\"polBalance\":0.005393399975898224,\"message\":\"Insufficient balance: 0.005393399975898224 POL (need 0.01 POL)\"}"
+  },
+  {
+    "timestamp": "2025-07-15T15:58:35.012Z",
+    "level": "info",
+    "message": "Status updated: checking_balance - Target not reached, retrying in 30 seconds | Next: Checking balance again in 30 seconds"
+  },
+  {
+    "timestamp": "2025-07-15T15:58:35.012Z",
+    "level": "warning",
+    "message": "❌ Target not reached yet. Retrying in 30 seconds."
+  },
+  {
+    "timestamp": "2025-07-15T15:59:06.352Z",
+    "level": "info",
+    "message": "Status updated: initializing - Creating wallet | Next: Setting up wallet and checking balance"
+  },
+  {
+    "timestamp": "2025-07-15T15:59:06.352Z",
+    "level": "info",
+    "message": "Wallet already exists: 0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe"
+  },
+  {
+    "timestamp": "2025-07-15T15:59:07.032Z",
+    "level": "success",
+    "message": "Agent wallet address updated: 0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe"
+  },
+  {
+    "timestamp": "2025-07-15T15:59:07.033Z",
+    "level": "info",
+    "message": "Wallet address: 0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe"
+  },
+  {
+    "timestamp": "2025-07-15T15:59:07.041Z",
+    "level": "info",
+    "message": "Status updated: checking_balance - Wallet created successfully | Next: Checking for 0.01 POL balance threshold"
+  },
+  {
+    "timestamp": "2025-07-15T15:59:09.181Z",
+    "level": "info",
+    "message": "Balance check result: {\"success\":false,\"polBalance\":0.005393399975898224,\"message\":\"Insufficient balance: 0.005393399975898224 POL (need 0.01 POL)\"}"
+  },
+  {
+    "timestamp": "2025-07-15T15:59:09.184Z",
+    "level": "info",
+    "message": "Status updated: checking_balance - Target not reached, retrying in 30 seconds | Next: Checking balance again in 30 seconds"
+  },
+  {
+    "timestamp": "2025-07-15T15:59:09.184Z",
+    "level": "warning",
+    "message": "❌ Target not reached yet. Retrying in 30 seconds."
+  },
+  {
+    "timestamp": "2025-07-15T17:43:07.844Z",
+    "level": "info",
+    "message": "Status updated: initializing - Creating wallet | Next: Setting up wallet and checking balance"
+  },
+  {
+    "timestamp": "2025-07-15T17:43:07.845Z",
+    "level": "info",
+    "message": "Wallet already exists: 0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe"
+  },
+  {
+    "timestamp": "2025-07-15T17:43:08.581Z",
+    "level": "success",
+    "message": "Agent wallet address updated: 0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe"
+  },
+  {
+    "timestamp": "2025-07-15T17:43:08.582Z",
+    "level": "info",
+    "message": "Wallet address: 0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe"
+  },
+  {
+    "timestamp": "2025-07-15T17:43:08.584Z",
+    "level": "info",
+    "message": "Status updated: checking_balance - Wallet created successfully | Next: Checking for 0.01 POL balance threshold"
+  },
+  {
+    "timestamp": "2025-07-15T17:43:09.876Z",
+    "level": "info",
+    "message": "Balance check result: {\"success\":false,\"polBalance\":0.005393399975898224,\"message\":\"Insufficient balance: 0.005393399975898224 POL (need 0.01 POL)\"}"
+  },
+  {
+    "timestamp": "2025-07-15T17:43:09.877Z",
+    "level": "info",
+    "message": "Status updated: checking_balance - Target not reached, retrying in 30 seconds | Next: Checking balance again in 30 seconds"
+  },
+  {
+    "timestamp": "2025-07-15T17:43:09.878Z",
+    "level": "warning",
+    "message": "❌ Target not reached yet. Retrying in 30 seconds."
+  },
+  {
+    "timestamp": "2025-07-15T17:43:41.401Z",
+    "level": "info",
+    "message": "Balance check result: {\"success\":false,\"polBalance\":0.005393399975898224,\"message\":\"Insufficient balance: 0.005393399975898224 POL (need 0.01 POL)\"}"
+  },
+  {
+    "timestamp": "2025-07-15T17:43:41.412Z",
+    "level": "info",
+    "message": "Status updated: checking_balance - Target not reached, retrying in 30 seconds | Next: Checking balance again in 30 seconds"
+  },
+  {
+    "timestamp": "2025-07-15T17:43:41.413Z",
+    "level": "warning",
+    "message": "❌ Target not reached yet. Retrying in 30 seconds."
+  },
+  {
+    "timestamp": "2025-07-15T17:44:12.630Z",
+    "level": "info",
+    "message": "Balance check result: {\"success\":false,\"polBalance\":0.005393399975898224,\"message\":\"Insufficient balance: 0.005393399975898224 POL (need 0.01 POL)\"}"
+  },
+  {
+    "timestamp": "2025-07-15T17:44:12.638Z",
+    "level": "info",
+    "message": "Status updated: checking_balance - Target not reached, retrying in 30 seconds | Next: Checking balance again in 30 seconds"
+  },
+  {
+    "timestamp": "2025-07-15T17:44:12.639Z",
+    "level": "warning",
+    "message": "❌ Target not reached yet. Retrying in 30 seconds."
+  },
+  {
+    "timestamp": "2025-07-15T17:44:45.785Z",
+    "level": "info",
+    "message": "Balance check result: {\"success\":true,\"polBalance\":0.19439339997589825,\"message\":\"Target achieved: 0.19439339997589825 POL (target: 0.01 POL)\"}"
+  },
+  {
+    "timestamp": "2025-07-15T17:44:45.793Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Target balance reached, launching trading strategy | Next: Fetching BTC market data for analysis"
+  },
+  {
+    "timestamp": "2025-07-15T17:44:45.793Z",
+    "level": "success",
+    "message": "✅ Target balance achieved! Starting trading strategy"
+  },
+  {
+    "timestamp": "2025-07-15T17:44:47.233Z",
+    "level": "info",
+    "message": "USDT contract address: 0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+  },
+  {
+    "timestamp": "2025-07-15T17:44:47.236Z",
+    "level": "info",
+    "message": "Scheduling trade check every 1 minute"
+  },
+  {
+    "timestamp": "2025-07-15T17:45:47.276Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Fetching BTC price | Next: Evaluate trade condition"
+  },
+  {
+    "timestamp": "2025-07-15T17:45:48.384Z",
+    "level": "info",
+    "message": "BTC price: $0.07697760405307952"
+  },
+  {
+    "timestamp": "2025-07-15T17:45:48.385Z",
+    "level": "info",
+    "message": "BTC below $100k, skipping trade"
+  },
+  {
+    "timestamp": "2025-07-15T17:45:48.388Z",
+    "level": "info",
+    "message": "Status updated: monitoring - No trade executed, BTC price below threshold | Next: Waiting for next scheduled trade"
+  },
+  {
+    "timestamp": "2025-07-15T17:47:38.059Z",
+    "level": "info",
+    "message": "Status updated: initializing - Creating wallet | Next: Setting up wallet and checking balance"
+  },
+  {
+    "timestamp": "2025-07-15T17:47:38.060Z",
+    "level": "info",
+    "message": "Wallet already exists: 0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe"
+  },
+  {
+    "timestamp": "2025-07-15T17:47:38.798Z",
+    "level": "success",
+    "message": "Agent wallet address updated: 0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe"
+  },
+  {
+    "timestamp": "2025-07-15T17:47:38.798Z",
+    "level": "info",
+    "message": "Wallet address: 0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe"
+  },
+  {
+    "timestamp": "2025-07-15T17:47:38.799Z",
+    "level": "info",
+    "message": "Status updated: checking_balance - Wallet created successfully | Next: Checking for 0.01 POL balance threshold"
+  },
+  {
+    "timestamp": "2025-07-15T17:47:40.735Z",
+    "level": "info",
+    "message": "Balance check result: {\"success\":true,\"polBalance\":0.19439339997589825,\"message\":\"Target achieved: 0.19439339997589825 POL (target: 0.01 POL)\"}"
+  },
+  {
+    "timestamp": "2025-07-15T17:47:40.736Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Target balance reached, launching trading strategy | Next: Fetching BTC market data for analysis"
+  },
+  {
+    "timestamp": "2025-07-15T17:47:40.737Z",
+    "level": "success",
+    "message": "✅ Target balance achieved! Starting trading strategy"
+  },
+  {
+    "timestamp": "2025-07-15T17:47:41.262Z",
+    "level": "info",
+    "message": "USDT contract address: 0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+  },
+  {
+    "timestamp": "2025-07-15T17:47:41.263Z",
+    "level": "info",
+    "message": "Scheduling trade check every 1 minute"
+  },
+  {
+    "timestamp": "2025-07-15T17:47:51.267Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Fetching BTC price | Next: Evaluate trade condition"
+  },
+  {
+    "timestamp": "2025-07-15T17:47:52.309Z",
+    "level": "info",
+    "message": "BTC price: $117260.3193637371"
+  },
+  {
+    "timestamp": "2025-07-15T17:47:52.312Z",
+    "level": "info",
+    "message": "Status updated: executing_trade - BTC above $100k, executing trade | Next: Swapping POL for USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:47:52.883Z",
+    "level": "info",
+    "message": "Swapping 0.0008750225661277711 POL for 0.0002 USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:47:53.200Z",
+    "level": "error",
+    "message": "Error fetching LiFi quote: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:47:53.201Z",
+    "level": "error",
+    "message": "Error during scheduled trade: Swap quote failed: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:47:53.205Z",
+    "level": "error",
+    "message": "Status updated: error - Error in scheduled trade execution | Next: Continuing scheduled trades"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:01.287Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Fetching BTC price | Next: Evaluate trade condition"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:02.249Z",
+    "level": "info",
+    "message": "BTC price: $117260.3193637371"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:02.251Z",
+    "level": "info",
+    "message": "Status updated: executing_trade - BTC above $100k, executing trade | Next: Swapping POL for USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:02.771Z",
+    "level": "info",
+    "message": "Swapping 0.0008750225661277711 POL for 0.0002 USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:03.038Z",
+    "level": "error",
+    "message": "Error fetching LiFi quote: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:03.039Z",
+    "level": "error",
+    "message": "Error during scheduled trade: Swap quote failed: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:03.041Z",
+    "level": "error",
+    "message": "Status updated: error - Error in scheduled trade execution | Next: Continuing scheduled trades"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:11.279Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Fetching BTC price | Next: Evaluate trade condition"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:12.141Z",
+    "level": "info",
+    "message": "BTC price: $117260.3193637371"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:12.144Z",
+    "level": "info",
+    "message": "Status updated: executing_trade - BTC above $100k, executing trade | Next: Swapping POL for USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:12.679Z",
+    "level": "info",
+    "message": "Swapping 0.0008750225661277711 POL for 0.0002 USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:12.940Z",
+    "level": "error",
+    "message": "Error fetching LiFi quote: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:12.943Z",
+    "level": "error",
+    "message": "Error during scheduled trade: Swap quote failed: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:12.945Z",
+    "level": "error",
+    "message": "Status updated: error - Error in scheduled trade execution | Next: Continuing scheduled trades"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:21.278Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Fetching BTC price | Next: Evaluate trade condition"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:22.238Z",
+    "level": "info",
+    "message": "BTC price: $117260.3193637371"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:22.241Z",
+    "level": "info",
+    "message": "Status updated: executing_trade - BTC above $100k, executing trade | Next: Swapping POL for USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:22.804Z",
+    "level": "info",
+    "message": "Swapping 0.0008750225661277711 POL for 0.0002 USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:23.037Z",
+    "level": "error",
+    "message": "Error fetching LiFi quote: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:23.039Z",
+    "level": "error",
+    "message": "Error during scheduled trade: Swap quote failed: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:23.041Z",
+    "level": "error",
+    "message": "Status updated: error - Error in scheduled trade execution | Next: Continuing scheduled trades"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:31.282Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Fetching BTC price | Next: Evaluate trade condition"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:32.174Z",
+    "level": "info",
+    "message": "BTC price: $117260.3193637371"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:32.176Z",
+    "level": "info",
+    "message": "Status updated: executing_trade - BTC above $100k, executing trade | Next: Swapping POL for USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:32.693Z",
+    "level": "info",
+    "message": "Swapping 0.0008750225661277711 POL for 0.0002 USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:32.953Z",
+    "level": "error",
+    "message": "Error fetching LiFi quote: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:32.954Z",
+    "level": "error",
+    "message": "Error during scheduled trade: Swap quote failed: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:32.957Z",
+    "level": "error",
+    "message": "Status updated: error - Error in scheduled trade execution | Next: Continuing scheduled trades"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:41.287Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Fetching BTC price | Next: Evaluate trade condition"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:42.163Z",
+    "level": "info",
+    "message": "BTC price: $117260.3193637371"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:42.164Z",
+    "level": "info",
+    "message": "Status updated: executing_trade - BTC above $100k, executing trade | Next: Swapping POL for USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:42.699Z",
+    "level": "info",
+    "message": "Swapping 0.0008750225661277711 POL for 0.0002 USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:42.970Z",
+    "level": "error",
+    "message": "Error fetching LiFi quote: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:42.971Z",
+    "level": "error",
+    "message": "Error during scheduled trade: Swap quote failed: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:42.973Z",
+    "level": "error",
+    "message": "Status updated: error - Error in scheduled trade execution | Next: Continuing scheduled trades"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:51.290Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Fetching BTC price | Next: Evaluate trade condition"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:52.294Z",
+    "level": "info",
+    "message": "BTC price: $117260.3193637371"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:52.297Z",
+    "level": "info",
+    "message": "Status updated: executing_trade - BTC above $100k, executing trade | Next: Swapping POL for USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:52.820Z",
+    "level": "info",
+    "message": "Swapping 0.0008750225661277711 POL for 0.0002 USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:53.043Z",
+    "level": "error",
+    "message": "Error fetching LiFi quote: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:53.044Z",
+    "level": "error",
+    "message": "Error during scheduled trade: Swap quote failed: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:48:53.045Z",
+    "level": "error",
+    "message": "Status updated: error - Error in scheduled trade execution | Next: Continuing scheduled trades"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:01.290Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Fetching BTC price | Next: Evaluate trade condition"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:03.534Z",
+    "level": "info",
+    "message": "BTC price: $117260.3193637371"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:03.535Z",
+    "level": "info",
+    "message": "Status updated: executing_trade - BTC above $100k, executing trade | Next: Swapping POL for USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:04.097Z",
+    "level": "info",
+    "message": "Swapping 0.0008750225661277711 POL for 0.0002 USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:04.354Z",
+    "level": "error",
+    "message": "Error fetching LiFi quote: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:04.355Z",
+    "level": "error",
+    "message": "Error during scheduled trade: Swap quote failed: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:04.357Z",
+    "level": "error",
+    "message": "Status updated: error - Error in scheduled trade execution | Next: Continuing scheduled trades"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:19.839Z",
+    "level": "info",
+    "message": "Status updated: initializing - Creating wallet | Next: Setting up wallet and checking balance"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:19.839Z",
+    "level": "info",
+    "message": "Wallet already exists: 0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:20.209Z",
+    "level": "success",
+    "message": "Agent wallet address updated: 0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:20.210Z",
+    "level": "info",
+    "message": "Wallet address: 0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:20.210Z",
+    "level": "info",
+    "message": "Status updated: checking_balance - Wallet created successfully | Next: Checking for 0.01 POL balance threshold"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:21.761Z",
+    "level": "info",
+    "message": "Balance check result: {\"success\":true,\"polBalance\":0.19439339997589825,\"message\":\"Target achieved: 0.19439339997589825 POL (target: 0.01 POL)\"}"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:21.762Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Target balance reached, launching trading strategy | Next: Fetching BTC market data for analysis"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:21.763Z",
+    "level": "success",
+    "message": "✅ Target balance achieved! Starting trading strategy"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:22.349Z",
+    "level": "info",
+    "message": "USDT contract address: 0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:22.350Z",
+    "level": "info",
+    "message": "Scheduling trade check every 1 minute"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:32.354Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Fetching BTC price | Next: Evaluate trade condition"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:33.221Z",
+    "level": "info",
+    "message": "BTC price: $117260.3193637371"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:33.226Z",
+    "level": "info",
+    "message": "Status updated: executing_trade - BTC above $100k, executing trade | Next: Swapping POL for USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:34.672Z",
+    "level": "info",
+    "message": "Swapping 0.0008750225661277711 POL for 0.0002 USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:34.951Z",
+    "level": "error",
+    "message": "Error fetching LiFi quote: AxiosError: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:34.952Z",
+    "level": "error",
+    "message": "Error during scheduled trade: Swap quote failed: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:34.955Z",
+    "level": "error",
+    "message": "Status updated: error - Error in scheduled trade execution | Next: Continuing scheduled trades"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:42.358Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Fetching BTC price | Next: Evaluate trade condition"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:43.387Z",
+    "level": "info",
+    "message": "BTC price: $117260.3193637371"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:43.390Z",
+    "level": "info",
+    "message": "Status updated: executing_trade - BTC above $100k, executing trade | Next: Swapping POL for USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:43.970Z",
+    "level": "info",
+    "message": "Swapping 0.0008750225661277711 POL for 0.0002 USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:46.620Z",
+    "level": "error",
+    "message": "Error fetching LiFi quote: AxiosError: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:46.621Z",
+    "level": "error",
+    "message": "Error during scheduled trade: Swap quote failed: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:46.636Z",
+    "level": "error",
+    "message": "Status updated: error - Error in scheduled trade execution | Next: Continuing scheduled trades"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:52.359Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Fetching BTC price | Next: Evaluate trade condition"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:53.250Z",
+    "level": "info",
+    "message": "BTC price: $117260.3193637371"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:53.253Z",
+    "level": "info",
+    "message": "Status updated: executing_trade - BTC above $100k, executing trade | Next: Swapping POL for USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:53.823Z",
+    "level": "info",
+    "message": "Swapping 0.0008750225661277711 POL for 0.0002 USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:54.074Z",
+    "level": "error",
+    "message": "Error fetching LiFi quote: AxiosError: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:54.075Z",
+    "level": "error",
+    "message": "Error during scheduled trade: Swap quote failed: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:49:54.076Z",
+    "level": "error",
+    "message": "Status updated: error - Error in scheduled trade execution | Next: Continuing scheduled trades"
+  },
+  {
+    "timestamp": "2025-07-15T17:58:37.469Z",
+    "level": "info",
+    "message": "Status updated: initializing - Creating wallet | Next: Setting up wallet and checking balance"
+  },
+  {
+    "timestamp": "2025-07-15T17:58:37.472Z",
+    "level": "info",
+    "message": "Wallet already exists: 0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe"
+  },
+  {
+    "timestamp": "2025-07-15T17:58:38.271Z",
+    "level": "success",
+    "message": "Agent wallet address updated: 0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe"
+  },
+  {
+    "timestamp": "2025-07-15T17:58:38.273Z",
+    "level": "info",
+    "message": "Wallet address: 0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe"
+  },
+  {
+    "timestamp": "2025-07-15T17:58:38.277Z",
+    "level": "info",
+    "message": "Status updated: checking_balance - Wallet created successfully | Next: Checking for 0.01 POL balance threshold"
+  },
+  {
+    "timestamp": "2025-07-15T17:58:39.644Z",
+    "level": "info",
+    "message": "Balance check result: {\"success\":true,\"polBalance\":0.19439339997589825,\"message\":\"Target achieved: 0.19439339997589825 POL (target: 0.01 POL)\"}"
+  },
+  {
+    "timestamp": "2025-07-15T17:58:39.645Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Target balance reached, launching trading strategy | Next: Fetching BTC market data for analysis"
+  },
+  {
+    "timestamp": "2025-07-15T17:58:39.645Z",
+    "level": "success",
+    "message": "✅ Target balance achieved! Starting trading strategy"
+  },
+  {
+    "timestamp": "2025-07-15T17:58:40.167Z",
+    "level": "info",
+    "message": "USDT contract address: 0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+  },
+  {
+    "timestamp": "2025-07-15T17:58:40.169Z",
+    "level": "info",
+    "message": "Scheduling trade check every 1 minute"
+  },
+  {
+    "timestamp": "2025-07-15T17:58:50.176Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Fetching BTC price | Next: Evaluate trade condition"
+  },
+  {
+    "timestamp": "2025-07-15T17:58:51.080Z",
+    "level": "info",
+    "message": "BTC price: $117331.4903469439"
+  },
+  {
+    "timestamp": "2025-07-15T17:58:51.083Z",
+    "level": "info",
+    "message": "Status updated: executing_trade - BTC above $100k, executing trade | Next: Swapping POL for USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:58:51.686Z",
+    "level": "info",
+    "message": "Swapping 0.0008714517954210673 POL for 0.0002 USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:58:51.696Z",
+    "level": "info",
+    "message": "Params: {\"fromChain\":\"137\",\"toChain\":\"137\",\"fromToken\":\"0x0000000000000000000000000000000000000000\",\"toToken\":\"0xc2132d05d31c914a87c6611c10748aeb04b58e8f\",\"fromAddress\":\"0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe\",\"fromAmount\":\"871451795421067.2\"}"
+  },
+  {
+    "timestamp": "2025-07-15T17:58:52.006Z",
+    "level": "error",
+    "message": "Error fetching LiFi quote: AxiosError: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:58:52.008Z",
+    "level": "error",
+    "message": "Error during scheduled trade: Swap quote failed: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:58:52.010Z",
+    "level": "error",
+    "message": "Status updated: error - Error in scheduled trade execution | Next: Continuing scheduled trades"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:00.177Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Fetching BTC price | Next: Evaluate trade condition"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:01.371Z",
+    "level": "info",
+    "message": "BTC price: $117331.4903469439"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:01.373Z",
+    "level": "info",
+    "message": "Status updated: executing_trade - BTC above $100k, executing trade | Next: Swapping POL for USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:02.789Z",
+    "level": "info",
+    "message": "Swapping 0.0008714517954210673 POL for 0.0002 USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:02.797Z",
+    "level": "info",
+    "message": "Params: {\"fromChain\":\"137\",\"toChain\":\"137\",\"fromToken\":\"0x0000000000000000000000000000000000000000\",\"toToken\":\"0xc2132d05d31c914a87c6611c10748aeb04b58e8f\",\"fromAddress\":\"0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe\",\"fromAmount\":\"871451795421067.2\"}"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:03.086Z",
+    "level": "error",
+    "message": "Error fetching LiFi quote: AxiosError: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:03.086Z",
+    "level": "error",
+    "message": "Error during scheduled trade: Swap quote failed: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:03.088Z",
+    "level": "error",
+    "message": "Status updated: error - Error in scheduled trade execution | Next: Continuing scheduled trades"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:10.177Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Fetching BTC price | Next: Evaluate trade condition"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:11.291Z",
+    "level": "info",
+    "message": "BTC price: $117331.4903469439"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:11.293Z",
+    "level": "info",
+    "message": "Status updated: executing_trade - BTC above $100k, executing trade | Next: Swapping POL for USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:11.952Z",
+    "level": "info",
+    "message": "Swapping 0.0008714517954210673 POL for 0.0002 USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:11.958Z",
+    "level": "info",
+    "message": "Params: {\"fromChain\":\"137\",\"toChain\":\"137\",\"fromToken\":\"0x0000000000000000000000000000000000000000\",\"toToken\":\"0xc2132d05d31c914a87c6611c10748aeb04b58e8f\",\"fromAddress\":\"0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe\",\"fromAmount\":\"871451795421067.2\"}"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:12.207Z",
+    "level": "error",
+    "message": "Error fetching LiFi quote: AxiosError: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:12.208Z",
+    "level": "error",
+    "message": "Error during scheduled trade: Swap quote failed: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:12.211Z",
+    "level": "error",
+    "message": "Status updated: error - Error in scheduled trade execution | Next: Continuing scheduled trades"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:20.177Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Fetching BTC price | Next: Evaluate trade condition"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:21.285Z",
+    "level": "info",
+    "message": "BTC price: $117331.4903469439"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:21.287Z",
+    "level": "info",
+    "message": "Status updated: executing_trade - BTC above $100k, executing trade | Next: Swapping POL for USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:22.836Z",
+    "level": "info",
+    "message": "Swapping 0.0008714517954210673 POL for 0.0002 USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:22.844Z",
+    "level": "info",
+    "message": "Params: {\"fromChain\":\"137\",\"toChain\":\"137\",\"fromToken\":\"0x0000000000000000000000000000000000000000\",\"toToken\":\"0xc2132d05d31c914a87c6611c10748aeb04b58e8f\",\"fromAddress\":\"0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe\",\"fromAmount\":\"871451795421067.2\"}"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:23.117Z",
+    "level": "error",
+    "message": "Error fetching LiFi quote: AxiosError: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:23.119Z",
+    "level": "error",
+    "message": "Error during scheduled trade: Swap quote failed: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:23.120Z",
+    "level": "error",
+    "message": "Status updated: error - Error in scheduled trade execution | Next: Continuing scheduled trades"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:30.178Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Fetching BTC price | Next: Evaluate trade condition"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:31.254Z",
+    "level": "info",
+    "message": "BTC price: $117331.4903469439"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:31.256Z",
+    "level": "info",
+    "message": "Status updated: executing_trade - BTC above $100k, executing trade | Next: Swapping POL for USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:32.672Z",
+    "level": "info",
+    "message": "Swapping 0.0008714517954210673 POL for 0.0002 USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:32.679Z",
+    "level": "info",
+    "message": "Params: {\"fromChain\":\"137\",\"toChain\":\"137\",\"fromToken\":\"0x0000000000000000000000000000000000000000\",\"toToken\":\"0xc2132d05d31c914a87c6611c10748aeb04b58e8f\",\"fromAddress\":\"0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe\",\"fromAmount\":\"871451795421067.2\"}"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:32.954Z",
+    "level": "error",
+    "message": "Error fetching LiFi quote: AxiosError: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:32.956Z",
+    "level": "error",
+    "message": "Error during scheduled trade: Swap quote failed: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:32.959Z",
+    "level": "error",
+    "message": "Status updated: error - Error in scheduled trade execution | Next: Continuing scheduled trades"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:40.198Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Fetching BTC price | Next: Evaluate trade condition"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:42.847Z",
+    "level": "info",
+    "message": "Status updated: initializing - Creating wallet | Next: Setting up wallet and checking balance"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:42.847Z",
+    "level": "info",
+    "message": "Wallet already exists: 0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:43.266Z",
+    "level": "success",
+    "message": "Agent wallet address updated: 0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:43.267Z",
+    "level": "info",
+    "message": "Wallet address: 0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:43.269Z",
+    "level": "info",
+    "message": "Status updated: checking_balance - Wallet created successfully | Next: Checking for 0.01 POL balance threshold"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:44.369Z",
+    "level": "info",
+    "message": "Balance check result: {\"success\":true,\"polBalance\":0.19439339997589825,\"message\":\"Target achieved: 0.19439339997589825 POL (target: 0.01 POL)\"}"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:44.371Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Target balance reached, launching trading strategy | Next: Fetching BTC market data for analysis"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:44.371Z",
+    "level": "success",
+    "message": "✅ Target balance achieved! Starting trading strategy"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:44.874Z",
+    "level": "info",
+    "message": "USDT contract address: 0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:44.875Z",
+    "level": "info",
+    "message": "Scheduling trade check every 1 minute"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:54.887Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Fetching BTC price | Next: Evaluate trade condition"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:55.829Z",
+    "level": "info",
+    "message": "BTC price: $117299.3093855202"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:55.832Z",
+    "level": "info",
+    "message": "Status updated: executing_trade - BTC above $100k, executing trade | Next: Swapping POL for USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:56.388Z",
+    "level": "info",
+    "message": "Swapping 0.0008706812562107424 POL for 0.0002 USDT"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:56.396Z",
+    "level": "info",
+    "message": "Params: {\"fromChain\":\"137\",\"toChain\":\"137\",\"fromToken\":\"0x0000000000000000000000000000000000000000\",\"toToken\":\"0xc2132d05d31c914a87c6611c10748aeb04b58e8f\",\"fromAddress\":\"0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe\",\"fromAmount\":\"870681256210742.4\"}"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:56.690Z",
+    "level": "error",
+    "message": "Error fetching LiFi quote: AxiosError: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:56.692Z",
+    "level": "error",
+    "message": "Error during scheduled trade: Swap quote failed: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T17:59:56.694Z",
+    "level": "error",
+    "message": "Status updated: error - Error in scheduled trade execution | Next: Continuing scheduled trades"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:04.892Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Fetching BTC price | Next: Evaluate trade condition"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:05.999Z",
+    "level": "info",
+    "message": "BTC price: $117299.3093855202"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:06.004Z",
+    "level": "info",
+    "message": "Status updated: executing_trade - BTC above $100k, executing trade | Next: Swapping POL for USDT"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:06.623Z",
+    "level": "info",
+    "message": "Swapping 0.0008706812562107424 POL for 0.0002 USDT"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:06.634Z",
+    "level": "info",
+    "message": "Params: {\"fromChain\":\"137\",\"toChain\":\"137\",\"fromToken\":\"0x0000000000000000000000000000000000000000\",\"toToken\":\"0xc2132d05d31c914a87c6611c10748aeb04b58e8f\",\"fromAddress\":\"0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe\",\"fromAmount\":\"870681256210742.4\"}"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:06.890Z",
+    "level": "error",
+    "message": "Error fetching LiFi quote: AxiosError: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:06.892Z",
+    "level": "error",
+    "message": "Error during scheduled trade: Swap quote failed: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:06.896Z",
+    "level": "error",
+    "message": "Status updated: error - Error in scheduled trade execution | Next: Continuing scheduled trades"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:14.136Z",
+    "level": "info",
+    "message": "Status updated: initializing - Creating wallet | Next: Setting up wallet and checking balance"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:14.137Z",
+    "level": "info",
+    "message": "Wallet already exists: 0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:14.531Z",
+    "level": "success",
+    "message": "Agent wallet address updated: 0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:14.532Z",
+    "level": "info",
+    "message": "Wallet address: 0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:14.533Z",
+    "level": "info",
+    "message": "Status updated: checking_balance - Wallet created successfully | Next: Checking for 0.01 POL balance threshold"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:15.918Z",
+    "level": "info",
+    "message": "Balance check result: {\"success\":true,\"polBalance\":0.19439339997589825,\"message\":\"Target achieved: 0.19439339997589825 POL (target: 0.01 POL)\"}"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:15.921Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Target balance reached, launching trading strategy | Next: Fetching BTC market data for analysis"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:15.922Z",
+    "level": "success",
+    "message": "✅ Target balance achieved! Starting trading strategy"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:16.541Z",
+    "level": "info",
+    "message": "USDT contract address: 0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:16.543Z",
+    "level": "info",
+    "message": "Scheduling trade check every 1 minute"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:26.547Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Fetching BTC price | Next: Evaluate trade condition"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:28.119Z",
+    "level": "info",
+    "message": "BTC price: $117299.3093855202"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:28.122Z",
+    "level": "info",
+    "message": "Status updated: executing_trade - BTC above $100k, executing trade | Next: Swapping POL for USDT"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:29.620Z",
+    "level": "info",
+    "message": "Swapping 0.0008706812562107424 POL for 0.0002 USDT"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:29.630Z",
+    "level": "info",
+    "message": "Params: {\"fromChain\":\"137\",\"toChain\":\"137\",\"fromToken\":\"0x0000000000000000000000000000000000000000\",\"toToken\":\"0xc2132d05d31c914a87c6611c10748aeb04b58e8f\",\"fromAddress\":\"0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe\",\"fromAmount\":\"870681256210742.4\"}"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:29.897Z",
+    "level": "error",
+    "message": "Error fetching LiFi quote: AxiosError: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:29.898Z",
+    "level": "error",
+    "message": "Error during scheduled trade: Swap quote failed: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:29.902Z",
+    "level": "error",
+    "message": "Status updated: error - Error in scheduled trade execution | Next: Continuing scheduled trades"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:36.550Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Fetching BTC price | Next: Evaluate trade condition"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:37.637Z",
+    "level": "info",
+    "message": "BTC price: $117299.3093855202"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:37.641Z",
+    "level": "info",
+    "message": "Status updated: executing_trade - BTC above $100k, executing trade | Next: Swapping POL for USDT"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:38.200Z",
+    "level": "info",
+    "message": "Swapping 0.0008706812562107424 POL for 0.0002 USDT"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:38.209Z",
+    "level": "info",
+    "message": "Params: {\"fromChain\":\"137\",\"toChain\":\"137\",\"fromToken\":\"0x0000000000000000000000000000000000000000\",\"toToken\":\"0xc2132d05d31c914a87c6611c10748aeb04b58e8f\",\"fromAddress\":\"0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe\",\"fromAmount\":\"870681256210742.4\"}"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:38.458Z",
+    "level": "error",
+    "message": "Error fetching LiFi quote: AxiosError: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:38.460Z",
+    "level": "error",
+    "message": "Error during scheduled trade: Swap quote failed: Request failed with status code 400"
+  },
+  {
+    "timestamp": "2025-07-15T18:00:38.464Z",
+    "level": "error",
+    "message": "Status updated: error - Error in scheduled trade execution | Next: Continuing scheduled trades"
+  },
+  {
+    "timestamp": "2025-07-15T18:01:21.266Z",
+    "level": "info",
+    "message": "Status updated: initializing - Creating wallet | Next: Setting up wallet and checking balance"
+  },
+  {
+    "timestamp": "2025-07-15T18:01:21.267Z",
+    "level": "info",
+    "message": "Wallet already exists: 0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe"
+  },
+  {
+    "timestamp": "2025-07-15T18:01:21.921Z",
+    "level": "success",
+    "message": "Agent wallet address updated: 0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe"
+  },
+  {
+    "timestamp": "2025-07-15T18:01:21.923Z",
+    "level": "info",
+    "message": "Wallet address: 0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe"
+  },
+  {
+    "timestamp": "2025-07-15T18:01:21.925Z",
+    "level": "info",
+    "message": "Status updated: checking_balance - Wallet created successfully | Next: Checking for 0.01 POL balance threshold"
+  },
+  {
+    "timestamp": "2025-07-15T18:01:23.062Z",
+    "level": "info",
+    "message": "Balance check result: {\"success\":true,\"polBalance\":0.19439339997589825,\"message\":\"Target achieved: 0.19439339997589825 POL (target: 0.01 POL)\"}"
+  },
+  {
+    "timestamp": "2025-07-15T18:01:23.064Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Target balance reached, launching trading strategy | Next: Fetching BTC market data for analysis"
+  },
+  {
+    "timestamp": "2025-07-15T18:01:23.064Z",
+    "level": "success",
+    "message": "✅ Target balance achieved! Starting trading strategy"
+  },
+  {
+    "timestamp": "2025-07-15T18:01:23.576Z",
+    "level": "info",
+    "message": "USDT contract address: 0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+  },
+  {
+    "timestamp": "2025-07-15T18:01:23.578Z",
+    "level": "info",
+    "message": "Scheduling trade check every 1 minute"
+  },
+  {
+    "timestamp": "2025-07-15T18:01:33.582Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Fetching BTC price | Next: Evaluate trade condition"
+  },
+  {
+    "timestamp": "2025-07-15T18:01:34.462Z",
+    "level": "info",
+    "message": "BTC price: $117299.3093855202"
+  },
+  {
+    "timestamp": "2025-07-15T18:01:34.466Z",
+    "level": "info",
+    "message": "Status updated: executing_trade - BTC above $100k, executing trade | Next: Swapping POL for USDT"
+  },
+  {
+    "timestamp": "2025-07-15T18:01:34.982Z",
+    "level": "info",
+    "message": "Swapping 0.0008706812562107424 POL for 0.0002 USDT"
+  },
+  {
+    "timestamp": "2025-07-15T18:01:34.991Z",
+    "level": "info",
+    "message": "Params: {\"fromChain\":\"137\",\"toChain\":\"137\",\"fromToken\":\"0x0000000000000000000000000000000000000000\",\"toToken\":\"0xc2132d05d31c914a87c6611c10748aeb04b58e8f\",\"fromAddress\":\"0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe\",\"fromAmount\":\"870681256210742\"}"
+  },
+  {
+    "timestamp": "2025-07-15T18:01:36.638Z",
+    "level": "info",
+    "message": "Quote received: {\"tool\":\"sushiswap\",\"approvalAddress\":\"0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE\",\"toAmountMin\":\"198\",\"toAmount\":\"199\",\"fromAmount\":\"870681256210742\",\"feeCosts\":[],\"gasCosts\":[{\"type\":\"SEND\",\"price\":\"30000119664\",\"estimate\":\"258486\",\"limit\":\"387729\",\"amount\":\"7754610931468704\",\"amountUSD\":\"0.0018\",\"token\":{\"address\":\"0x0000000000000000000000000000000000000000\",\"chainId\":137,\"symbol\":\"POL\",\"decimals\":18,\"name\":\"Polygon Ecosystem Token\",\"coinKey\":\"POL\",\"logoURI\":\"https://static.debank.com/image/matic_token/logo_url/matic/6f5a6b6f0732a7a235131bd7804d357c.png\",\"priceUSD\":\"0.22962419\"}}],\"executionDuration\":30,\"fromAmountUSD\":\"0.0002\",\"toAmountUSD\":\"0.0002\"}"
+  },
+  {
+    "timestamp": "2025-07-15T18:01:37.557Z",
+    "level": "success",
+    "message": "Trade executed: txHash 0x97abdf946d0626294a8e68e7339e051c0d3affb9200ddac3b11579ab7015829b"
+  },
+  {
+    "timestamp": "2025-07-15T18:01:37.561Z",
+    "level": "info",
+    "message": "Status updated: completed_trade - Trade executed successfully | Next: Waiting for next scheduled trade"
+  },
+  {
+    "timestamp": "2025-07-15T18:01:43.585Z",
+    "level": "info",
+    "message": "Status updated: monitoring - Fetching BTC price | Next: Evaluate trade condition"
+  },
+  {
+    "timestamp": "2025-07-15T18:01:45.376Z",
+    "level": "info",
+    "message": "BTC price: $117299.3093855202"
+  },
+  {
+    "timestamp": "2025-07-15T18:01:45.378Z",
+    "level": "info",
+    "message": "Status updated: executing_trade - BTC above $100k, executing trade | Next: Swapping POL for USDT"
+  },
+  {
+    "timestamp": "2025-07-15T18:01:45.893Z",
+    "level": "info",
+    "message": "Swapping 0.0008706812562107424 POL for 0.0002 USDT"
+  },
+  {
+    "timestamp": "2025-07-15T18:01:45.901Z",
+    "level": "info",
+    "message": "Params: {\"fromChain\":\"137\",\"toChain\":\"137\",\"fromToken\":\"0x0000000000000000000000000000000000000000\",\"toToken\":\"0xc2132d05d31c914a87c6611c10748aeb04b58e8f\",\"fromAddress\":\"0xFbBF9E192d75739a9c1a282E2D365069F3B20ffe\",\"fromAmount\":\"870681256210742\"}"
+  },
+  {
+    "timestamp": "2025-07-15T18:01:47.632Z",
+    "level": "info",
+    "message": "Quote received: {\"tool\":\"sushiswap\",\"approvalAddress\":\"0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE\",\"toAmountMin\":\"198\",\"toAmount\":\"199\",\"fromAmount\":\"870681256210742\",\"feeCosts\":[],\"gasCosts\":[{\"type\":\"SEND\",\"price\":\"30000119664\",\"estimate\":\"258486\",\"limit\":\"387729\",\"amount\":\"7754610931468704\",\"amountUSD\":\"0.0018\",\"token\":{\"address\":\"0x0000000000000000000000000000000000000000\",\"chainId\":137,\"symbol\":\"POL\",\"decimals\":18,\"name\":\"Polygon Ecosystem Token\",\"coinKey\":\"POL\",\"logoURI\":\"https://static.debank.com/image/matic_token/logo_url/matic/6f5a6b6f0732a7a235131bd7804d357c.png\",\"priceUSD\":\"0.22962419\"}}],\"executionDuration\":30,\"fromAmountUSD\":\"0.0002\",\"toAmountUSD\":\"0.0002\"}"
+  },
+  {
+    "timestamp": "2025-07-15T18:01:48.348Z",
+    "level": "success",
+    "message": "Trade executed: txHash 0x64ada1a7d51713dd611efb0a071c2e8bb35888c1310e5f464bc3ad8b7b7f50b7"
+  },
+  {
+    "timestamp": "2025-07-15T18:01:48.352Z",
+    "level": "info",
+    "message": "Status updated: completed_trade - Trade executed successfully | Next: Waiting for next scheduled trade"
   }
 ]

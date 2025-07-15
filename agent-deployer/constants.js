@@ -13,6 +13,14 @@ import { PrivyClient } from "@privy-io/server-auth";
 import axios from "axios";
 import dotenv from "dotenv";
 import { ethers } from "ethers";
+import { log, updateStatus as loggerUpdateStatus } from "./logging.js";
+import { createClient } from "@supabase/supabase-js";
+
+// Initialize Supabase client
+const supabase = createClient(
+  process.env.VITE_SUPABASE_URL,
+  process.env.VITE_SUPABASE_ANON_KEY
+);
 
 dotenv.config();
 
@@ -22,6 +30,7 @@ let currentStatus = {
   walletAddress: null,
   polBalance: 0,
   lastMessage: "Starting...",
+  nextStep: "Creating wallet",
   trades: [],
   error: null,
   isRunning: false,
@@ -29,24 +38,47 @@ let currentStatus = {
 
 // Optional callbacks
 let onStatusUpdate = (status) => {};
-let onLog = (message) => console.log(message);
 
 export function setOnStatusUpdate(callback) {
   onStatusUpdate = callback;
 }
 
 export function setOnLog(callback) {
-  onLog = callback;
+  // Override default logging behavior if needed
+  log.callback = callback;
 }
 
+// Function to update agent wallet address in database
+async function updateAgentWalletAddress(walletAddress) {
+  try {
+    const agentId = process.env.AGENT_ID;
+    if (!agentId) {
+      log("AGENT_ID not set in environment", "error");
+      return;
+    }
+
+    const { error } = await supabase
+      .from("evm-agents")
+      .update({
+        agent_wallet: walletAddress,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", parseInt(agentId));
+
+    if (error) {
+      log(\`Failed to update agent wallet address: \${error.message}\`, "error");
+    } else {
+      log(\`Agent wallet address updated: \${walletAddress}\`, "success");
+    }
+  } catch (error) {
+    log(\`Error updating agent wallet address: \${error.message}\`, "error");
+  }
+}
+
+// Status update wrapper
 function updateStatus(newStatus) {
-  currentStatus = { ...currentStatus, ...newStatus };
+  currentStatus = loggerUpdateStatus(currentStatus, newStatus);
   onStatusUpdate(currentStatus);
-  onLog(
-    \`Status updated: \${newStatus.phase || ""} - \${
-      newStatus.lastMessage || ""
-    }\`
-  );
 }
 
 export function getCurrentStatus() {
@@ -57,7 +89,11 @@ export async function withdrawToOwner(tokenAddress, amount) {
   const ownerAddress = process.env.OWNER_ADDRESS;
   if (!ownerAddress) throw new Error("OWNER_ADDRESS not set");
 
-  updateStatus({ lastMessage: "Preparing withdrawal..." });
+  updateStatus({
+    phase: "withdrawing",
+    lastMessage: "Preparing withdrawal...",
+    nextStep: "Executing withdrawal transaction",
+  });
 
   let txRequest;
   if (
@@ -90,10 +126,19 @@ export async function withdrawToOwner(tokenAddress, amount) {
       type: "withdrawal",
       details: \`Withdrew \${amount} from \${tokenAddress} - Hash: \${hash}\`,
     });
-    updateStatus({ lastMessage: \`Withdrawal complete: \${hash}\` });
+    updateStatus({
+      phase: "withdrawal_complete",
+      lastMessage: \`Withdrawal complete: \${hash}\`,
+      nextStep: "Returning to normal operations",
+    });
     return { success: true, hash };
   } catch (error) {
-    updateStatus({ error: error.message, lastMessage: "Withdrawal failed" });
+    updateStatus({
+      phase: "error",
+      error: error.message,
+      lastMessage: "Withdrawal failed",
+      nextStep: "Attempting to retry withdrawal",
+    });
     throw error;
   }
 }
@@ -144,20 +189,26 @@ export async function createWallet(ownerAddress) {
       process.env.WALLET_ID = id;
       process.env.WALLET_ADDRESS = address;
 
-      console.log(\`Wallet created\`);
+      // Update the evm-agents table with the wallet address
+      await updateAgentWalletAddress(address);
+
+      log(\`Wallet created: \${address}\`, "success");
 
       return {
         id,
         address,
       };
     } catch (error) {
-      console.error("Error creating wallet:", error);
+      log(\`Error creating wallet: \${error.message}\`, "error");
       throw new Error(\`Failed to create wallet: \${error.message}\`);
     }
   } else {
-    console.log(\`Wallet already exists\`);
+    log(\`Wallet already exists: \${process.env.WALLET_ADDRESS}\`, "info");
     const id = process.env.WALLET_ID;
     const address = process.env.WALLET_ADDRESS;
+
+    // Ensure the wallet address is updated in the database (in case it wasn't before)
+    await updateAgentWalletAddress(address);
 
     return {
       id,
@@ -186,23 +237,26 @@ export async function swap(
 ) {
   try {
     const tokenDecimals = getTokenDecimals(fromChain, fromToken);
-    const amount = toWei(fromAmount, tokenDecimals);
+    const roundedAmount = Number(Number(fromAmount).toFixed(18));
+    const amount = toWei(roundedAmount, tokenDecimals);
+    const params = {
+      fromChain,
+      toChain,
+      fromToken,
+      toToken,
+      fromAddress,
+      fromAmount: amount,
+    };
+    log(\`Params: \${JSON.stringify(params)}\`, "info");
     const response = await axios.get(\`\${LIFI_API_BASE}/quote\`, {
-      params: {
-        fromChain,
-        toChain,
-        fromToken,
-        toToken,
-        fromAddress,
-        fromAmount: amount,
-      },
+      params,
     });
 
-    console.log(\`Quote: \${response.data.estimate}\`);
+    log(\`Quote received: \${JSON.stringify(response.data.estimate)}\`, "info");
 
     return response.data;
   } catch (error) {
-    console.error(\`Error fetching LiFi quote: \${error.message}\`);
+    log(\`Error fetching LiFi quote: \${error}\`, "error");
     throw new Error(\`Swap quote failed: \${error.message}\`);
   }
 }
@@ -216,6 +270,7 @@ export async function sendTransaction(transaction) {
 
   return { hash, caip2 };
 }
+
 `;
 
 module.exports = codeString;

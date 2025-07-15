@@ -19,7 +19,6 @@ createConfig({
 // Constants
 const LIFI_API_BASE = "https://li.quest/v1";
 const POLYGON_CHAIN_ID = "137";
-const TATUM_API_BASE = "https://api.tatum.io/v4/data";
 const NATIVE_TOKEN_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 // Load and cache tokens data
@@ -220,11 +219,10 @@ async function getTokenMarketData(symbol) {
 /**
  * Create axios instance with common configuration
  */
-const tatumApi = axios.create({
-  baseURL: TATUM_API_BASE,
+const mobulaApi = axios.create({
+  baseURL: "https://api.mobula.io/api/1",
   headers: {
     accept: "application/json",
-    "x-api-key": process.env.TATUM_API_KEY,
   },
   timeout: 30000, // 30 second timeout
   validateStatus: function (status) {
@@ -289,20 +287,14 @@ async function getBalances(walletAddress) {
     throw new Error("Valid wallet address is required");
   }
 
-  // Validate API key
-  if (!process.env.TATUM_API_KEY) {
-    console.error("❌ TATUM_API_KEY is not set in environment variables");
-    return [];
-  }
-
   console.log(`🔍 Fetching balances for wallet: ${walletAddress}`);
 
   try {
-    // Make API calls with retry logic
-    const nativeResponse = await retryApiCall(async () => {
-      console.log(`📡 Fetching native balances...`);
-      const response = await tatumApi.get(
-        `/wallet/portfolio?chain=polygon-mainnet&addresses=${walletAddress}&tokenTypes=native`
+    // Make API call with retry logic
+    const response = await retryApiCall(async () => {
+      console.log(`📡 Fetching balances from Mobula...`);
+      const response = await mobulaApi.get(
+        `/wallet/portfolio?wallet=${walletAddress}&blockchains=137`
       );
 
       // Check for API errors in response
@@ -315,38 +307,17 @@ async function getBalances(walletAddress) {
       return response;
     });
 
-    const fungibleResponse = await retryApiCall(async () => {
-      console.log(`📡 Fetching fungible balances...`);
-      const response = await tatumApi.get(
-        `/wallet/portfolio?chain=polygon-mainnet&addresses=${walletAddress}&tokenTypes=fungible`
-      );
-
-      // Check for API errors in response
-      if (response.status >= 400) {
-        throw new Error(
-          `API returned status ${response.status}: ${response.statusText}`
-        );
-      }
-
-      return response;
-    });
-
-    // Validate API responses
-    if (!nativeResponse?.data && !fungibleResponse?.data) {
+    // Validate API response
+    if (!response?.data?.data?.assets) {
       console.warn(`⚠️ No balance data returned for wallet: ${walletAddress}`);
       return [];
     }
 
-    // Safely extract results with fallback to empty arrays
-    const nativeBalances = nativeResponse?.data?.result || [];
-    const fungibleBalances = fungibleResponse?.data?.result || [];
-
-    console.log(
-      `✅ Found ${nativeBalances.length} native, ${fungibleBalances.length} fungible balances`
-    );
+    const assets = response.data.data.assets;
+    console.log(`✅ Found ${assets.length} assets`);
 
     // Early return if no balances found
-    if (nativeBalances.length === 0 && fungibleBalances.length === 0) {
+    if (assets.length === 0) {
       console.log(`📋 Wallet ${walletAddress} has no token balances`);
       return [];
     }
@@ -356,58 +327,88 @@ async function getBalances(walletAddress) {
       supportedTokens.map((token) => [token.address.toLowerCase(), token])
     );
 
-    // Process balances in a single pass
-    const enrichedBalances = [...nativeBalances, ...fungibleBalances]
-      .filter((balance) => {
-        // Include native tokens and supported fungible tokens
-        if (balance.type === "native") return true;
-        if (!balance.tokenAddress) return false;
-        return supportedTokenMap.has(balance.tokenAddress.toLowerCase());
-      })
-      .map((balance) => {
-        // Handle native tokens
-        if (balance.type === "native") {
-          return {
-            ...balance,
-            tokenAddress: NATIVE_TOKEN_ADDRESS,
-            symbol: nativeTokenInfo.symbol || "POL",
-            name: nativeTokenInfo.name || "Polygon",
-            logoURI: nativeTokenInfo.logoURI || null,
-            priceUSD: nativeTokenInfo.priceUSD || 0,
-            decimals: nativeTokenInfo.decimals || 18,
-          };
+    // Process balances from Mobula response
+    const enrichedBalances = [];
+
+    for (const asset of assets) {
+      // Skip assets with no balance
+      if (!asset.token_balance || asset.token_balance <= 0) {
+        continue;
+      }
+
+      // Process each contract balance for this asset
+      for (const contractBalance of asset.contracts_balances || []) {
+        // Only process Polygon contracts (chainId: "137" or "evm:137")
+        const chainId = contractBalance.chainId?.toString();
+        if (chainId !== "137" && chainId !== "evm:137") {
+          continue;
         }
 
-        // Handle fungible tokens with O(1) lookup
-        const tokenInfo =
-          supportedTokenMap.get(balance.tokenAddress.toLowerCase()) || {};
+        const tokenAddress = contractBalance.address?.toLowerCase() || "";
+        const isNativeToken =
+          tokenAddress === NATIVE_TOKEN_ADDRESS ||
+          tokenAddress === "0x0" ||
+          tokenAddress === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" ||
+          !tokenAddress;
 
-        return {
-          ...balance,
-          symbol: tokenInfo.symbol || "Unknown",
-          name: tokenInfo.name || "Unknown Token",
-          logoURI: tokenInfo.logoURI || null,
-          priceUSD: tokenInfo.priceUSD || 0,
-          decimals: tokenInfo.decimals || 18,
+        // Determine token type
+        const type = isNativeToken ? "native" : "fungible";
+
+        // For native tokens, use cached info; for others, check if supported
+        let tokenInfo = {};
+        if (isNativeToken) {
+          tokenInfo = {
+            symbol: nativeTokenInfo.symbol || "POL",
+            name: nativeTokenInfo.name || "Polygon",
+            logoURI: nativeTokenInfo.logoURI || asset.asset?.logo || null,
+            decimals: 18,
+          };
+        } else {
+          // Check if token is supported
+          if (!supportedTokenMap.has(tokenAddress)) {
+            continue; // Skip unsupported tokens
+          }
+          tokenInfo = supportedTokenMap.get(tokenAddress) || {};
+        }
+
+        // Create balance object in expected format
+        const balanceObj = {
+          chain: "polygon-mainnet",
+          address: walletAddress,
+          balance: contractBalance.balance.toString(),
+          denominatedBalance: contractBalance.balanceRaw,
+          decimals: contractBalance.decimals || tokenInfo.decimals || 18,
+          type: type,
+          tokenAddress: isNativeToken
+            ? NATIVE_TOKEN_ADDRESS
+            : contractBalance.address,
+          symbol: tokenInfo.symbol || asset.asset?.symbol || "Unknown",
+          name: tokenInfo.name || asset.asset?.name || "Unknown Token",
+          logoURI: tokenInfo.logoURI || asset.asset?.logo || null,
+          priceUSD: asset.price || 0,
         };
-      })
-      .filter((balance) => {
-        // Filter out zero balances and invalid entries
-        const balanceValue = parseFloat(balance.balance || 0);
-        return balanceValue > 0;
-      });
 
-    if (enrichedBalances.length === 0) {
+        enrichedBalances.push(balanceObj);
+      }
+    }
+
+    // Filter out zero balances
+    const filteredBalances = enrichedBalances.filter((balance) => {
+      const balanceValue = parseFloat(balance.balance || 0);
+      return balanceValue > 0;
+    });
+
+    if (filteredBalances.length === 0) {
       console.log(
         `📊 Wallet ${walletAddress} has no non-zero supported token balances`
       );
     } else {
       console.log(
-        `💰 Found ${enrichedBalances.length} non-zero token balances`
+        `💰 Found ${filteredBalances.length} non-zero token balances`
       );
     }
 
-    return enrichedBalances;
+    return filteredBalances;
   } catch (error) {
     // Enhanced error logging with more details
     const errorDetails = {
@@ -430,7 +431,7 @@ async function getBalances(walletAddress) {
     } else if (error.code === "ENOTFOUND") {
       console.error("🌐 Network/DNS error - check internet connection");
     } else if (error.response?.status === 401) {
-      console.error("🔐 Authentication failed - check TATUM_API_KEY");
+      console.error("🔐 Authentication failed - check API key");
     } else if (error.response?.status === 429) {
       console.error("⏰ Rate limit exceeded - too many requests");
     }
@@ -565,7 +566,7 @@ export {
 
 // // Example usage (commented out)
 // const balances = await getBalances(
-//   "/status"
+//   "0x9864bB6d8359A7eeA4Ea112Dd82C6134BfD0c611"
 // );
 // console.log(balances);
 

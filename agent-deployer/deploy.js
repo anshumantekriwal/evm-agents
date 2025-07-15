@@ -58,6 +58,12 @@ async function deployAgent({ agentId, ownerAddress, baselineFunction }) {
     path.join(buildDir, "utils.js")
   );
 
+  // Copy logging.js (new file)
+  fs.copyFileSync(
+    path.join(baselineDir, "logging.js"),
+    path.join(buildDir, "logging.js")
+  );
+
   // Copy tokens.json
   fs.copyFileSync(
     path.join(baselineDir, "tokens.json"),
@@ -87,6 +93,7 @@ async function deployAgent({ agentId, ownerAddress, baselineFunction }) {
     dependencies: {
       "@lifi/sdk": "^3.7.9",
       "@privy-io/server-auth": "^1.27.4",
+      "@supabase/supabase-js": "^2.51.0",
       axios: "^1.10.0",
       cors: "^2.8.5",
       dotenv: "^16.5.0",
@@ -150,6 +157,7 @@ CMD ["npm", "start"]
         "index.js",
         "baseline.js",
         "utils.js",
+        "logging.js",
         "tokens.json",
         "package.json",
       ],
@@ -212,6 +220,9 @@ CMD ["npm", "start"]
             PRIVY_APP_ID: process.env.PRIVY_APP_ID || "",
             PRIVY_APP_SECRET: process.env.PRIVY_APP_SECRET || "",
             TATUM_API_KEY: process.env.TATUM_API_KEY || "",
+            VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL || "",
+            VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || "",
+            AGENT_ID: agentId || "",
             NODE_ENV: "production",
             PORT: "3000",
           },

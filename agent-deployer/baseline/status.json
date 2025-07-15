@@ -1,0 +1,9 @@
+{
+  "phase": "checking_balance",
+  "walletAddress": "0x9D5Ddd2b149586c2eF46DB39a98C6e9Db2b0BB26",
+  "polBalance": 0,
+  "lastMessage": "Target not reached, retrying in 30 seconds",
+  "trades": [],
+  "error": null,
+  "isRunning": true
+}

@@ -1,19 +1,19 @@
 import { useState, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
+import { supabase } from "../lib/supabase";
 import "./TradingAgentLauncher.css";
 
 // Import slide components
-import InviteSlide from "./slides/InviteSlide";
 import BasicInfoSlide from "./slides/BasicInfoSlide";
 import ImageUploadSlide from "./slides/ImageUploadSlide";
 import BehaviorSlide from "./slides/BehaviorSlide";
+import OnchainConfigSlide from "./slides/OnchainConfigSlide";
 import ReviewSlide from "./slides/ReviewSlide";
 import AgentSuccess from "./AgentSuccess";
 
 // Types
 interface FormState {
   currentStep: number;
-  inviteCode: string;
   agentName: string;
   agentDescription: string;
   agentImage: File | null;
@@ -21,40 +21,43 @@ interface FormState {
   selectedStrategy: string;
   selectedSources: string[];
   selectedChains: string[];
+  ownerAddress: string;
+  slippageTolerance: string;
+  gasLimit: string;
 }
 
 interface UIState {
   isCreating: boolean;
-  inviteError: string;
   imagesLoaded: boolean;
-  isGeneratingQuestions: boolean;
-  isFetchingAICode: boolean;
-  aiRating: number | null;
   showSuccess: boolean;
   deployedAgent: any;
-  followUpQuestions: string[];
-  aiSteps: string[];
   reviewEnabled: boolean;
+  isGeneratingQuestions: boolean;
+  aiRating: number | null;
+  followUpQuestions: string[];
   aiJustification: string;
-  aiCode: string;
 }
 
 interface Chain {
   name: string;
   logo: string;
+  comingSoon?: boolean;
 }
 
 interface TradingAgentLauncherProps {
   onBack?: () => void;
+  onAgentCreated?: (agentId: number) => void;
 }
 
-const TradingAgentLauncher = ({ onBack }: TradingAgentLauncherProps = {}) => {
+const TradingAgentLauncher = ({
+  onBack,
+  onAgentCreated,
+}: TradingAgentLauncherProps = {}) => {
   const { user } = useAuth0();
 
   // Consolidated form state
   const [formState, setFormState] = useState<FormState>({
     currentStep: 0,
-    inviteCode: "",
     agentName: "",
     agentDescription: "",
     agentImage: null,
@@ -62,33 +65,26 @@ const TradingAgentLauncher = ({ onBack }: TradingAgentLauncherProps = {}) => {
     selectedStrategy: "trading",
     selectedSources: [],
     selectedChains: [],
+    ownerAddress: "",
+    slippageTolerance: "",
+    gasLimit: "",
   });
 
   // Consolidated UI state
   const [uiState, setUIState] = useState<UIState>({
     isCreating: false,
-    inviteError: "",
     imagesLoaded: false,
-    isGeneratingQuestions: false,
-    isFetchingAICode: false,
-    aiRating: null,
     showSuccess: false,
     deployedAgent: null,
-    followUpQuestions: [],
-    aiSteps: [],
     reviewEnabled: false,
+    isGeneratingQuestions: false,
+    aiRating: null,
+    followUpQuestions: [],
     aiJustification: "",
-    aiCode: "",
   });
 
   // Static data
   const slides = [
-    {
-      image: "/login.png",
-      title: "Enter Invite Code",
-      content: "Please enter your invitation code to continue",
-      component: InviteSlide,
-    },
     {
       image: "/login.png",
       title: "It all starts with a name",
@@ -111,6 +107,12 @@ const TradingAgentLauncher = ({ onBack }: TradingAgentLauncherProps = {}) => {
     },
     {
       image: "/login.png",
+      title: "Configure Trading Parameters",
+      content: "Set up onchain properties for your trading agent",
+      component: OnchainConfigSlide,
+    },
+    {
+      image: "/login.png",
       title: "Review",
       content: "",
       component: ReviewSlide,
@@ -121,6 +123,21 @@ const TradingAgentLauncher = ({ onBack }: TradingAgentLauncherProps = {}) => {
     {
       name: "Polygon",
       logo: "https://coin-images.coingecko.com/coins/images/32440/large/polygon.png",
+    },
+    {
+      name: "Ethereum",
+      logo: "https://coin-images.coingecko.com/coins/images/279/large/ethereum.png",
+      comingSoon: true,
+    },
+    {
+      name: "Base",
+      logo: "https://coin-images.coingecko.com/coins/images/50114/large/base.png",
+      comingSoon: true,
+    },
+    {
+      name: "Arbitrum",
+      logo: "https://coin-images.coingecko.com/coins/images/16547/large/photo_2023-03-29_21.47.00.jpeg",
+      comingSoon: true,
     },
   ];
 
@@ -174,65 +191,85 @@ const TradingAgentLauncher = ({ onBack }: TradingAgentLauncherProps = {}) => {
   };
 
   // Business logic handlers
-  const validateInviteCode = async (code: string) => {
-    // Mock validation - replace with actual API call
-    return new Promise<{ valid: boolean; error?: string }>((resolve) => {
-      setTimeout(() => {
-        if (code === "XADE2024" || code === "EVM123") {
-          resolve({ valid: true });
-        } else {
-          resolve({ valid: false, error: "Invalid invite code" });
-        }
-      }, 1000);
-    });
-  };
-
   const handleFileUpload = (file: File) => {
     updateForm("agentImage", file);
   };
 
-  const handleAIRating = async () => {
-    updateUI("isGeneratingQuestions", true);
-
-    // Mock AI rating - replace with actual API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    const mockRating = 8; // Fixed 8/10 rating
-
-    setUIBatch({
-      isGeneratingQuestions: false,
-      aiRating: mockRating,
-      aiJustification:
-        "Your strategy shows good understanding of risk management and market analysis.",
-      followUpQuestions: [], // No follow-up questions
-      reviewEnabled: true,
-    });
-  };
-
-  // Reset handleCreateKeypair functionality
+  // Updated handleCreateKeypair to save to Supabase
   const handleCreateKeypair = async () => {
     updateUI("isCreating", true);
 
     try {
-      // Placeholder functionality - add your implementation here
       console.log("Creating agent with data:", {
         name: formState.agentName,
         description: formState.agentDescription,
         behavior: formState.agentBehavior,
         image: formState.agentImage,
+        owner_address: formState.ownerAddress,
+        slippage_tolerance: parseFloat(formState.slippageTolerance),
+        gas_limit: parseInt(formState.gasLimit),
+        selected_chains: formState.selectedChains,
         user_id: user?.sub || user?.email,
       });
 
-      // Simulate some processing time
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Upload image to Supabase storage if exists
+      let imageUrl = null;
+      if (formState.agentImage) {
+        const fileExt = formState.agentImage.name.split(".").pop();
+        const fileName = `${Date.now()}.${fileExt}`;
 
-      // For now, just log success
-      console.log("Agent creation simulated successfully");
+        const { error: uploadError } = await supabase.storage
+          .from("agent-images")
+          .upload(fileName, formState.agentImage);
+
+        if (!uploadError) {
+          const { data } = supabase.storage
+            .from("agent-images")
+            .getPublicUrl(fileName);
+          imageUrl = data.publicUrl;
+        }
+      }
+
+      // Insert agent data into Supabase
+      const { data, error } = await supabase
+        .from("evm-agents")
+        .insert([
+          {
+            name: formState.agentName,
+            description: formState.agentDescription,
+            prompt: formState.agentBehavior,
+            image: imageUrl,
+            owner_address: formState.ownerAddress,
+            slippage_tolerance: formState.slippageTolerance
+              ? parseFloat(formState.slippageTolerance)
+              : null,
+            gas_limit: formState.gasLimit ? parseInt(formState.gasLimit) : null,
+            selected_chains: formState.selectedChains,
+            user_id: user?.email,
+            agent_wallet: null, // Leave blank as requested
+            agent_aws: null, // Leave blank as requested
+            agent_deployed: false, // Set to false as requested
+          },
+        ])
+        .select();
+
+      if (error) {
+        throw error;
+      }
+
+      console.log("Agent created successfully:", data);
+
+      // Navigate to agent dashboard
+      if (onAgentCreated && data) {
+        onAgentCreated(data[0].id);
+      }
 
       updateUI("isCreating", false);
     } catch (error) {
       console.error("Error creating agent:", error);
       updateUI("isCreating", false);
+      // You might want to show an error message to the user here
+      alert("Failed to create agent. Please try again.");
     }
   };
 
@@ -240,7 +277,6 @@ const TradingAgentLauncher = ({ onBack }: TradingAgentLauncherProps = {}) => {
     // Reset all states to go back to dashboard
     setFormState({
       currentStep: 0,
-      inviteCode: "",
       agentName: "",
       agentDescription: "",
       agentImage: null,
@@ -248,28 +284,58 @@ const TradingAgentLauncher = ({ onBack }: TradingAgentLauncherProps = {}) => {
       selectedStrategy: "trading",
       selectedSources: [],
       selectedChains: [],
+      ownerAddress: "",
+      slippageTolerance: "",
+      gasLimit: "",
     });
 
     setUIState({
       isCreating: false,
-      inviteError: "",
       imagesLoaded: false,
-      isGeneratingQuestions: false,
-      isFetchingAICode: false,
-      aiRating: null,
       showSuccess: false,
       deployedAgent: null,
-      followUpQuestions: [],
-      aiSteps: [],
       reviewEnabled: false,
+      isGeneratingQuestions: false,
+      aiRating: null,
+      followUpQuestions: [],
       aiJustification: "",
-      aiCode: "",
     });
 
     // Call the onBack prop if provided
     if (onBack) {
       onBack();
     }
+  };
+
+  const handleAIRating = async () => {
+    updateUI("isGeneratingQuestions", true);
+    try {
+      // Simulate AI rating generation
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      updateUI("aiRating", 8.5);
+      updateUI(
+        "aiJustification",
+        "This agent has a clear purpose and well-defined behavior."
+      );
+      updateUI("followUpQuestions", [
+        "Have you considered adding specific trading parameters?",
+        "Would you like to add more chains for diversification?",
+        "Do you want to set up automated reporting?",
+      ]);
+    } catch (error) {
+      console.error("Error generating AI rating:", error);
+    } finally {
+      updateUI("isGeneratingQuestions", false);
+    }
+  };
+
+  const validateInviteCode = async (code: string) => {
+    // Simulate invite code validation
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    if (code === "BETA") {
+      return { valid: true };
+    }
+    return { valid: false, error: "Invalid invite code" };
   };
 
   // Show success page if deployment completed
@@ -300,20 +366,19 @@ const TradingAgentLauncher = ({ onBack }: TradingAgentLauncherProps = {}) => {
   return (
     <div className="agent-launcher-container">
       <div className="progress-bar-container">
-        <div
-          className="progress-bar"
-          style={{
-            width: ((formState.currentStep + 1) / slides.length) * 100 + "%",
-          }}
-        />
-        <div className="progress-text">
-          Step {formState.currentStep + 1} of {slides.length}
+        <div className="progress-bar-wrapper">
+          <div
+            className="progress-bar"
+            style={{
+              width: ((formState.currentStep + 1) / slides.length) * 100 + "%",
+            }}
+          />
         </div>
       </div>
 
       {formState.currentStep > 0 && (
         <button className="back-button" onClick={handleBack}>
-          ← Back
+          Back
         </button>
       )}
 
@@ -322,23 +387,22 @@ const TradingAgentLauncher = ({ onBack }: TradingAgentLauncherProps = {}) => {
           <div className="image-container">
             <img
               src={currentSlide.image}
-              alt={`Step ${formState.currentStep + 1}`}
+              alt="Slide illustration"
               className="slide-image"
             />
           </div>
-
           <div className="content-container">
             <h2>{currentSlide.title}</h2>
-
+            {currentSlide.content && <p>{currentSlide.content}</p>}
             <SlideComponent
               formState={formState}
               uiState={uiState}
               updateForm={updateForm}
               updateUI={updateUI}
-              validateInviteCode={validateInviteCode}
               handleFileUpload={handleFileUpload}
-              handleAIRating={handleAIRating}
               handleCreateKeypair={handleCreateKeypair}
+              handleAIRating={handleAIRating}
+              validateInviteCode={validateInviteCode}
               onNext={handleNext}
               onBack={handleBack}
               chains={chains}

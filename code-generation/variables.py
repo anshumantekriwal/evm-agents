@@ -10,10 +10,10 @@ TRANSACTIONS_CODE = """
 /**
  * Swap one token for another using LiFi
  * 
- * @param {string} params.fromToken - Contract Address of input token
- * @param {string} params.toToken - Contract Address of output token
- * @param {string} params.fromAddress - User Wallet Address
- * @param {string|number} params.fromAmount - Amount to swap (in normal format)
+ * @param {string} fromToken - Contract Address of input token
+ * @param {string} toToken - Contract Address of output token
+ * @param {string} fromAddress - User Wallet Address
+ * @param {string|number} fromAmount - Amount to swap (in normal format)
  * @returns {Promise<Object>} Swap transaction data containing:
  *   - transactionRequest: Object containing:
  *     - value: Transaction value in hex format
@@ -150,41 +150,66 @@ BASELINE_JS = """
  * Main baseline function that orchestrates the entire process
  */
 export async function baselineFunction(ownerAddress) {
+  // Initialize and create wallet
+  updateStatus({
+    phase: "initializing",
+    lastMessage: "Creating wallet",
+    nextStep: "Setting up wallet and checking balance",
+    isRunning: true,
+  });
+
   const wallet = await createWallet(ownerAddress);
+  log(`Wallet address: ${wallet.address}`, "info");
 
-  console.log("Address:", wallet.address);
+  updateStatus({
+    phase: "checking_balance",
+    walletAddress: wallet.address,
+    lastMessage: "Wallet created successfully",
+    nextStep: "Checking for 0.01 POL balance threshold",
+  });
 
-  console.log(
-    `Checking balance for wallet ${{wallet.address}} every 30 seconds until target is reached...`
-  );
-
-  // Keep checking until success - no timeout limit
+  // Loop until the wallet has at least 0.01 POL
   while (true) {
     try {
-      const result = await checkBalance(wallet.address, 0.01); // Do NOT edit threshold value
-      console.log("Result: ", result);
+      const result = await checkBalance(wallet.address, 0.01);
+      log(`Balance check result: ${JSON.stringify(result)}`, "info");
 
       if (result.success) {
-        console.log("✅ Target balance achieved!");
+        // Threshold reached: start trading strategy
+        updateStatus({
+          phase: "monitoring",
+          lastMessage: "Target balance reached, launching trading strategy",
+          nextStep: "Fetching BTC market data for analysis",
+        });
+        log("✅ Target balance achieved! Starting trading strategy", "success");
 
-        // ============================
         // ======= ENTER AI CODE =======
+        // =============================
 
-                
-        // ======= END AI CODE  =======
-        // ============================
+
+        // =============================
+        // ======= END AI CODE =======
+
+        break; // exit balance-check loop once strategy is running
       }
 
-      console.log(
-        "❌ Target not reached yet. Waiting 30 seconds before next check..."
-      );
-      // Wait 30 seconds before next check
-      await new Promise((resolve) => setTimeout(resolve, 30000));
+      updateStatus({
+        phase: "checking_balance",
+        lastMessage: "Target not reached, retrying in 30 seconds",
+        nextStep: "Checking balance again in 30 seconds",
+      });
+
+      log("❌ Target not reached yet. Retrying in 30 seconds.", "warning");
+      await new Promise((resolve) => setTimeout(resolve, 30_000));
     } catch (error) {
-      console.error("Error checking balance:", error.message);
-      console.log("Retrying in 30 seconds...");
-      // Wait 30 seconds before retrying
-      await new Promise((resolve) => setTimeout(resolve, 30000));
+      log(`Error checking balance: ${error.message}`, "error");
+      updateStatus({
+        phase: "error",
+        error: error.message,
+        lastMessage: "Error checking balance, retrying",
+        nextStep: "Retrying balance check in 30 seconds",
+      });
+      await new Promise((resolve) => setTimeout(resolve, 30_000));
     }
   }
 }
@@ -193,13 +218,15 @@ export async function baselineFunction(ownerAddress) {
 
 STATUS_FORMAT = """
 {{
-  "phase": "trading",
-  "walletAddress": "0x9100Ad0b86dc6dE723B92492255BAaEBAEeb00c4",
-  "polBalance": 0.13799583126547793,
-  "lastMessage": "Target achieved! Starting trades...",
+  "phase": "initializing",
+  "walletAddress": null,
+  "polBalance": 0,
+  "lastMessage": "Starting...",
+  "nextStep": "Creating wallet",
   "trades": [],
   "error": null,
-  "isRunning": true
+  "isRunning": false,
+};
 }}
 """
 
@@ -241,34 +268,25 @@ CODER_PROMPT = """
 
     EXECUTION WORKFLOW:
     When a user prompt arrives, follow this comprehensive approach:
-    - Deeply understand the trading strategy requirements and identify all tokens/symbols that influence execution decisions
-    - Map out price conditions, thresholds, trigger points, and what market conditions will trigger trades
-    - Establish stop-loss, take-profit, position sizing logic, and timing constraints for execution windows
-    - Map complex if-then scenarios for market-responsive execution and identify all market data needed
-    - Catalog all available TRANSACTIONS CODE and HELPER FUNCTIONS, mapping which functions serve each strategy component
-    - Design how market data flows through decision logic and plan optimal order of operations for execution
-    - Anticipate failure points and recovery mechanisms while minimizing API calls and maximizing efficiency
-    - Build execution logic with integrated scheduling using `setInterval()` for recurring strategies or `Date()` validation for specific execution windows
-    - Implement dynamic decision-making based on real-time data and create functions that analyze multiple symbols simultaneously
-    - Build sophisticated if-then-else logic for complex strategies and seamlessly integrate all transaction types
-    - Insert all strategy logic within the designated AI code area with detailed console output for transparency
-    - Implement try-catch blocks and failsafe mechanisms for robust error handling
-    - Compare prices and trends across multiple tokens for cross-symbol analysis
-    - Execute trades based on optimal market conditions and manage multiple positions with rebalancing strategies
-    - Implement momentum-based trading decisions, contrarian strategies based on price deviations, and incorporate trading volume into decision-making
-    - Use price action patterns for entry/exit signals and technical indicators
+    1. Deconstruct the Strategy: First, analyze the user's request to identify all key components: tokens, triggers, actions, and risk parameters.
+    2. Plan Data & Logic Flow: Before writing code, map out your plan by determining which HELPER_FUNCTIONS are needed and designing the optimal order of operations.
+    3. Implement Timing and Scheduling: Use setInterval() for strategies that require continuous monitoring, or new Date() for time-specific trades.
+    4. Build Conditional Logic: Translate the strategy's rules into clear if-then-else blocks inside the // ======= ENTER AI CODE ======= section.
+    5. Execute Transactions: Follow the two-step pattern: first, call swap() to generate the transaction data, then pass that data to sendTransaction() to execute it on-chain.
 
     STATUS UPDATES AND LOGGING:
-    - Replace all console.log() with onLog() for consistent logging.
+    - Use log(message, type) instead of console.log() for consistent logging.
+    - Valid types: "info", "success", "warning", "error".
     - Use updateStatus({{ phase, lastMessage, error, ... }}) to track execution state.
-    - Valid phases: "initializing", "checking_balance", "analyzing_market",
-      "calculating_strategy", "executing_trade", "waiting", "monitoring", "error", "completed".
-    - Call onLog() at key points: market fetch, analysis, execution, errors.
+    - Valid phases: "initializing", "checking_balance", "executing_trade", "monitoring", "error", "completed_trade".
+    - Call log() at key points: fetch, analysis, execution, errors.
     - Call updateStatus() whenever the execution phase changes.
     - Include relevant info: prices, trade amounts, tx hashes, error messages.
     - Log all API calls, decisions, and calculations for traceability.
     - Update status before and after major operations for real-time tracking.
     - Status object format: {STATUS_FORMAT}; update only necessary fields.
+    - Do NOT be overly verbose with logging.
+    - Use Trading lingo when logging.
 
     BASELINE FUNCTION:
     {BASELINE_JS}
@@ -277,18 +295,9 @@ CODER_PROMPT = """
      Return ONLY a structured JSON object with the key:
      - code: Complete baselineFunction() with integrated timing logic and strategy execution. 
 
-     ## EXECUTION PRINCIPLES:
-     - **Autonomous Operation**: Code must execute flawlessly without user intervention
-     - **Timing Integration**: All scheduling logic must be built into the baseline function
-     - **Market Data Utilization**: Leverage helper functions for comprehensive market analysis
-     - **Strategic Sophistication**: Implement complex, multi-conditional trading strategies
-     - **Error Resilience**: Include robust error handling and recovery mechanisms
-     - **Performance Optimization**: Efficient code execution with minimal resource usage
-     - **Transparency**: Comprehensive logging for strategy monitoring and debugging
-     - **Risk Management**: Built-in safeguards for position sizing and loss mitigation
-     - **Status Communication**: Use onLog() and updateStatus() throughout execution for real-time feedback
-     - **Progress Tracking**: Update status at each phase change and major operation completion
-     - **Comprehensive Logging**: Replace all console.log() with onLog() and update status at every phase transition
-     - **Real-time Monitoring**: Provide detailed feedback for every API call, calculation, and decision point
-     
+     CORE PRINCIPLES:
+     - Resilience & Error Handling: Every operation that can fail (API calls, transactions) must be wrapped in a try-catch block. Log errors using log(error.message, "error") and update the status.
+     - Transparency & Communication: You must use the provided functions for all output. Use log(message, type) for logs and updateStatus({{ phase, ... }}) for state changes. Do not use console.log().
+     - Efficiency: Write optimized code that minimizes resource consumption by avoiding redundant API calls and unnecessary computations.
+     - Autonomy: The generated baselineFunction must be fully autonomous, capable of running from start to finish without any manual intervention.
     """

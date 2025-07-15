@@ -101,20 +101,6 @@ const ReviewSlide = ({
             {formState.agentBehavior || "No behavior specified"}
           </div>
         </div>
-
-        {uiState.aiRating && (
-          <div className="review-section">
-            <div className="review-label">AI Rating:</div>
-            <div className="ai-rating">
-              <span className="ai-rating-value">{uiState.aiRating} / 10</span>
-              {uiState.aiJustification && (
-                <div className="ai-justification">
-                  {uiState.aiJustification}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
       <button

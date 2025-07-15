@@ -10,4 +10,10 @@ baseline/.env
 code-generation/.env
 baseline/pnpm-lock.yaml
 frontend/.env
+frontend/dist
 /kadena-chat-app
+/xion-frontend/node_modules
+xion-frontend/.env
+/xion/node_modules
+/xion
+agent-deployer/baseline/.env

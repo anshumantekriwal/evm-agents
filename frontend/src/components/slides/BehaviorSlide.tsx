@@ -11,162 +11,143 @@ interface FormState {
   selectedStrategy: string;
 }
 
-interface UIState {
-  isGeneratingQuestions: boolean;
-  aiRating: number | null;
-  followUpQuestions: string[];
-}
-
 interface BehaviorSlideProps {
   formState: FormState;
-  uiState: UIState;
+  uiState: {
+    isGeneratingQuestions: boolean;
+    aiRating: number | null;
+    followUpQuestions: string[];
+  };
   updateForm: (field: string, value: any) => void;
-  handleAIRating: () => void;
+  updateUI: (field: string, value: any) => void;
   onNext: () => void;
   chains: Chain[];
 }
+
+const STRATEGY_PROMPTS = [
+  {
+    name: "DCA Strategy",
+    description: "Buy 0.01 USDC using POL every 20 minutes",
+  },
+  {
+    name: "Momentum Strategy",
+    description:
+      "Track token price momentum using multiple timeframe analysis. Enter long positions when short-term moving averages cross above longer-term averages with increasing volume. Exit when momentum indicators show reversal.",
+  },
+  {
+    name: "Grid Trading",
+    description:
+      "Create a grid of buy and sell orders across a price range. Automatically profit from price oscillations by buying at lower grid levels and selling at higher levels. Adjust grid spacing based on historical volatility.",
+  },
+];
 
 const BehaviorSlide = ({
   formState,
   uiState,
   updateForm,
-  handleAIRating,
+  updateUI,
   onNext,
   chains,
 }: BehaviorSlideProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [hasReviewed, setHasReviewed] = useState(false);
+  const [selectedStrategy, setSelectedStrategy] = useState<string | null>(null);
+  const [isLoadingRating, setIsLoadingRating] = useState(false);
 
-  const toggleExpansion = () => {
-    setIsExpanded(!isExpanded);
+  const handlePromptClick = (strategy: (typeof STRATEGY_PROMPTS)[0]) => {
+    updateForm("agentBehavior", strategy.description);
+    setSelectedStrategy(strategy.name);
   };
 
-  const toggleChain = (chainName: string) => {
-    const currentChains = formState.selectedChains || [];
-    const updatedChains = currentChains.includes(chainName)
-      ? currentChains.filter((c: string) => c !== chainName)
-      : [...currentChains, chainName];
-    updateForm("selectedChains", updatedChains);
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    updateForm("agentBehavior", e.target.value);
+    // If user manually types, clear the selected strategy
+    if (selectedStrategy) {
+      const currentStrategy = STRATEGY_PROMPTS.find(
+        (s) => s.description === e.target.value
+      );
+      if (!currentStrategy) {
+        setSelectedStrategy(null);
+      }
+    }
   };
 
-  const handleStrategyClick = (strategy: string) => {
-    updateForm("selectedStrategy", strategy);
+  const handleReviewStrategy = async () => {
+    setIsLoadingRating(true);
+
+    // Wait for 5 seconds before showing the rating
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
+    // Hardcoded 8/10 rating
+    updateUI("aiRating", 8);
+    updateUI(
+      "aiJustification",
+      "This strategy has a clear objective and well-defined execution parameters."
+    );
+    setHasReviewed(true);
+    setIsLoadingRating(false);
   };
 
-  const canContinue = formState.agentBehavior.trim();
+  const canContinue =
+    formState.agentBehavior.trim() &&
+    hasReviewed &&
+    (uiState.aiRating ?? 0) >= 8;
 
   return (
-    <div>
-      <div className="input-group">
-        <label htmlFor="agentBehavior">Describe your agent's behavior</label>
-        <textarea
-          id="agentBehavior"
-          value={formState.agentBehavior}
-          onChange={(e) => updateForm("agentBehavior", e.target.value)}
-          placeholder="Describe what you want your agent to do..."
-          className="form-textarea"
-          rows={6}
-        />
-      </div>
-
-      <div className="strategy-section">
-        <h3>Trading Strategy</h3>
-        <div className="strategy-options">
+    <div className="behavior-slide">
+      <div className="prompt-buttons">
+        {STRATEGY_PROMPTS.map((strategy, index) => (
           <button
-            className={`strategy-button ${
-              formState.selectedStrategy === "trading" ? "selected" : ""
+            key={index}
+            className={`prompt-button ${
+              selectedStrategy === strategy.name ? "selected" : ""
             }`}
-            onClick={() => handleStrategyClick("trading")}
-            onMouseEnter={(e) => {
-              const target = e.target as HTMLElement;
-              target.style.backgroundColor = "#555555";
-              target.style.borderColor = "#777777";
-            }}
-            onMouseLeave={(e) => {
-              const target = e.target as HTMLElement;
-              target.style.backgroundColor = "#333333";
-              target.style.borderColor = "#555555";
-            }}
+            onClick={() => handlePromptClick(strategy)}
           >
-            EVM Trading Agent
+            {strategy.name}
           </button>
-        </div>
+        ))}
       </div>
 
-      <div className="chains-section">
-        <div className="chains-header">
-          <h3>Select Chains</h3>
-          <button
-            onClick={toggleExpansion}
-            className="expand-button"
-            style={{
-              background: "none",
-              border: "none",
-              color: "var(--text-secondary)",
-              cursor: "pointer",
-              fontSize: "0.9rem",
-            }}
-          >
-            {isExpanded ? "Show Less" : "Show All"}
-          </button>
-        </div>
-        <div className="chains-grid">
-          {chains.map((chain: Chain) => (
-            <div
-              key={chain.name}
-              className={`chain-option ${
-                formState.selectedChains?.includes(chain.name) ? "selected" : ""
-              }`}
-              onClick={() => toggleChain(chain.name)}
-            >
-              <img
-                src={chain.logo}
-                alt={chain.name}
-                className="chain-logo"
-                style={{ width: "24px", height: "24px" }}
-              />
-              <span>{chain.name}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      <textarea
+        value={formState.agentBehavior}
+        onChange={handleTextareaChange}
+        placeholder="Describe your agent's behavior..."
+        rows={6}
+        className="behavior-textarea"
+      />
 
-      {formState.agentBehavior.trim() && (
-        <div className="ai-rating-section">
-          <button
-            onClick={handleAIRating}
-            disabled={uiState.isGeneratingQuestions}
-            className="ai-rating-button"
-          >
-            {uiState.isGeneratingQuestions
-              ? "Analyzing Strategy..."
-              : "Get AI Rating"}
-          </button>
-
-          {uiState.aiRating && (
-            <div className="ai-rating-result">
-              <div className="rating-score">
-                AI Rating: {uiState.aiRating}/10
-              </div>
-            </div>
-          )}
+      {isLoadingRating && (
+        <div className="ai-rating-loading">
+          <div className="loading-spinner"></div>
+          <span>Analyzing strategy...</span>
         </div>
       )}
 
-      {uiState.followUpQuestions.length > 0 && (
-        <div className="follow-up-questions">
-          <h4>Follow-up Questions:</h4>
-          <ul>
-            {uiState.followUpQuestions.map(
-              (question: string, index: number) => (
-                <li key={index}>{question}</li>
-              )
-            )}
-          </ul>
+      {uiState.aiRating && !isLoadingRating && (
+        <div className="ai-rating-display">
+          <div className="rating-content">
+            <span className="rating-label">AI Rating:</span>
+            <span className="rating-value">{uiState.aiRating}/10</span>
+          </div>
+          <div className="rating-feedback">
+            <span className="feedback-text">
+              Great strategy! Well-defined parameters and clear execution logic.
+            </span>
+          </div>
         </div>
       )}
+
+      <button
+        onClick={handleReviewStrategy}
+        className="next-button"
+        disabled={isLoadingRating}
+      >
+        {isLoadingRating ? "Analyzing..." : "Review Strategy"}
+      </button>
 
       <button onClick={onNext} disabled={!canContinue} className="next-button">
-        Continue to Review
+        Continue
       </button>
     </div>
   );
