@@ -5,11 +5,14 @@ A service for deploying EVM agents on AWS App Runner with automated deployment a
 ## Features
 
 - Deploy EVM agents to AWS App Runner
+- **Real-time log monitoring** with WebSocket streaming
+- **REST API for log retrieval** with configurable line limits
 - API key authentication for secure access
 - Modular code structure for maintainability
 - Integration with Polygon blockchain and EVM-compatible networks
 - Automated environment variable configuration
 - Docker containerization for consistent deployment
+- CloudWatch Logs integration for comprehensive monitoring
 
 ## Project Structure
 
@@ -17,6 +20,7 @@ A service for deploying EVM agents on AWS App Runner with automated deployment a
 evm-agent-deployer/
 ├── index.js          # Main server with routes and authentication
 ├── deploy.js         # EVM agent deployment logic
+├── logs.js           # Log monitoring and real-time streaming
 ├── constants.js      # EVM baseline code template
 ├── package.json      # Dependencies and scripts
 └── README.md         # This file
@@ -52,6 +56,85 @@ POST /deploy-agent
 ```json
 {
   "agentUrl": "https://evm-agent-xxx.us-east-1.awsapprunner.com"
+}
+```
+
+### Monitor Agent Logs
+
+```
+GET /logs/:agentId
+```
+
+**Query Parameters:**
+
+- `lines` (optional): Number of log lines to return (default: 500)
+
+**Example:**
+
+```bash
+curl -H "x-api-key: YOUR_API_KEY" \
+  "http://localhost:3000/logs/my-agent?lines=1000"
+```
+
+**Response:**
+
+```json
+{
+  "logs": {
+    "logGroupName": "/aws/apprunner/evm-my-agent/application",
+    "events": [
+      {
+        "timestamp": 1704110400000,
+        "message": "Agent started successfully",
+        "logStreamName": "..."
+      }
+    ],
+    "totalEvents": 500,
+    "timestamp": "2024-01-01T12:00:00.000Z",
+    "requestedLines": 500
+  }
+}
+```
+
+### Real-time Log Streaming (WebSocket)
+
+```
+ws://localhost:3000/logs-stream/:agentId?apiKey=YOUR_API_KEY&lines=500
+```
+
+**Query Parameters:**
+
+- `apiKey` (required): Your API key for authentication
+- `lines` (optional): Number of initial log lines to return (default: 500)
+
+**Message Types:**
+
+1. **Initial logs:**
+
+```json
+{
+  "type": "initial",
+  "logs": {
+    "logGroupName": "/aws/apprunner/evm-my-agent/application",
+    "events": [...],
+    "totalEvents": 500
+  }
+}
+```
+
+2. **New log updates (every 5 seconds):**
+
+```json
+{
+  "type": "update",
+  "events": [
+    {
+      "timestamp": 1704110400000,
+      "message": "New log message",
+      "logStreamName": "..."
+    }
+  ],
+  "timestamp": "2024-01-01T12:00:00.000Z"
 }
 ```
 
@@ -107,8 +190,45 @@ curl -X POST -H "x-api-key: Xade_dev1" \
   }' \
   http://localhost:3000/deploy-agent
 
+# Monitor agent logs (latest 500 lines)
+curl -H "x-api-key: Xade_dev1" \
+  http://localhost:3000/logs/my-evm-agent
+
+# Monitor agent logs (custom number of lines)
+curl -H "x-api-key: Xade_dev1" \
+  "http://localhost:3000/logs/my-evm-agent?lines=1000"
+
 # Check server health
 curl -H "x-api-key: Xade_dev1" http://localhost:3000/
+```
+
+### WebSocket Usage Examples
+
+**JavaScript (Browser/Node.js):**
+```javascript
+const ws = new WebSocket('ws://localhost:3000/logs-stream/my-evm-agent?apiKey=Xade_dev1&lines=500');
+
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  
+  if (data.type === 'initial') {
+    console.log('Initial logs:', data.logs.totalEvents, 'events');
+  } else if (data.type === 'update') {
+    console.log('New logs:', data.events.length, 'new events');
+  } else if (data.error) {
+    console.error('Error:', data.error);
+  }
+};
+
+ws.onopen = () => console.log('WebSocket connected');
+ws.onerror = (error) => console.error('WebSocket error:', error);
+```
+
+**Postman:**
+1. Create a new WebSocket request
+2. URL: `ws://localhost:3000/logs-stream/my-evm-agent?apiKey=Xade_dev1&lines=500`
+3. Click "Connect"
+4. Monitor real-time log messages in the Messages panel
 ```
 
 ## EVM Agent Features
@@ -192,8 +312,22 @@ The codebase is organized into focused modules:
 
    - Wait a few minutes for the service to fully start
    - Check if the App Runner service is in "RUNNING" status
+   - Verify the agent ID exists and has generated logs
 
-3. **Docker build fails**
+3. **WebSocket connection fails**
+
+   - Ensure the URL format is correct: `ws://localhost:3000/logs-stream/agentId?apiKey=YOUR_API_KEY`
+   - Check that the API key is valid and included in the query parameters
+   - Verify the agent ID exists in the URL path
+   - Restart the server if WebSocket connections are not working
+
+4. **Real-time logs not updating**
+
+   - Check that the agent is actively generating logs
+   - WebSocket polls for new logs every 5 seconds
+   - Verify CloudWatch Logs permissions are configured correctly
+
+5. **Docker build fails**
    - Ensure Docker daemon is running
    - Check available disk space in /tmp directory
 

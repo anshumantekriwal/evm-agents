@@ -1,9 +1,21 @@
 {
-  "phase": "checking_balance",
-  "walletAddress": "0x9D5Ddd2b149586c2eF46DB39a98C6e9Db2b0BB26",
+  "phase": "withdrawal_complete",
+  "walletAddress": null,
   "polBalance": 0,
-  "lastMessage": "Target not reached, retrying in 30 seconds",
-  "trades": [],
-  "error": null,
-  "isRunning": true
+  "lastMessage": "Withdrawal complete: 0xd870adbff4d37cedb9d2256e8c90af13dd55413a4b80439955c17ce52b5f29fc",
+  "nextStep": "Returning to normal operations",
+  "trades": [
+    {
+      "timestamp": "2025-07-16T18:57:00.190Z",
+      "type": "withdrawal",
+      "details": "Withdrew 0.0001 from 0xc2132d05d31c914a87c6611c10748aeb04b58e8f - Hash: 0x8460e1433694477e55b11bfbc0a39419e8bd77f71319099df340ba5ff3bcc628"
+    },
+    {
+      "timestamp": "2025-07-16T18:57:56.517Z",
+      "type": "withdrawal",
+      "details": "Withdrew 0.1 from 0x0 - Hash: 0xd870adbff4d37cedb9d2256e8c90af13dd55413a4b80439955c17ce52b5f29fc"
+    }
+  ],
+  "error": "Execution reverted with reason: ERC20: transfer amount exceeds balance. Details: execution reverted: ERC20: transfer amount exceeds balance",
+  "isRunning": false
 }

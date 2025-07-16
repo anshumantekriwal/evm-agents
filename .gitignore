@@ -16,4 +16,6 @@ frontend/dist
 xion-frontend/.env
 /xion/node_modules
 /xion
-agent-deployer/baseline/.env
+/agent-deployer/baseline/.env
+/baseline/logs.json
+/baseline/status.json

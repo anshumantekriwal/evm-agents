@@ -451,3 +451,225 @@
     text-align: left;
   }
 }
+
+/* Agent Runtime Status Section */
+.agent-runtime-status {
+  background: var(--surface-solid);
+  border: 1px solid #333333;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.agent-runtime-status h3 {
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.runtime-status-card {
+  background: var(--surface-light);
+  border: 1px solid #333333;
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+}
+
+.status-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.running-indicator {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.runtime-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.runtime-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.runtime-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.runtime-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.runtime-value {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  font-weight: 400;
+}
+
+.runtime-error {
+  background: rgba(244, 67, 54, 0.1);
+  border: 1px solid rgba(244, 67, 54, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.error-label {
+  font-size: 0.875rem;
+  color: #f44336;
+  font-weight: 600;
+}
+
+.error-message {
+  font-size: 0.875rem;
+  color: #ff8a80;
+  font-weight: 400;
+}
+
+.recent-trades {
+  background: var(--surface-dark);
+  border: 1px solid #333333;
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+}
+
+.recent-trades h4 {
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.trade-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #333333;
+}
+
+.trade-item:last-child {
+  border-bottom: none;
+}
+
+.trade-timestamp {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  min-width: 120px;
+}
+
+.trade-type {
+  font-size: 0.875rem;
+  color: var(--primary);
+  font-weight: 500;
+  min-width: 80px;
+}
+
+.trade-details {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.no-runtime-status {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+}
+
+.no-runtime-status p {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.875rem;
+}
+
+/* Additional status badges for runtime phases */
+.status-badge.initializing {
+  background: rgba(33, 150, 243, 0.2);
+  color: #2196f3;
+}
+
+.status-badge.checking {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+}
+
+.status-badge.monitoring {
+  background: rgba(156, 39, 176, 0.2);
+  color: #9c27b0;
+}
+
+.status-badge.analyzing {
+  background: rgba(255, 87, 34, 0.2);
+  color: #ff5722;
+}
+
+.status-badge.calculating {
+  background: rgba(96, 125, 139, 0.2);
+  color: #607d8b;
+}
+
+.status-badge.executing {
+  background: rgba(255, 235, 59, 0.2);
+  color: #ffeb3b;
+}
+
+.status-badge.completed {
+  background: rgba(139, 195, 74, 0.2);
+  color: #8bc34a;
+}
+
+.status-badge.waiting {
+  background: rgba(158, 158, 158, 0.2);
+  color: #9e9e9e;
+}
+
+.status-badge.withdrawing {
+  background: rgba(233, 30, 99, 0.2);
+  color: #e91e63;
+}
+
+.status-badge.active {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+}
+
+/* Responsive design for runtime status */
+@media (max-width: 768px) {
+  .runtime-info {
+    grid-template-columns: 1fr;
+  }
+
+  .status-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .trade-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .trade-timestamp,
+  .trade-type {
+    min-width: auto;
+  }
+}

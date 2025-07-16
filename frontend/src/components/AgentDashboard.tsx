@@ -23,9 +23,23 @@ interface AgentStatusResponse {
   walletAddress: string | null;
   polBalance: number;
   lastMessage: string;
+  nextStep: string;
   trades: any[];
   error: string | null;
   isRunning: boolean;
+  updatedAt: string;
+}
+
+interface AgentRuntimeStatus {
+  phase: string;
+  walletAddress: string | null;
+  polBalance: number;
+  lastMessage: string;
+  nextStep: string;
+  trades: any[];
+  error: string | null;
+  isRunning: boolean;
+  updatedAt: string;
 }
 
 const AgentDashboard = ({ agentId, onBack }: AgentDashboardProps) => {
@@ -37,13 +51,19 @@ const AgentDashboard = ({ agentId, onBack }: AgentDashboardProps) => {
     useState<DeploymentStatus>("idle");
   const [deploymentProgress, setDeploymentProgress] = useState("");
   const [agentLogs, setAgentLogs] = useState<string[]>([]);
+  const [agentRuntimeStatus, setAgentRuntimeStatus] =
+    useState<AgentRuntimeStatus | null>(null);
   const statusCheckInterval = useRef<NodeJS.Timeout | null>(null);
+  const realtimeChannel = useRef<any>(null);
 
   useEffect(() => {
     fetchAgent();
     return () => {
       if (statusCheckInterval.current) {
         clearInterval(statusCheckInterval.current);
+      }
+      if (realtimeChannel.current) {
+        supabase.removeChannel(realtimeChannel.current);
       }
     };
   }, [agentId]);
@@ -66,10 +86,10 @@ const AgentDashboard = ({ agentId, onBack }: AgentDashboardProps) => {
 
       setAgent(data);
 
-      // If agent is deployed, start checking status
+      // If agent is deployed, set deployment status to deployed and start listening for runtime status
       if (data.agent_aws && data.agent_deployed) {
         setDeploymentStatus("deployed");
-        startStatusChecking(data.agent_aws);
+        startRealtimeStatusListening();
       }
     } catch (err) {
       console.error("Error fetching agent:", err);
@@ -153,6 +173,7 @@ const AgentDashboard = ({ agentId, onBack }: AgentDashboardProps) => {
         .update({
           agent_aws: deployData.agentUrl,
           updated_at: new Date().toISOString(),
+          agent_deployed: true,
         })
         .eq("id", agent.id);
 
@@ -178,6 +199,120 @@ const AgentDashboard = ({ agentId, onBack }: AgentDashboardProps) => {
     }
   };
 
+  const startRealtimeStatusListening = () => {
+    // Clean up any existing channel
+    if (realtimeChannel.current) {
+      supabase.removeChannel(realtimeChannel.current);
+    }
+
+    // Create and subscribe to the agent-specific channel
+    const channelName = `agent_${agentId}`;
+    realtimeChannel.current = supabase
+      .channel(channelName)
+      .on("broadcast", { event: "status_update" }, (payload) => {
+        console.log("Received status update:", payload);
+
+        if (
+          payload.payload?.agent_id === agentId.toString() &&
+          payload.payload?.status
+        ) {
+          const status = payload.payload.status;
+
+          // Update agent runtime status
+          setAgentRuntimeStatus({
+            phase: status.phase,
+            walletAddress: status.walletAddress,
+            polBalance: status.polBalance || 0,
+            lastMessage: status.lastMessage,
+            nextStep: status.nextStep,
+            trades: status.trades || [],
+            error: status.error,
+            isRunning: status.isRunning,
+            updatedAt: status.updatedAt,
+          });
+
+          // Update agent wallet address if not already set
+          if (status.walletAddress && agent && !agent.agent_wallet) {
+            updateAgentWalletInDatabase(status.walletAddress);
+          }
+
+          // Fetch logs periodically when agent is running
+          if (status.isRunning && agent?.agent_aws) {
+            fetchAgentLogs(agent.agent_aws);
+          }
+        }
+      })
+      .subscribe((status) => {
+        console.log("Realtime subscription status:", status);
+        if (status === "SUBSCRIBED") {
+          console.log(`Successfully subscribed to ${channelName}`);
+        } else if (status === "CHANNEL_ERROR") {
+          console.error("Error subscribing to channel");
+        } else if (status === "TIMED_OUT") {
+          console.error("Subscription timed out");
+        }
+      });
+  };
+
+  const updateAgentWalletInDatabase = async (walletAddress: string) => {
+    try {
+      const { error: updateError } = await supabase
+        .from("evm-agents")
+        .update({
+          agent_wallet: walletAddress,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", agentId);
+
+      if (updateError) {
+        console.error("Error updating agent wallet:", updateError);
+      } else {
+        setAgent((prev) =>
+          prev
+            ? {
+                ...prev,
+                agent_wallet: walletAddress,
+              }
+            : null
+        );
+      }
+    } catch (err) {
+      console.error("Error updating agent wallet:", err);
+    }
+  };
+
+  const updateAgentDeploymentStatus = async (
+    walletAddress: string,
+    agentUrl: string
+  ) => {
+    try {
+      const { error: finalUpdateError } = await supabase
+        .from("evm-agents")
+        .update({
+          agent_deployed: true,
+          agent_wallet: walletAddress,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", agentId);
+
+      if (finalUpdateError) {
+        console.error("Error updating final agent status:", finalUpdateError);
+      } else {
+        setAgent((prev) =>
+          prev
+            ? {
+                ...prev,
+                agent_deployed: true,
+                agent_wallet: walletAddress,
+              }
+            : null
+        );
+      }
+    } catch (err) {
+      console.error("Error updating agent deployment status:", err);
+    }
+  };
+
   const startStatusChecking = (agentUrl: string) => {
     setDeploymentStatus("creating_wallet");
     setDeploymentProgress("Creating wallet and initializing...");
@@ -187,82 +322,74 @@ const AgentDashboard = ({ agentId, onBack }: AgentDashboardProps) => {
       clearInterval(statusCheckInterval.current);
     }
 
-    // Check status every 30 seconds
-    statusCheckInterval.current = setInterval(async () => {
-      try {
-        const statusResponse = await fetch(`https://${agentUrl}/status`);
-        if (!statusResponse.ok) {
-          console.warn("Status check failed, will retry...");
-          return;
-        }
+    // Clean up any existing deployment channel
+    if (realtimeChannel.current) {
+      supabase.removeChannel(realtimeChannel.current);
+    }
 
-        const statusData: AgentStatusResponse = await statusResponse.json();
-        console.log("Agent status:", statusData);
+    // Create and subscribe to the agent-specific channel for deployment status
+    const channelName = `agent_${agentId}`;
+    realtimeChannel.current = supabase
+      .channel(channelName)
+      .on("broadcast", { event: "status_update" }, (payload) => {
+        console.log("Received deployment status update:", payload);
 
-        // Update progress based on phase
-        if (statusData.phase === "initializing") {
-          setDeploymentProgress("Agent initializing...");
-        } else if (
-          statusData.phase === "check_balance" &&
-          statusData.walletAddress
+        if (
+          payload.payload?.agent_id === agentId.toString() &&
+          payload.payload?.status
         ) {
-          // Agent is ready!
-          setDeploymentStatus("awaiting_deposit");
-          setDeploymentProgress(
-            "Agent deployed successfully! Awaiting minimum deposit of 0.01 POL"
+          const status = payload.payload.status;
+
+          // Update progress based on phase during deployment
+          if (status.phase === "initializing") {
+            setDeploymentProgress("Agent initializing...");
+          } else if (
+            status.phase === "checking_balance" &&
+            status.walletAddress
+          ) {
+            // Agent is ready! Deployment complete
+            setDeploymentStatus("deployed");
+            setDeploymentProgress("Agent deployed successfully!");
+
+            // Update Supabase with final deployment info
+            updateAgentDeploymentStatus(status.walletAddress, agentUrl);
+
+            // Clean up the deployment channel
+            if (realtimeChannel.current) {
+              supabase.removeChannel(realtimeChannel.current);
+              realtimeChannel.current = null;
+            }
+
+            // Restart realtime listening for runtime status
+            startRealtimeStatusListening();
+
+            // Start fetching logs
+            fetchAgentLogs(agentUrl);
+          }
+
+          // Handle errors
+          if (status.error) {
+            setDeploymentStatus("error");
+            setDeploymentProgress(`Agent error: ${status.error}`);
+            if (realtimeChannel.current) {
+              supabase.removeChannel(realtimeChannel.current);
+              realtimeChannel.current = null;
+            }
+          }
+        }
+      })
+      .subscribe((status) => {
+        console.log("Deployment realtime subscription status:", status);
+        if (status === "SUBSCRIBED") {
+          console.log(
+            `Successfully subscribed to ${channelName} for deployment`
           );
-
-          // Update Supabase with final deployment info
-          const { error: finalUpdateError } = await supabase
-            .from("evm-agents")
-            .update({
-              agent_deployed: true,
-              agent_wallet: statusData.walletAddress,
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", agentId);
-
-          if (finalUpdateError) {
-            console.error(
-              "Error updating final agent status:",
-              finalUpdateError
-            );
-          } else {
-            setAgent((prev) =>
-              prev
-                ? {
-                    ...prev,
-                    agent_deployed: true,
-                    agent_wallet: statusData.walletAddress,
-                  }
-                : null
-            );
-          }
-
-          // Clear the interval as deployment is complete
-          if (statusCheckInterval.current) {
-            clearInterval(statusCheckInterval.current);
-            statusCheckInterval.current = null;
-          }
-
-          // Start fetching logs
-          fetchAgentLogs(agentUrl);
+        } else if (status === "CHANNEL_ERROR") {
+          console.error("Error subscribing to deployment channel");
+        } else if (status === "TIMED_OUT") {
+          console.error("Deployment subscription timed out");
         }
-
-        // Handle errors
-        if (statusData.error) {
-          setDeploymentStatus("error");
-          setDeploymentProgress(`Agent error: ${statusData.error}`);
-          if (statusCheckInterval.current) {
-            clearInterval(statusCheckInterval.current);
-            statusCheckInterval.current = null;
-          }
-        }
-      } catch (err) {
-        console.error("Error checking agent status:", err);
-        // Don't stop the interval for temporary network errors
-      }
-    }, 30000); // 30 seconds
+      });
   };
 
   const fetchAgentLogs = async (agentUrl: string) => {
@@ -275,16 +402,6 @@ const AgentDashboard = ({ agentId, onBack }: AgentDashboardProps) => {
     } catch (err) {
       console.error("Error fetching logs:", err);
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
   };
 
   const getStatusBadge = (deployed: boolean | null) => {
@@ -301,12 +418,77 @@ const AgentDashboard = ({ agentId, onBack }: AgentDashboardProps) => {
       return <span className="status-badge awaiting">💰 Awaiting Deposit</span>;
     } else if (deploymentStatus === "error") {
       return <span className="status-badge error">❌ Error</span>;
+    } else if (deploymentStatus === "deployed") {
+      return <span className="status-badge deployed">✅ Deployed</span>;
     } else if (deployed === true) {
-      return <span className="status-badge deployed">🟢 Active</span>;
+      return <span className="status-badge deployed">✅ Deployed</span>;
     } else if (deployed === false) {
       return <span className="status-badge pending">🟡 Pending</span>;
     }
     return <span className="status-badge unknown">⚪ Unknown</span>;
+  };
+
+  const getAgentRuntimeStatusBadge = (
+    runtimeStatus: AgentRuntimeStatus | null
+  ) => {
+    if (!runtimeStatus) {
+      return <span className="status-badge unknown">⚪ No Status</span>;
+    }
+
+    if (runtimeStatus.error) {
+      return <span className="status-badge error">❌ Error</span>;
+    }
+
+    switch (runtimeStatus.phase) {
+      case "initializing":
+        return (
+          <span className="status-badge initializing">🔄 Initializing</span>
+        );
+      case "checking_balance":
+        return (
+          <span className="status-badge checking">💰 Checking Balance</span>
+        );
+      case "monitoring":
+        return <span className="status-badge monitoring">👀 Monitoring</span>;
+      case "analyzing_market":
+        return (
+          <span className="status-badge analyzing">📊 Analyzing Market</span>
+        );
+      case "calculating_strategy":
+        return (
+          <span className="status-badge calculating">
+            🧠 Calculating Strategy
+          </span>
+        );
+      case "executing_trade":
+        return (
+          <span className="status-badge executing">⚡ Executing Trade</span>
+        );
+      case "trade_completed":
+        return (
+          <span className="status-badge completed">✅ Trade Completed</span>
+        );
+      case "waiting":
+        return <span className="status-badge waiting">⏳ Waiting</span>;
+      case "withdrawing":
+        return <span className="status-badge withdrawing">💸 Withdrawing</span>;
+      case "withdrawal_complete":
+        return (
+          <span className="status-badge completed">✅ Withdrawal Complete</span>
+        );
+      default:
+        return <span className="status-badge active">🟢 Active</span>;
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   const isDeploymentInProgress = [
@@ -438,7 +620,7 @@ const AgentDashboard = ({ agentId, onBack }: AgentDashboardProps) => {
                   <span className="stat-value">
                     {agent.agent_aws ? (
                       <a
-                        href={agent.agent_aws}
+                        href={"https://" + agent.agent_aws}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="aws-link"
@@ -494,6 +676,103 @@ const AgentDashboard = ({ agentId, onBack }: AgentDashboardProps) => {
             </div>
           </div>
         </div>
+
+        {/* Agent Runtime Status Section */}
+        {deploymentStatus === "deployed" && (
+          <div className="agent-runtime-status">
+            <h3>Agent Runtime Status</h3>
+            <div className="runtime-status-card">
+              <div className="status-header">
+                {getAgentRuntimeStatusBadge(agentRuntimeStatus)}
+                {agentRuntimeStatus?.isRunning && (
+                  <span className="running-indicator">🟢 Running</span>
+                )}
+              </div>
+
+              {agentRuntimeStatus ? (
+                <div className="runtime-details">
+                  <div className="runtime-info">
+                    <div className="runtime-item">
+                      <span className="runtime-label">Current Phase:</span>
+                      <span className="runtime-value">
+                        {agentRuntimeStatus.phase}
+                      </span>
+                    </div>
+                    <div className="runtime-item">
+                      <span className="runtime-label">Last Message:</span>
+                      <span className="runtime-value">
+                        {agentRuntimeStatus.lastMessage}
+                      </span>
+                    </div>
+                    <div className="runtime-item">
+                      <span className="runtime-label">Next Step:</span>
+                      <span className="runtime-value">
+                        {agentRuntimeStatus.nextStep}
+                      </span>
+                    </div>
+                    <div className="runtime-item">
+                      <span className="runtime-label">POL Balance:</span>
+                      <span className="runtime-value">
+                        {agentRuntimeStatus.polBalance.toFixed(6)} POL
+                      </span>
+                    </div>
+                    <div className="runtime-item">
+                      <span className="runtime-label">Last Update:</span>
+                      <span className="runtime-value">
+                        {formatDate(agentRuntimeStatus.updatedAt)}
+                      </span>
+                    </div>
+                    {agentRuntimeStatus.trades &&
+                      agentRuntimeStatus.trades.length > 0 && (
+                        <div className="runtime-item">
+                          <span className="runtime-label">Total Trades:</span>
+                          <span className="runtime-value">
+                            {agentRuntimeStatus.trades.length}
+                          </span>
+                        </div>
+                      )}
+                  </div>
+
+                  {agentRuntimeStatus.error && (
+                    <div className="runtime-error">
+                      <span className="error-label">Error:</span>
+                      <span className="error-message">
+                        {agentRuntimeStatus.error}
+                      </span>
+                    </div>
+                  )}
+
+                  {agentRuntimeStatus.trades &&
+                    agentRuntimeStatus.trades.length > 0 && (
+                      <div className="recent-trades">
+                        <h4>Recent Trades</h4>
+                        {agentRuntimeStatus.trades
+                          .slice(-5)
+                          .map((trade, index) => (
+                            <div key={index} className="trade-item">
+                              <span className="trade-timestamp">
+                                {formatDate(trade.timestamp)}
+                              </span>
+                              <span className="trade-type">{trade.type}</span>
+                              <span className="trade-details">
+                                {trade.details}
+                              </span>
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                </div>
+              ) : (
+                <div className="no-runtime-status">
+                  <p>Waiting for agent runtime status...</p>
+                  <p>
+                    The agent may be initializing or connecting to the network.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="agent-activity">
           <h3>Agent Logs</h3>
