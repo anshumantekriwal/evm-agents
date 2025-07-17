@@ -19,3 +19,4 @@ xion-frontend/.env
 /agent-deployer/baseline/.env
 /baseline/logs.json
 /baseline/status.json
+frontend/package-lock.json

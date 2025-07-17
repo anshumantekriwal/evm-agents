@@ -10,8 +10,8 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   if (isLoading) {
     return (
-      <div className="loading-state">
-        <div className="loading-spinner"></div>
+      <div className="app-loading-state">
+        <div className="app-loading-spinner"></div>
         <p>Loading...</p>
       </div>
     );

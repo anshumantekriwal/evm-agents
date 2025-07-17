@@ -48,10 +48,10 @@ const ReviewSlide = ({
             <img
               src={URL.createObjectURL(formState.agentImage)}
               alt="Agent profile"
-              className="agent-avatar"
+              className="launcher-agent-avatar"
             />
           ) : (
-            <div className="agent-avatar-placeholder" />
+            <div className="launcher-agent-avatar-placeholder" />
           )}
           <h3 style={{ margin: 0, letterSpacing: "-0.02em" }}>
             {formState.agentName}
@@ -120,7 +120,7 @@ const ReviewSlide = ({
         {uiState.isCreating ? (
           <>
             Creating your agent...
-            <div className="loading-animation" />
+            <div className="launcher-loading-animation" />
           </>
         ) : (
           "Deploy Agent"

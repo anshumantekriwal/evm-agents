@@ -270,6 +270,132 @@ export async function sendTransaction(transaction) {
   return { hash, caip2 };
 }
 
+export async function baselineFunction(ownerAddress) {
+  // Initialize and create wallet
+  updateStatus({
+    phase: "initializing",
+    lastMessage: "Creating wallet",
+    nextStep: "Setting up wallet and checking balance",
+    isRunning: true,
+  });
+
+  const wallet = await createWallet(ownerAddress);
+  log(`Wallet address: ${wallet.address}`, "info");
+
+  updateStatus({
+    phase: "checking_balance",
+    walletAddress: wallet.address,
+    lastMessage: "Wallet created successfully",
+    nextStep: "Checking for 0.01 POL balance threshold",
+  });
+
+  // Loop until the wallet has at least 0.01 POL
+  while (true) {
+    try {
+      const result = await checkBalance(wallet.address, 0.01);
+      log(`Balance check result: ${JSON.stringify(result)}`, "info");
+
+      if (result.success) {
+        // Threshold reached: start trading strategy
+        updateStatus({
+          phase: "monitoring",
+          lastMessage: "Target balance reached, launching trading strategy",
+          nextStep: "Scheduling periodic USDC purchases",
+        });
+        log("✅ Target balance achieved! Starting trading strategy", "success");
+
+        // ======= ENTER AI CODE =======
+        // Strategy: Buy 0.01 USDC using POL every 20 minutes
+        log(
+          "Setting up periodic purchase of 0.01 USDC every 20 minutes",
+          "info"
+        );
+        updateStatus({
+          phase: "monitoring",
+          lastMessage: "Scheduling first trade in 20 minutes",
+          nextStep: "Waiting before first execution",
+        });
+
+        const intervalId = setInterval(async () => {
+          updateStatus({
+            phase: "executing_trade",
+            lastMessage: "Executing scheduled USDC purchase",
+            nextStep: "Waiting for transaction confirmation",
+          });
+          try {
+            // Fetch current market prices
+            const polyData = await getTokenMarketData("MATIC");
+            const usdcData = await getTokenMarketData("USDC");
+            log(
+              `POL price: ${polyData.price} USD, USDC price: ${usdcData.price} USD`,
+              "info"
+            );
+
+            // Compute required POL amount to buy 0.01 USDC
+            const usdcAmount = 0.01;
+            const requiredPOL = (usdcAmount * usdcData.price) / polyData.price;
+            log(`Swapping ${requiredPOL.toFixed(8)} POL for 0.01 USDC`, "info");
+
+            // Execute the swap
+            const swapQuote = await swap(
+              "0x0000000000000000000000000000000000000000", // POL native
+              "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359", // USDC contract
+              wallet.address,
+              requiredPOL.toString()
+            );
+            const txData = swapQuote.transactionRequest;
+            const { hash, caip2 } = await sendTransaction(txData);
+            log(
+              `Swap transaction sent: hash=${hash} caip2=${caip2}`,
+              "success"
+            );
+
+            updateStatus({
+              phase: "monitoring",
+              lastMessage: `Trade executed. TX hash: ${hash}`,
+              nextStep: "Waiting for next scheduled trade",
+              trades: [
+                ...(Array.isArray(trades) ? trades : []),
+                { hash, timestamp: new Date().toISOString() },
+              ],
+            });
+          } catch (error) {
+            log(`Error executing trade: ${error.message}`, "error");
+            updateStatus({
+              phase: "error",
+              error: error.message,
+              lastMessage: "Trade execution failed",
+              nextStep: "Will retry at next schedule",
+            });
+          }
+        }, 20 * 60 * 1000);
+
+        log("Periodic buyer initialized successfully", "info");
+        // ======= END AI CODE =======
+
+        break; // exit balance-check loop once strategy is running
+      }
+
+      updateStatus({
+        phase: "checking_balance",
+        lastMessage: "Target not reached, retrying in 30 seconds",
+        nextStep: "Checking balance again in 30 seconds",
+      });
+      log("❌ Target not reached yet. Retrying in 30 seconds.", "warning");
+      await new Promise((resolve) => setTimeout(resolve, 30_000));
+    } catch (error) {
+      log(`Error checking balance: ${error.message}`, "error");
+      updateStatus({
+        phase: "error",
+        error: error.message,
+        lastMessage: "Error checking balance, retrying",
+        nextStep: "Retrying balance check in 30 seconds",
+      });
+      await new Promise((resolve) => setTimeout(resolve, 30_000));
+    }
+  }
+}
+
 // export async function baselineFunction(ownerAddress) {
 // // Initialization phase
 // updateStatus({

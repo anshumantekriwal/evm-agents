@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
-import { supabase } from "../lib/supabase";
+import { supabase } from "../config";
 import "./TradingAgentLauncher.css";
 
 // Import slide components
-import BasicInfoSlide from "./slides/BasicInfoSlide";
-import ImageUploadSlide from "./slides/ImageUploadSlide";
-import BehaviorSlide from "./slides/BehaviorSlide";
-import OnchainConfigSlide from "./slides/OnchainConfigSlide";
-import ReviewSlide from "./slides/ReviewSlide";
+import BasicInfoSlide from "./launcher/BasicInfoSlide";
+import ImageUploadSlide from "./launcher/ImageUploadSlide";
+import BehaviorSlide from "./launcher/BehaviorSlide";
+import OnchainConfigSlide from "./launcher/OnchainConfigSlide";
+import ReviewSlide from "./launcher/ReviewSlide";
 import AgentSuccess from "./AgentSuccess";
 
 // Types
@@ -86,13 +86,15 @@ const TradingAgentLauncher = ({
   // Static data
   const slides = [
     {
-      image: "/login.png",
+      image:
+        "https://wbsnlpviggcnwqfyfobh.supabase.co/storage/v1/object/public/app//picture2.png",
       title: "It all starts with a name",
       content: "How should we call your EVM Agent?",
       component: BasicInfoSlide,
     },
     {
-      image: "/login.png",
+      image:
+        "https://wbsnlpviggcnwqfyfobh.supabase.co/storage/v1/object/public/app//picture3.png",
       title: `Let's upload the picture\nof ${
         formState.agentName || "your agent"
       }`,
@@ -100,13 +102,15 @@ const TradingAgentLauncher = ({
       component: ImageUploadSlide,
     },
     {
-      image: "/login.png",
+      image:
+        "https://wbsnlpviggcnwqfyfobh.supabase.co/storage/v1/object/public/app//picture4.png",
       title: `What do you want\n${formState.agentName || "your agent"} to do?`,
       content: "Describe your agent's behavior and capabilities",
       component: BehaviorSlide,
     },
     {
-      image: "/login.png",
+      image:
+        "https://wbsnlpviggcnwqfyfobh.supabase.co/storage/v1/object/public/app//picture10.png",
       title: "Configure Trading Parameters",
       content: "Set up onchain properties for your trading agent",
       component: OnchainConfigSlide,
@@ -365,10 +369,10 @@ const TradingAgentLauncher = ({
 
   return (
     <div className="agent-launcher-container">
-      <div className="progress-bar-container">
-        <div className="progress-bar-wrapper">
+      <div className="launcher-progress-bar-container">
+        <div className="launcher-progress-bar-wrapper">
           <div
-            className="progress-bar"
+            className="launcher-progress-bar"
             style={{
               width: ((formState.currentStep + 1) / slides.length) * 100 + "%",
             }}

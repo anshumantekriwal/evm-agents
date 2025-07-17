@@ -7,7 +7,17 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error("Missing Supabase environment variables");
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  realtime: {
+    heartbeatIntervalMs: 30000,
+    reconnectDelayMs: 1000,
+    timeout: 10000,
+  },
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  },
+});
 
 // Types for the database schema
 export interface Agent {

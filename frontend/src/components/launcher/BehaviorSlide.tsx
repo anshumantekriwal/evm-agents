@@ -119,7 +119,7 @@ const BehaviorSlide = ({
 
       {isLoadingRating && (
         <div className="ai-rating-loading">
-          <div className="loading-spinner"></div>
+          <div className="launcher-loading-spinner"></div>
           <span>Analyzing strategy...</span>
         </div>
       )}
