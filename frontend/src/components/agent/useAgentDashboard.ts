@@ -9,6 +9,7 @@ export type DeploymentStatus =
   | "deploying_agent"
   | "creating_wallet"
   | "awaiting_deposit"
+  | "deployment_success"
   | "deployed"
   | "error";
 
@@ -36,6 +37,57 @@ export interface AgentRuntimeStatus {
   updatedAt: string;
 }
 
+export interface TokenBalance {
+  chain: string;
+  address: string;
+  balance: string;
+  denominatedBalance: string;
+  decimals: number;
+  type: "native" | "fungible";
+  tokenAddress: string;
+  symbol: string;
+  name: string;
+  logoURI: string | null;
+  priceUSD: number;
+}
+
+export interface Transaction {
+  id: string;
+  timestamp: number;
+  from: string;
+  to: string;
+  contract: string | null;
+  hash: string;
+  amount_usd: number;
+  amount: number;
+  block_number: number;
+  type: string;
+  blockchain: string;
+  tx_cost: number;
+  transaction: {
+    hash: string;
+    chainId: string;
+    fees: string;
+    feesUSD: number;
+    date: string;
+  };
+  asset: {
+    id: number;
+    name: string;
+    symbol: string;
+    decimals: number;
+    totalSupply: number;
+    circulatingSupply: number;
+    price: number;
+    liquidity: number;
+    priceChange24hPercent: number;
+    marketCapUSD: number;
+    logo: string;
+    nativeChainId: string;
+    contract: string | null;
+  };
+}
+
 interface LogEvent {
   eventId: string;
   ingestionTime: number;
@@ -61,6 +113,12 @@ export const useAgentDashboard = ({ agentId }: UseAgentDashboardProps) => {
   const [deploymentStatus, setDeploymentStatus] =
     useState<DeploymentStatus>("idle");
   const [deploymentProgress, setDeploymentProgress] = useState("");
+  const [deploymentStartTime, setDeploymentStartTime] = useState<number | null>(
+    null
+  );
+  const [deploymentDuration, setDeploymentDuration] = useState<string>("00:00");
+  const deploymentTimerInterval = useRef<NodeJS.Timeout | null>(null);
+  const startTimeRef = useRef<number | null>(null);
   const [agentLogs, setAgentLogs] = useState<string[]>([]);
   const [agentRuntimeStatus, setAgentRuntimeStatus] =
     useState<AgentRuntimeStatus | null>(null);
@@ -68,6 +126,14 @@ export const useAgentDashboard = ({ agentId }: UseAgentDashboardProps) => {
     useState<string>("disconnected");
   const [showDebugPanel, setShowDebugPanel] = useState(false);
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
+  const [balances, setBalances] = useState<TokenBalance[]>([]);
+  const [balancesLoading, setBalancesLoading] = useState(false);
+  const [balancesError, setBalancesError] = useState<string | null>(null);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [transactionsLoading, setTransactionsLoading] = useState(false);
+  const [transactionsError, setTransactionsError] = useState<string | null>(
+    null
+  );
   const statusCheckInterval = useRef<NodeJS.Timeout | null>(null);
   const realtimeChannel = useRef<any>(null);
   const logsWebSocket = useRef<WebSocket | null>(null);
@@ -77,6 +143,112 @@ export const useAgentDashboard = ({ agentId }: UseAgentDashboardProps) => {
     const timestamp = new Date().toLocaleTimeString();
     setDebugInfo((prev) => [`[${timestamp}] ${message}`, ...prev.slice(0, 49)]);
   };
+
+  // Update timer function
+  const updateDeploymentTimer = () => {
+    if (!startTimeRef.current) return;
+
+    const now = Date.now();
+    const duration = now - startTimeRef.current;
+    const minutes = Math.floor(duration / 60000);
+    const seconds = Math.floor((duration % 60000) / 1000);
+    setDeploymentDuration(
+      `${minutes.toString().padStart(2, "0")}:${seconds
+        .toString()
+        .padStart(2, "0")}`
+    );
+  };
+
+  // Fetch balances for the agent's wallet
+  const fetchBalances = async (walletAddress: string) => {
+    setBalancesLoading(true);
+    setBalancesError(null);
+    try {
+      // Mobula API endpoint for wallet balances on Polygon
+      const response = await fetch(
+        `https://api.mobula.io/api/1/wallet/portfolio?wallet=${walletAddress}&blockchains=137`,
+        {
+          headers: { accept: "application/json" },
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to fetch balances: ${response.statusText}`);
+      }
+      const data = await response.json();
+      const assets = data?.data?.assets || [];
+      // Flatten and filter balances for Polygon
+      const balances: TokenBalance[] = [];
+      for (const asset of assets) {
+        if (!asset.token_balance || asset.token_balance <= 0) continue;
+        for (const contractBalance of asset.contracts_balances || []) {
+          const chainId = contractBalance.chainId?.toString();
+          if (chainId !== "137" && chainId !== "evm:137") continue;
+          const tokenAddress = contractBalance.address?.toLowerCase() || "";
+          const isNativeToken =
+            tokenAddress === "0x0000000000000000000000000000000000000000" ||
+            tokenAddress === "0x0" ||
+            tokenAddress === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" ||
+            !tokenAddress;
+          const type = isNativeToken ? "native" : "fungible";
+          balances.push({
+            chain: "polygon-mainnet",
+            address: walletAddress,
+            balance: contractBalance.balance.toString(),
+            denominatedBalance: contractBalance.balanceRaw,
+            decimals: contractBalance.decimals || 18,
+            type,
+            tokenAddress: isNativeToken
+              ? "0x0000000000000000000000000000000000000000"
+              : contractBalance.address,
+            symbol: asset.asset?.symbol || "Unknown",
+            name: asset.asset?.name || "Unknown Token",
+            logoURI: asset.asset?.logo || null,
+            priceUSD: asset.price || 0,
+          });
+        }
+      }
+      setBalances(balances.filter((b) => parseFloat(b.balance) > 0));
+    } catch (err: any) {
+      setBalancesError(err.message || "Failed to fetch balances");
+      setBalances([]);
+    } finally {
+      setBalancesLoading(false);
+    }
+  };
+
+  // Fetch transactions for the agent's wallet
+  const fetchTransactions = async (walletAddress: string) => {
+    setTransactionsLoading(true);
+    setTransactionsError(null);
+    try {
+      // Mobula API endpoint for wallet transactions on Polygon
+      const response = await fetch(
+        `https://api.mobula.io/api/1/wallet/transactions?wallet=${walletAddress}`,
+        {
+          headers: { accept: "application/json" },
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to fetch transactions: ${response.statusText}`);
+      }
+      const data = await response.json();
+      const transactions = data?.data?.transactions || [];
+      setTransactions(transactions);
+    } catch (err: any) {
+      setTransactionsError(err.message || "Failed to fetch transactions");
+      setTransactions([]);
+    } finally {
+      setTransactionsLoading(false);
+    }
+  };
+
+  // Fetch balances when agent is loaded and has a wallet address
+  useEffect(() => {
+    if (agent && agent.agent_wallet) {
+      fetchBalances(agent.agent_wallet);
+      fetchTransactions(agent.agent_wallet);
+    }
+  }, [agent?.agent_wallet]);
 
   useEffect(() => {
     fetchAgent();
@@ -90,8 +262,22 @@ export const useAgentDashboard = ({ agentId }: UseAgentDashboardProps) => {
       if (logsWebSocket.current) {
         logsWebSocket.current.close();
       }
+      if (deploymentTimerInterval.current) {
+        clearInterval(deploymentTimerInterval.current);
+      }
+      startTimeRef.current = null;
     };
   }, [agentId]);
+
+  // Clean up timer when status changes to deployed or error
+  useEffect(() => {
+    if (deploymentStatus === "deployed" || deploymentStatus === "error") {
+      if (deploymentTimerInterval.current) {
+        clearInterval(deploymentTimerInterval.current);
+      }
+      startTimeRef.current = null;
+    }
+  }, [deploymentStatus]);
 
   const fetchAgent = async () => {
     try {
@@ -252,6 +438,21 @@ export const useAgentDashboard = ({ agentId }: UseAgentDashboardProps) => {
     if (!agent) return;
 
     try {
+      // Start the deployment timer
+      startTimeRef.current = Date.now();
+      setDeploymentStartTime(startTimeRef.current);
+
+      // Clear any existing timer
+      if (deploymentTimerInterval.current) {
+        clearInterval(deploymentTimerInterval.current);
+      }
+
+      // Start a new timer that updates every second
+      deploymentTimerInterval.current = setInterval(
+        updateDeploymentTimer,
+        1000
+      );
+
       addDebugInfo("Starting deployment process");
       setDeploymentStatus("writing_code");
       setDeploymentProgress("Generating agent code...");
@@ -354,6 +555,12 @@ export const useAgentDashboard = ({ agentId }: UseAgentDashboardProps) => {
       setDeploymentStatus("error");
       setDeploymentProgress(`Deployment failed: ${errorMessage}`);
       setError("Deployment failed. Please try again.");
+
+      // Clear timer on error
+      if (deploymentTimerInterval.current) {
+        clearInterval(deploymentTimerInterval.current);
+      }
+      startTimeRef.current = null;
     }
   };
 
@@ -532,26 +739,31 @@ export const useAgentDashboard = ({ agentId }: UseAgentDashboardProps) => {
             status.phase === "checking_balance" &&
             status.walletAddress
           ) {
-            // Agent is ready! Deployment complete
-            addDebugInfo("Deployment complete - agent ready");
-            clearTimeout(deploymentTimeout);
-            setDeploymentStatus("deployed");
-            setDeploymentProgress("Agent deployed successfully!");
+            // Agent is ready! Show success animation before completing deployment
+            addDebugInfo("Deployment complete - showing success animation");
+            setDeploymentStatus("deployment_success");
+            setDeploymentProgress("Deployment successful!");
 
-            // Update Supabase with final deployment info
-            updateAgentDeploymentStatus(status.walletAddress, agentUrl);
-
-            // Clean up the deployment channel
-            if (realtimeChannel.current) {
-              supabase.removeChannel(realtimeChannel.current);
-              realtimeChannel.current = null;
-            }
-
-            // Wait a moment before starting runtime listening to avoid conflicts
+            // After animation duration, complete the deployment
             setTimeout(() => {
-              startRealtimeStatusListening();
-              startLogsWebSocket();
-            }, 1000);
+              addDebugInfo("Transitioning to deployed state");
+              setDeploymentStatus("deployed");
+
+              // Update Supabase with final deployment info
+              updateAgentDeploymentStatus(status.walletAddress, agentUrl);
+
+              // Clean up the deployment channel
+              if (realtimeChannel.current) {
+                supabase.removeChannel(realtimeChannel.current);
+                realtimeChannel.current = null;
+              }
+
+              // Wait a moment before starting runtime listening to avoid conflicts
+              setTimeout(() => {
+                startRealtimeStatusListening();
+                startLogsWebSocket();
+              }, 1000);
+            }, 3000); // Show success animation for 3 seconds
           }
 
           // Handle errors
@@ -690,18 +902,28 @@ export const useAgentDashboard = ({ agentId }: UseAgentDashboardProps) => {
     error,
     deploymentStatus,
     deploymentProgress,
+    deploymentDuration,
     agentLogs,
     agentRuntimeStatus,
     logsConnectionStatus,
     showDebugPanel,
     debugInfo,
     isDeploymentInProgress,
-
+    balances,
+    balancesLoading,
+    balancesError,
+    transactions,
+    transactionsLoading,
+    transactionsError,
     // Actions
     handleDeploy,
     startLogsWebSocket,
     setShowDebugPanel,
     setError,
     fetchAgent,
+    refreshBalances: () =>
+      agent && agent.agent_wallet && fetchBalances(agent.agent_wallet),
+    refreshTransactions: () =>
+      agent && agent.agent_wallet && fetchTransactions(agent.agent_wallet),
   };
 };

@@ -36,4 +36,7 @@ export interface Agent {
   slippage_tolerance: number | null;
   gas_limit: number | null;
   selected_chains: string[] | null;
+  strategy_type: string | null;
+  trading_pairs: string[] | null;
+  risk_level: string | null;
 }
