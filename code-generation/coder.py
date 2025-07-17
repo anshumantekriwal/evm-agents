@@ -98,6 +98,7 @@ For any linting errors, consider whether the error is significant enough to brea
 If there are no errors, simply return the original code.
 If there are errors, fix them and return the corrected code.
 
+Ensure baselineFunction() is exported either as `export async function baselineFunction(ownerAddress)` or `export baselineFunction`. Ensure no default exports.
 Output valid JSON with **only** `code` field.
 Do NOT include any markdown, comments, or extra keys—just the JSON.
 

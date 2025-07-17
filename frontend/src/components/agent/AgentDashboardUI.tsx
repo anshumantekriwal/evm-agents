@@ -173,7 +173,8 @@ const AgentDashboardUI: React.FC<AgentDashboardUIProps> = ({
     );
   }
 
-  const isDeployed = agent.agent_deployed === true || deploymentStatus === "deployed";
+  const isDeployed =
+    agent.agent_deployed === true || deploymentStatus === "deployed";
 
   return (
     <div className="agent-dashboard">
@@ -185,7 +186,7 @@ const AgentDashboardUI: React.FC<AgentDashboardUIProps> = ({
               ← Back to Dashboard
             </button>
           </div>
-          
+
           <div className="agent-hero-content">
             <div className="agent-hero-info">
               <div className="agent-hero-avatar">
@@ -195,11 +196,15 @@ const AgentDashboardUI: React.FC<AgentDashboardUIProps> = ({
                   <div className="agent-hero-avatar-placeholder">🤖</div>
                 )}
               </div>
-              
+
               <div className="agent-hero-details">
-                <h1 className="agent-hero-title">{agent.name || "Unnamed Agent"}</h1>
+                <h1 className="agent-hero-title">
+                  {agent.name || "Unnamed Agent"}
+                </h1>
                 <p className="agent-hero-subtitle">
-                  {agent.description || agent.prompt || "No description available"}
+                  {agent.description ||
+                    agent.prompt ||
+                    "No description available"}
                 </p>
                 <div className="agent-hero-status">
                   {getStatusBadge(agent.agent_deployed)}
@@ -221,7 +226,7 @@ const AgentDashboardUI: React.FC<AgentDashboardUIProps> = ({
                   {agent.agent_wallet ? "Active" : "Not Generated"}
                 </div>
               </div>
-              
+
               <div className="agent-hero-stat-item">
                 <div className="agent-hero-stat-label">Total Trades</div>
                 <div className="agent-hero-stat-value">
@@ -231,7 +236,7 @@ const AgentDashboardUI: React.FC<AgentDashboardUIProps> = ({
                   {agentRuntimeStatus?.trades?.length ? "Active" : "No Trades"}
                 </div>
               </div>
-              
+
               <div className="agent-hero-stat-item">
                 <div className="agent-hero-stat-label">Current Phase</div>
                 <div className="agent-hero-stat-value">
@@ -261,13 +266,17 @@ const AgentDashboardUI: React.FC<AgentDashboardUIProps> = ({
             <div className="agent-tabs-header">
               <div className="agent-tabs-nav">
                 <button
-                  className={`agent-tab ${activeTab === "trading" ? "active" : ""}`}
+                  className={`agent-tab ${
+                    activeTab === "trading" ? "active" : ""
+                  }`}
                   onClick={() => setActiveTab("trading")}
                 >
                   Trading View
                 </button>
                 <button
-                  className={`agent-tab ${activeTab === "config" ? "active" : ""}`}
+                  className={`agent-tab ${
+                    activeTab === "config" ? "active" : ""
+                  }`}
                   onClick={() => setActiveTab("config")}
                 >
                   Configuration
@@ -284,33 +293,35 @@ const AgentDashboardUI: React.FC<AgentDashboardUIProps> = ({
                     <h3>Runtime Status</h3>
                     {getAgentRuntimeStatusBadge(agentRuntimeStatus)}
                   </div>
-                  
+
                   <div className="agent-runtime-status-grid">
                     <div className="runtime-status-item">
-                      <span className="runtime-status-label">Current Phase</span>
+                      <span className="runtime-status-label">
+                        Current Phase
+                      </span>
                       <span className="runtime-status-value">
                         {agentRuntimeStatus?.phase || "Unknown"}
                       </span>
                     </div>
-                    
+
                     <div className="runtime-status-item">
                       <span className="runtime-status-label">Last Message</span>
                       <span className="runtime-status-value">
                         {agentRuntimeStatus?.lastMessage || "No message"}
                       </span>
                     </div>
-                    
+
                     <div className="runtime-status-item">
                       <span className="runtime-status-label">Next Step</span>
                       <span className="runtime-status-value">
                         {agentRuntimeStatus?.nextStep || "Waiting"}
                       </span>
                     </div>
-                    
+
                     <div className="runtime-status-item">
                       <span className="runtime-status-label">Last Update</span>
                       <span className="runtime-status-value">
-                        {agentRuntimeStatus?.updatedAt 
+                        {agentRuntimeStatus?.updatedAt
                           ? formatDate(agentRuntimeStatus.updatedAt)
                           : "Never"}
                       </span>
@@ -320,30 +331,37 @@ const AgentDashboardUI: React.FC<AgentDashboardUIProps> = ({
                   {agentRuntimeStatus?.error && (
                     <div className="runtime-error-section">
                       <h4>Runtime Error</h4>
-                      <p className="runtime-error-message">{agentRuntimeStatus.error}</p>
+                      <p className="runtime-error-message">
+                        {agentRuntimeStatus.error}
+                      </p>
                     </div>
                   )}
                 </div>
 
                 {/* Recent Trades */}
-                {agentRuntimeStatus?.trades && agentRuntimeStatus.trades.length > 0 && (
-                  <div className="agent-trades-section">
-                    <h3>Recent Trades</h3>
-                    <div className="agent-trades-list">
-                      {agentRuntimeStatus.trades.slice(-5).map((trade, index) => (
-                        <div key={index} className="agent-trade-item">
-                          <div className="trade-info">
-                            <div className="trade-type">{trade.type}</div>
-                            <div className="trade-details">{trade.details}</div>
-                          </div>
-                          <div className="trade-timestamp">
-                            {formatDate(trade.timestamp)}
-                          </div>
-                        </div>
-                      ))}
+                {agentRuntimeStatus?.trades &&
+                  agentRuntimeStatus.trades.length > 0 && (
+                    <div className="agent-trades-section">
+                      <h3>Recent Trades</h3>
+                      <div className="agent-trades-list">
+                        {agentRuntimeStatus.trades
+                          .slice(-5)
+                          .map((trade, index) => (
+                            <div key={index} className="agent-trade-item">
+                              <div className="trade-info">
+                                <div className="trade-type">{trade.type}</div>
+                                <div className="trade-details">
+                                  {trade.details}
+                                </div>
+                              </div>
+                              <div className="trade-timestamp">
+                                {formatDate(trade.timestamp)}
+                              </div>
+                            </div>
+                          ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
                 {/* Agent Logs */}
                 <div className="agent-logs-section">
@@ -360,7 +378,7 @@ const AgentDashboardUI: React.FC<AgentDashboardUIProps> = ({
                       </button>
                     </div>
                   </div>
-                  
+
                   <div className="agent-logs-container">
                     {agentLogs.length > 0 ? (
                       agentLogs.map((log, index) => (
@@ -388,29 +406,37 @@ const AgentDashboardUI: React.FC<AgentDashboardUIProps> = ({
                 {/* Agent Configuration */}
                 <div className="agent-config-section">
                   <h3>Agent Configuration</h3>
-                  
+
                   <div className="agent-config-grid">
                     <div className="config-group">
                       <h4>Basic Information</h4>
                       <div className="config-items">
                         <div className="config-item">
                           <span className="config-label">Name</span>
-                          <span className="config-value">{agent.name || "Unnamed Agent"}</span>
+                          <span className="config-value">
+                            {agent.name || "Unnamed Agent"}
+                          </span>
                         </div>
                         <div className="config-item">
                           <span className="config-label">Description</span>
                           <span className="config-value">
-                            {agent.description || agent.prompt || "No description"}
+                            {agent.description ||
+                              agent.prompt ||
+                              "No description"}
                           </span>
                         </div>
                         <div className="config-item">
                           <span className="config-label">Created</span>
-                          <span className="config-value">{formatDate(agent.created_at)}</span>
+                          <span className="config-value">
+                            {formatDate(agent.created_at)}
+                          </span>
                         </div>
                         {agent.updated_at && (
                           <div className="config-item">
                             <span className="config-label">Last Updated</span>
-                            <span className="config-value">{formatDate(agent.updated_at)}</span>
+                            <span className="config-value">
+                              {formatDate(agent.updated_at)}
+                            </span>
                           </div>
                         )}
                       </div>
@@ -420,9 +446,13 @@ const AgentDashboardUI: React.FC<AgentDashboardUIProps> = ({
                       <h4>Trading Settings</h4>
                       <div className="config-items">
                         <div className="config-item">
-                          <span className="config-label">Slippage Tolerance</span>
+                          <span className="config-label">
+                            Slippage Tolerance
+                          </span>
                           <span className="config-value">
-                            {agent.slippage_tolerance ? `${agent.slippage_tolerance}%` : "Not set"}
+                            {agent.slippage_tolerance
+                              ? `${agent.slippage_tolerance}%`
+                              : "Not set"}
                           </span>
                         </div>
                         <div className="config-item">
@@ -472,7 +502,8 @@ const AgentDashboardUI: React.FC<AgentDashboardUIProps> = ({
                     <div className="config-group">
                       <h4>Supported Chains</h4>
                       <div className="config-chains">
-                        {agent.selected_chains && agent.selected_chains.length > 0 ? (
+                        {agent.selected_chains &&
+                        agent.selected_chains.length > 0 ? (
                           agent.selected_chains.map((chain, index) => (
                             <span key={index} className="config-chain-badge">
                               {chain}
@@ -519,7 +550,7 @@ const AgentDashboardUI: React.FC<AgentDashboardUIProps> = ({
                         <span>{logsConnectionStatus}</span>
                       </div>
                     </div>
-                    
+
                     <div className="debug-logs-section">
                       <h4>Debug Logs</h4>
                       <div className="debug-logs-container">
@@ -539,26 +570,81 @@ const AgentDashboardUI: React.FC<AgentDashboardUIProps> = ({
 
         {/* Non-deployed Agent Actions */}
         {!isDeployed && (
-          <section className="agent-deploy-section glass-card">
-            <div className="agent-deploy-content">
-              <h3>Deploy Your Agent</h3>
-              <p>Your agent is ready to be deployed. Click the button below to start the deployment process.</p>
-              
-              <div className="agent-deploy-actions">
-                <button
-                  className="agent-deploy-btn primary"
-                  onClick={handleDeploy}
-                  disabled={isDeploymentInProgress}
-                >
-                  {isDeploymentInProgress ? "Deploying..." : "Deploy Agent"}
-                </button>
-                
-                <button className="agent-deploy-btn secondary">
-                  Edit Configuration
-                </button>
+          <>
+            <section className="agent-deploy-section glass-card">
+              <div className="agent-deploy-content">
+                <h3>Deploy Your Agent</h3>
+                <p>
+                  Your agent is ready to be deployed. Click the button below to
+                  start the deployment process.
+                </p>
+
+                <div className="agent-deploy-actions">
+                  <button
+                    className="agent-deploy-btn primary"
+                    onClick={handleDeploy}
+                    disabled={isDeploymentInProgress}
+                  >
+                    {isDeploymentInProgress ? "Deploying..." : "Deploy Agent"}
+                  </button>
+
+                  <button className="agent-deploy-btn secondary">
+                    Edit Configuration
+                  </button>
+
+                  <button
+                    className="agent-deploy-btn secondary"
+                    onClick={() => setShowDebugPanel(!showDebugPanel)}
+                  >
+                    {showDebugPanel ? "Hide Debug" : "Show Debug"}
+                  </button>
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
+
+            {/* Debug Panel for Non-deployed Agents */}
+            {showDebugPanel && (
+              <section className="agent-debug-section glass-card">
+                <h3>Debug Information</h3>
+                <div className="debug-status-grid">
+                  <div className="debug-status-item">
+                    <span>Deployment Status:</span>
+                    <span>{deploymentStatus}</span>
+                  </div>
+                  <div className="debug-status-item">
+                    <span>Logs Connection:</span>
+                    <span>{logsConnectionStatus}</span>
+                  </div>
+                  <div className="debug-status-item">
+                    <span>Agent Deployed:</span>
+                    <span>{agent.agent_deployed ? "Yes" : "No"}</span>
+                  </div>
+                  <div className="debug-status-item">
+                    <span>Agent ID:</span>
+                    <span>{agent.id}</span>
+                  </div>
+                </div>
+
+                <div className="debug-logs-section">
+                  <h4>Debug Logs</h4>
+                  <div className="debug-logs-container">
+                    {debugInfo.length > 0 ? (
+                      debugInfo.map((log, index) => (
+                        <div key={index} className="debug-log-entry">
+                          {log}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="debug-log-entry">
+                        No debug information available yet. Debug logs will
+                        appear here during deployment.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
+            )}
+          </>
         )}
       </div>
     </div>

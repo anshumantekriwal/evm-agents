@@ -247,7 +247,7 @@ CODER_PROMPT = """
     - The agent's wallet information is enclosed in the wallet variable.
       - wallet.id contains the wallet ID.
       - wallet.address contains the wallet address.
-    - Ensure that you export the baselineFunction() as `export async function baselineFunction(ownerAddress)` and not `export default async function baselineFunction()`
+    - Ensure that you export the baselineFunction() as `export async function baselineFunction(ownerAddress)`. Do NOT use default exports.
 
     RESOURCES:
       1. Transactions Documentation:
