@@ -10,7 +10,6 @@ if (!supabaseUrl || !supabaseKey) {
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   realtime: {
     heartbeatIntervalMs: 30000,
-    reconnectDelayMs: 1000,
     timeout: 10000,
   },
   auth: {

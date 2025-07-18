@@ -1,11 +1,6 @@
 import React from "react";
 import type { BaseAgentDashboardProps } from "./AgentDashboardShared";
-import {
-  AgentHeader,
-  AgentOverview,
-  LoadingState,
-  ErrorState,
-} from "./AgentDashboardShared";
+import { LoadingState, ErrorState } from "./AgentDashboardShared";
 import "../AgentDashboard.css";
 
 interface UndeployedAgentDashboardProps extends BaseAgentDashboardProps {

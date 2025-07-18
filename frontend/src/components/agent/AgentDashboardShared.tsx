@@ -12,6 +12,7 @@ export interface BaseAgentDashboardProps {
   error: string | null;
   deploymentStatus: DeploymentStatus;
   deploymentProgress: string;
+  deploymentDuration: string;
   agentLogs: string[];
   agentRuntimeStatus: AgentRuntimeStatus | null;
   logsConnectionStatus: string;

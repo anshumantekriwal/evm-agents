@@ -47,9 +47,7 @@ const BehaviorSlide = ({
   updateForm,
   updateUI,
   onNext,
-  chains,
 }: BehaviorSlideProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
   const [hasReviewed, setHasReviewed] = useState(false);
   const [selectedStrategy, setSelectedStrategy] = useState<string | null>(null);
   const [isLoadingRating, setIsLoadingRating] = useState(false);

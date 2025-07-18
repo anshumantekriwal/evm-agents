@@ -113,9 +113,6 @@ export const useAgentDashboard = ({ agentId }: UseAgentDashboardProps) => {
   const [deploymentStatus, setDeploymentStatus] =
     useState<DeploymentStatus>("idle");
   const [deploymentProgress, setDeploymentProgress] = useState("");
-  const [deploymentStartTime, setDeploymentStartTime] = useState<number | null>(
-    null
-  );
   const [deploymentDuration, setDeploymentDuration] = useState<string>("00:00");
   const deploymentTimerInterval = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number | null>(null);
@@ -208,8 +205,10 @@ export const useAgentDashboard = ({ agentId }: UseAgentDashboardProps) => {
         }
       }
       setBalances(balances.filter((b) => parseFloat(b.balance) > 0));
-    } catch (err: any) {
-      setBalancesError(err.message || "Failed to fetch balances");
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to fetch balances";
+      setBalancesError(errorMessage);
       setBalances([]);
     } finally {
       setBalancesLoading(false);
@@ -234,8 +233,10 @@ export const useAgentDashboard = ({ agentId }: UseAgentDashboardProps) => {
       const data = await response.json();
       const transactions = data?.data?.transactions || [];
       setTransactions(transactions);
-    } catch (err: any) {
-      setTransactionsError(err.message || "Failed to fetch transactions");
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to fetch transactions";
+      setTransactionsError(errorMessage);
       setTransactions([]);
     } finally {
       setTransactionsLoading(false);
@@ -440,7 +441,6 @@ export const useAgentDashboard = ({ agentId }: UseAgentDashboardProps) => {
     try {
       // Start the deployment timer
       startTimeRef.current = Date.now();
-      setDeploymentStartTime(startTimeRef.current);
 
       // Clear any existing timer
       if (deploymentTimerInterval.current) {
@@ -488,7 +488,7 @@ export const useAgentDashboard = ({ agentId }: UseAgentDashboardProps) => {
         baselineFunction = baselineFunction.replace(/```json\n?|\n?```/g, "");
         try {
           baselineFunction = JSON.parse(baselineFunction);
-        } catch (e) {
+        } catch {
           // If it's not JSON, keep as string
         }
       }
@@ -711,7 +711,7 @@ export const useAgentDashboard = ({ agentId }: UseAgentDashboardProps) => {
       addDebugInfo("Deployment timeout reached, switching to polling");
       console.log("Deployment timeout reached, switching to polling mode");
       setDeploymentProgress("Taking longer than expected, checking status...");
-      startPollingForDeploymentStatus(agentUrl);
+      startPollingForDeploymentStatus();
     }, 480000); // 8 minutes timeout
 
     // Create and subscribe to the agent-specific channel for deployment status
@@ -803,7 +803,7 @@ export const useAgentDashboard = ({ agentId }: UseAgentDashboardProps) => {
           // Switch to polling mode as fallback
           setTimeout(() => {
             console.log("Switching to polling mode due to channel error");
-            startPollingForDeploymentStatus(agentUrl);
+            startPollingForDeploymentStatus();
           }, 1000);
         } else if (status === "TIMED_OUT") {
           console.error("Deployment subscription timed out");
@@ -822,14 +822,14 @@ export const useAgentDashboard = ({ agentId }: UseAgentDashboardProps) => {
           // Switch to polling mode as fallback
           setTimeout(() => {
             console.log("Switching to polling mode due to timeout");
-            startPollingForDeploymentStatus(agentUrl);
+            startPollingForDeploymentStatus();
           }, 1000);
         }
       });
   };
 
   // Fallback polling mechanism
-  const startPollingForDeploymentStatus = (_agentUrl: string) => {
+  const startPollingForDeploymentStatus = () => {
     addDebugInfo("Starting polling for deployment status");
     setDeploymentProgress(
       "Checking deployment status... (Deployment typically takes 5-7 minutes)"

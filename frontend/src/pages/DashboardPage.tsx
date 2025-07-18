@@ -1,17 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { Link } from "react-router-dom";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-} from "recharts";
+import { XAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 import { supabase, type Agent } from "../config";
 import "../components/Dashboard.css";
 
@@ -77,16 +67,16 @@ export const DashboardPage = () => {
   const [portfolioError, setPortfolioError] = useState<string | null>(null);
 
   // Agent portfolio data
-  const agentPortfolios: AgentPortfolio[] = agents.map((agent) => ({
-    id: agent.id,
-    name: agent.name || "Unnamed Agent",
-    portfolioValue: 0, // This will be updated when we implement P/L tracking
-    change24h: "0%",
-    isPositive: true,
-    status: agent.agent_deployed ? "Active" : "Pending",
-    trades: 0, // This will be updated when we implement trade tracking
-    wallet: agent.agent_wallet,
-  }));
+  // const agentPortfolios: AgentPortfolio[] = agents.map((agent) => ({
+  //   id: agent.id,
+  //   name: agent.name || "Unnamed Agent",
+  //   portfolioValue: 0, // This will be updated when we implement P/L tracking
+  //   change24h: "0%",
+  //   isPositive: true,
+  //   status: agent.agent_deployed ? "Active" : "Pending",
+  //   trades: 0, // This will be updated when we implement trade tracking
+  //   wallet: agent.agent_wallet,
+  // }));
 
   // Calculate active agents and new agents in last 24 hours
   const getAgentStats = (agents: Agent[]) => {
@@ -125,17 +115,10 @@ export const DashboardPage = () => {
       const balances: TokenBalance[] = [];
       for (const asset of assets) {
         if (!asset.token_balance || asset.token_balance <= 0) continue;
-        for (const contractBalance of asset.contracts_balances || []) {
-          const chainId = contractBalance.chainId?.toString();
-          if (chainId !== "137" && chainId !== "evm:137") continue;
-          const tokenAddress = contractBalance.address?.toLowerCase() || "";
-          const isNativeToken =
-            tokenAddress === "0x0000000000000000000000000000000000000000" ||
-            tokenAddress === "0x0" ||
-            tokenAddress === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" ||
-            !tokenAddress;
-          const type = isNativeToken ? "native" : "fungible";
-          balances.push({
+                  for (const contractBalance of asset.contracts_balances || []) {
+            const chainId = contractBalance.chainId?.toString();
+            if (chainId !== "137" && chainId !== "evm:137") continue;
+            balances.push({
             symbol: asset.asset?.symbol || "Unknown",
             name: asset.asset?.name || "Unknown Token",
             balance: contractBalance.balance.toString(),
@@ -421,19 +404,19 @@ export const DashboardPage = () => {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
+  // const formatDate = (dateString: string) => {
+  //   return new Date(dateString).toLocaleDateString("en-US", {
+  //     year: "numeric",
+  //     month: "short",
+  //     day: "numeric",
+  //   });
+  // };
 
-  const getStatusColor = (deployed: boolean | null) => {
-    if (deployed === true) return "#4ade80"; // green for deployed
-    if (deployed === false) return "#f59e0b"; // orange for not deployed
-    return "#6b7280"; // gray for unknown
-  };
+  // const getStatusColor = (deployed: boolean | null) => {
+  //   if (deployed === true) return "#4ade80"; // green for deployed
+  //   if (deployed === false) return "#f59e0b"; // orange for not deployed
+  //   return "#6b7280"; // gray for unknown
+  // };
 
   // Update the holdingsData reference in the JSX to use aggregatedBalances
   const getHoldingsData = () => {
@@ -539,7 +522,7 @@ export const DashboardPage = () => {
               <div className="error-state">
                 {portfolioError}
                 <button
-                  onClick={fetchPortfolioPerformance}  
+                  onClick={fetchPortfolioPerformance}
                   className="retry-btn"
                 >
                   Retry

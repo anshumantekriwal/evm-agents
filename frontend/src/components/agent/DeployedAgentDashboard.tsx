@@ -1,15 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-} from "recharts";
+import { XAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 import type { BaseAgentDashboardProps } from "./AgentDashboardShared";
 import {
   AgentHeader,

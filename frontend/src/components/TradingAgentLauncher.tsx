@@ -177,10 +177,6 @@ const TradingAgentLauncher = ({
     setUIState((prev) => ({ ...prev, [field]: value }));
   };
 
-  const setUIBatch = (updates: Partial<UIState>) => {
-    setUIState((prev) => ({ ...prev, ...updates }));
-  };
-
   // Navigation handlers
   const handleNext = () => {
     if (formState.currentStep < slides.length - 1) {
