@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import fs from "fs";
 import path from "path";
 import {
@@ -10,6 +11,17 @@ import {
 } from "./baseline.js";
 
 const app = express();
+
+// Enable CORS for all routes
+app.use(
+  cors({
+    origin: "*", // Allow all origins for now
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "x-api-key"],
+    credentials: false,
+  })
+);
+
 app.use(express.json());
 const PORT = process.env.PORT || 3000;
 

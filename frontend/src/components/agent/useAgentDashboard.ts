@@ -280,6 +280,40 @@ export const useAgentDashboard = ({ agentId }: UseAgentDashboardProps) => {
     }
   }, [deploymentStatus]);
 
+  // Fetch initial status from AWS URI
+  const fetchInitialStatus = async (awsUri: string) => {
+    try {
+      addDebugInfo(`Fetching initial status from ${awsUri}/status`);
+      const response = await fetch(`https://${awsUri}/status`);
+
+      if (!response.ok) {
+        throw new Error(`Status fetch failed: ${response.statusText}`);
+      }
+
+      const statusData = await response.json();
+      addDebugInfo(`Initial status received: ${statusData.phase}`);
+
+      // Set initial agent runtime status
+      setAgentRuntimeStatus({
+        phase: statusData.phase || "unknown",
+        walletAddress: statusData.walletAddress || null,
+        polBalance: statusData.polBalance || 0,
+        lastMessage: statusData.lastMessage || "No message",
+        nextStep: statusData.nextStep || "Unknown",
+        trades: statusData.trades || [],
+        error: statusData.error || null,
+        isRunning: statusData.isRunning || false,
+        updatedAt: statusData.updatedAt || new Date().toISOString(),
+      });
+
+      return statusData;
+    } catch (error) {
+      console.error("Error fetching initial status:", error);
+      addDebugInfo(`Initial status fetch failed: ${error}`);
+      return null;
+    }
+  };
+
   const fetchAgent = async () => {
     try {
       setLoading(true);
@@ -298,9 +332,13 @@ export const useAgentDashboard = ({ agentId }: UseAgentDashboardProps) => {
 
       setAgent(data);
 
-      // If agent is deployed, set deployment status to deployed and start listening for runtime status
+      // If agent is deployed, set deployment status to deployed and fetch initial status
       if (data.agent_aws && data.agent_deployed) {
         setDeploymentStatus("deployed");
+
+        // Fetch initial status from AWS URI before starting realtime listening
+        await fetchInitialStatus(data.agent_aws);
+
         startRealtimeStatusListening();
         startLogsWebSocket();
       }
