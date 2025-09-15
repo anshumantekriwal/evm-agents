@@ -1,77 +1,149 @@
-import { VersionedTransaction } from '@solana/web3.js';
+import { VersionedTransaction, PublicKey, SystemProgram, TransactionMessage } from '@solana/web3.js';
+import { TOKEN_PROGRAM_ID, createTransferInstruction, getAssociatedTokenAddress, createAssociatedTokenAccountInstruction } from '@solana/spl-token';
 import fetch from 'node-fetch';
-import { getJupiterTokens, privy } from './wallet.js';
+import { privy, connection } from './wallet.js';
+
+// Global cache for Jupiter tokens (shared across all operations)
+let jupiterTokensCache = null;
+let jupiterTokensCacheTime = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 // =============================
-// ======= Swap Operations =======
+// ======= Token Utilities =======
 // =============================
 
-export async function swap(fromTokenSymbol, toTokenSymbol, fromAmount, walletAddress) {
+// Optimized Jupiter token fetcher (shared across all functions)
+export async function getJupiterTokens() {
+    const now = Date.now();
+    if (!jupiterTokensCache || (now - jupiterTokensCacheTime) > CACHE_DURATION) {
+        try {
+            const response = await fetch('https://token.jup.ag/all', { timeout: 5000 });
+            if (response.ok) {
+                jupiterTokensCache = await response.json();
+                jupiterTokensCacheTime = now;
+            }
+        } catch (error) {
+            console.log('Failed to update Jupiter cache:', error.message);
+            if (!jupiterTokensCache) throw new Error('Unable to fetch token list from Jupiter API');
+        }
+    }
+    return jupiterTokensCache;
+}
+
+export async function getTokenMetadata(mintAddress) {
+    try {
+        const tokens = await getJupiterTokens();
+        const token = tokens.find(t => t.address === mintAddress);
+        
+        if (token) {
+            return {
+                name: token.name || 'Unknown',
+                symbol: token.symbol || 'Unknown',
+                decimals: token.decimals,
+                logoURI: token.logoURI || ''
+            };
+        }
+        
+        // Fallback: Try Solana RPC metadata
+        const mintPublicKey = new PublicKey(mintAddress);
+        try {
+            const accountInfo = await connection.getAccountInfo(mintPublicKey);
+            if (accountInfo) {
+                return {
+                    name: `Token ${mintAddress.slice(0, 8)}...`,
+                    symbol: 'SPL',
+                    decimals: accountInfo.data[44] || 0,
+                    logoURI: ''
+                };
+            }
+        } catch (rpcError) {
+            console.log('RPC metadata fetch failed, using defaults');
+        }
+        
+        // Final fallback
+        return {
+            name: `Token ${mintAddress.slice(0, 8)}...`,
+            symbol: 'SPL',
+            decimals: 0,
+            logoURI: ''
+        };
+    } catch (error) {
+        console.error('Error fetching token metadata:', error);
+        return {
+            name: `Token ${mintAddress.slice(0, 8)}...`,
+            symbol: 'SPL',
+            decimals: 0,
+            logoURI: ''
+        };
+    }
+}
+
+export async function getTokenMintAddress(symbol) {
     try {
         const tokens = await getJupiterTokens();
         
-        // Find tokens by symbol
-        const fromTokenInfo = tokens.find(t => 
-            t.symbol && t.symbol.toUpperCase() === fromTokenSymbol.toUpperCase()
-        );
-        const toTokenInfo = tokens.find(t => 
-            t.symbol && t.symbol.toUpperCase() === toTokenSymbol.toUpperCase()
+        // Find token by symbol (case-insensitive)
+        const token = tokens.find(t => 
+            t.symbol && t.symbol.toUpperCase() === symbol.toUpperCase()
         );
         
-        if (!fromTokenInfo || !toTokenInfo) {
-            throw new Error(`Token not found: ${fromTokenSymbol} or ${toTokenSymbol}`);
+        if (!token) {
+            throw new Error(`Token with symbol '${symbol}' not found`);
         }
         
-        const fromToken = fromTokenInfo.address;
-        const toToken = toTokenInfo.address;
-        const fromTokenDecimals = fromTokenInfo.decimals;
+        return {
+            success: true,
+            mintAddress: token.address,
+            tokenInfo: {
+                name: token.name,
+                symbol: token.symbol,
+                decimals: token.decimals,
+                logoURI: token.logoURI || ''
+            }
+        };
+    } catch (error) {
+        console.error('Failed to get token mint address:', error);
+        return { 
+            success: false, 
+            error: error.message 
+        };
+    }
+}
+
+export async function checkTokenAccountExists(walletAddress, mintAddress) {
+    try {
+        const publicKey = new PublicKey(walletAddress);
+        const mintPublicKey = new PublicKey(mintAddress);
         
-        console.log(`Swapping ${fromAmount} ${fromTokenSymbol} to ${toTokenSymbol}`);
-        console.log(`From token: ${fromToken} (${fromTokenDecimals} decimals)`);
-        console.log(`To token: ${toToken}`);
-        
-        // Convert human-readable amount to raw amount
-        const rawAmount = Math.floor(fromAmount * Math.pow(10, fromTokenDecimals));
-        
-        console.log(`Converting ${fromAmount} ${fromTokenSymbol} (${fromTokenDecimals} decimals) to ${rawAmount} raw units`);
-        
-        const url = `https://li.quest/v1/quote?fromChain=SOL&toChain=SOL&fromToken=${fromToken}&toToken=${toToken}&fromAddress=${walletAddress}&toAddress=${walletAddress}&fromAmount=${rawAmount}`;
-        
-        const quoteResponse = await fetch(url, {
-            method: 'GET',
-            headers: { 'accept': 'application/json' }
+        const tokenAccounts = await connection.getParsedTokenAccountsByOwner(publicKey, {
+            mint: mintPublicKey
         });
         
-        if (!quoteResponse.ok) {
-            throw new Error(`HTTP error! status: ${quoteResponse.status}`);
-        }
-        
-        const quote = await quoteResponse.json();
-        return { success: true, quote };
+        return tokenAccounts.value.length > 0;
     } catch (error) {
-        console.error('Failed to get swap quote:', error);
-        return { success: false, error: error.message };
+        console.error('Error checking token account:', error);
+        return false;
     }
 }
 
 // =============================
-// ======= Execute Swap (Optimized) =======
+// ======= Swap Function =======
 // =============================
 
-export async function executeSwapJupiter(walletId, fromTokenSymbol, toTokenSymbol, fromAmount, walletAddress, options = {}) {
+export async function swap(walletId, fromTokenSymbol, toTokenSymbol, fromAmount, walletAddress, options = {}) {
     try {
         const startTime = Date.now();
-        console.log(`🚀 Optimized Jupiter swap: ${fromAmount} ${fromTokenSymbol} → ${toTokenSymbol}`);
+        console.log(`🚀 Jupiter swap: ${fromAmount} ${fromTokenSymbol} → ${toTokenSymbol}`);
         
-        // Default options with smart defaults
+        // Default options
         const {
-            slippageBps = 100, // 1% slippage (more reasonable than 0.5%)
-            priorityFee = 'auto', // Let Jupiter optimize
+            slippageBps = 150, // 1.5% slippage
+            priorityFee = 'auto',
             maxRetries = 3,
             confirmTransaction = true
         } = options;
         
-        // Use shared Jupiter token cache
+        // Get token information
         const tokens = await getJupiterTokens();
         
         const fromTokenInfo = tokens.find(t => 
@@ -89,29 +161,28 @@ export async function executeSwapJupiter(walletId, fromTokenSymbol, toTokenSymbo
         const toToken = toTokenInfo.address;
         const fromTokenDecimals = fromTokenInfo.decimals;
         
-        // Convert with proper precision handling
+        // Convert amount to raw units
         const rawAmount = BigInt(Math.floor(fromAmount * Math.pow(10, fromTokenDecimals)));
         
         console.log(`📊 Token details: ${fromToken} (${fromTokenDecimals} decimals) → ${toToken}`);
         
-        // Optimized quote request with better parameters
+        // Get quote from Jupiter
         const quoteParams = new URLSearchParams({
             inputMint: fromToken,
             outputMint: toToken,
             amount: rawAmount.toString(),
             slippageBps: slippageBps.toString(),
-            onlyDirectRoutes: 'false', // Allow multi-hop for better rates
-            asLegacyTransaction: 'false', // Use versioned transactions
-            maxAccounts: '64', // Optimize for compute units
+            onlyDirectRoutes: 'false',
+            asLegacyTransaction: 'false',
+            maxAccounts: '64',
             minimizeSlippage: 'true'
         });
         
-        // Get quote with timeout and retry logic
         let quoteData;
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
                 const quoteResponse = await fetch(`https://quote-api.jup.ag/v6/quote?${quoteParams}`, {
-                    timeout: 10000 // 10 second timeout
+                    timeout: 10000
                 });
                 
                 if (!quoteResponse.ok) {
@@ -125,33 +196,32 @@ export async function executeSwapJupiter(walletId, fromTokenSymbol, toTokenSymbo
                     throw new Error('No valid route found for this swap');
                 }
                 
-                break; // Success, exit retry loop
+                break;
             } catch (error) {
                 console.log(`⚠️  Quote attempt ${attempt}/${maxRetries} failed: ${error.message}`);
                 if (attempt === maxRetries) throw error;
-                await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
+                await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
             }
         }
         
-        // Calculate expected output in human-readable format
+        // Calculate expected output
         const expectedOutput = parseFloat(quoteData.outAmount) / Math.pow(10, toTokenInfo.decimals);
         const priceImpact = quoteData.priceImpactPct || 0;
         
         console.log(`💰 Expected output: ${expectedOutput.toFixed(6)} ${toTokenSymbol} (Impact: ${priceImpact}%)`);
         
-        // Optimized swap transaction request
+        // Get swap transaction
         const swapPayload = {
             quoteResponse: quoteData,
             userPublicKey: walletAddress,
             wrapAndUnwrapSol: true,
             dynamicComputeUnitLimit: true,
             prioritizationFeeLamports: priorityFee,
-            dynamicSlippage: { // Enable dynamic slippage for better execution
-                maxBps: Math.max(slippageBps, 300) // At least 3% max
+            dynamicSlippage: {
+                maxBps: Math.max(slippageBps, 300)
             }
         };
         
-        // Get swap transaction with retry logic
         let swapData;
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
@@ -162,7 +232,7 @@ export async function executeSwapJupiter(walletId, fromTokenSymbol, toTokenSymbo
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify(swapPayload),
-                    timeout: 15000 // 15 second timeout
+                    timeout: 15000
                 });
                 
                 if (!swapResponse.ok) {
@@ -176,23 +246,22 @@ export async function executeSwapJupiter(walletId, fromTokenSymbol, toTokenSymbo
                     throw new Error('No swap transaction received from Jupiter');
                 }
                 
-                break; // Success, exit retry loop
+                break;
             } catch (error) {
                 console.log(`⚠️  Swap transaction attempt ${attempt}/${maxRetries} failed: ${error.message}`);
                 if (attempt === maxRetries) throw error;
-                await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
+                await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
             }
         }
         
         console.log(`⚡ Transaction prepared in ${Date.now() - startTime}ms`);
         
-        // Deserialize and send transaction
+        // Sign and send transaction
         const transactionBuffer = Buffer.from(swapData.swapTransaction, 'base64');
         const transaction = VersionedTransaction.deserialize(transactionBuffer);
         
         console.log(`📤 Signing and sending transaction...`);
         
-        // Sign and send with Privy
         const { hash } = await privy.walletApi.solana.signAndSendTransaction({
             walletId: walletId,
             caip2: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
@@ -201,11 +270,10 @@ export async function executeSwapJupiter(walletId, fromTokenSymbol, toTokenSymbo
         
         console.log(`✅ Transaction sent: ${hash}`);
         
-        // Optional: Wait for confirmation
+        // Optional confirmation
         if (confirmTransaction) {
             console.log(`⏳ Confirming transaction...`);
             try {
-                const { connection } = await import('./wallet.js');
                 const confirmation = await connection.confirmTransaction(hash, 'confirmed');
                 
                 if (confirmation.value.err) {
@@ -215,7 +283,6 @@ export async function executeSwapJupiter(walletId, fromTokenSymbol, toTokenSymbo
                 }
             } catch (confirmError) {
                 console.log(`⚠️  Confirmation check failed: ${confirmError.message}`);
-                // Don't fail the whole operation for confirmation issues
             }
         }
         
@@ -224,7 +291,7 @@ export async function executeSwapJupiter(walletId, fromTokenSymbol, toTokenSymbo
         
         return { 
             success: true, 
-            hash,
+            signature: hash,
             fromAmount: rawAmount.toString(),
             estimatedToAmount: quoteData.outAmount,
             actualOutputAmount: expectedOutput,
@@ -238,7 +305,6 @@ export async function executeSwapJupiter(walletId, fromTokenSymbol, toTokenSymbo
     } catch (error) {
         console.error(`❌ Jupiter swap failed: ${error.message}`);
         
-        // Enhanced error reporting
         let errorCategory = 'unknown';
         if (error.message.includes('insufficient')) errorCategory = 'insufficient_funds';
         else if (error.message.includes('slippage')) errorCategory = 'slippage_exceeded';
@@ -249,6 +315,130 @@ export async function executeSwapJupiter(walletId, fromTokenSymbol, toTokenSymbo
             success: false, 
             error: error.message,
             errorCategory,
+            timestamp: new Date().toISOString()
+        };
+    }
+}
+
+// =============================
+// ======= Transfer Function =======
+// =============================
+
+export async function transfer(walletId, fromWalletAddress, toAddress, tokenSymbol, amount) {
+    try {
+        console.log(`🔄 Transfer: ${amount} ${tokenSymbol} from ${fromWalletAddress} to ${toAddress}`);
+        
+        const fromPublicKey = new PublicKey(fromWalletAddress);
+        const toPublicKey = new PublicKey(toAddress);
+        
+        let instructions = [];
+        let recentBlockhash;
+        
+        // Get recent blockhash
+        const { blockhash } = await connection.getLatestBlockhash();
+        recentBlockhash = blockhash;
+        
+        if (tokenSymbol.toUpperCase() === 'SOL') {
+            // SOL transfer
+            const amountInLamports = Math.floor(amount * 1e9);
+            console.log(`Transfer amount: ${amountInLamports} lamports (${amount} SOL)`);
+            
+            const instruction = SystemProgram.transfer({
+                fromPubkey: fromPublicKey,
+                toPubkey: toPublicKey,
+                lamports: amountInLamports,
+            });
+            
+            instructions.push(instruction);
+            
+        } else {
+            // SPL Token transfer
+            const tokenResult = await getTokenMintAddress(tokenSymbol);
+            if (!tokenResult.success) {
+                throw new Error(`Token ${tokenSymbol} not found: ${tokenResult.error}`);
+            }
+            
+            const mintAddress = tokenResult.mintAddress;
+            const tokenInfo = tokenResult.tokenInfo;
+            const mintPublicKey = new PublicKey(mintAddress);
+            
+            // Convert amount to raw units
+            const rawAmount = BigInt(Math.floor(amount * Math.pow(10, tokenInfo.decimals)));
+            console.log(`Transfer amount: ${rawAmount} raw units (${amount} ${tokenSymbol})`);
+            
+            // Get associated token addresses
+            const fromTokenAccount = await getAssociatedTokenAddress(mintPublicKey, fromPublicKey);
+            const toTokenAccount = await getAssociatedTokenAddress(mintPublicKey, toPublicKey);
+            
+            // Check if destination token account exists
+            const toAccountExists = await checkTokenAccountExists(toAddress, mintAddress);
+            
+            if (!toAccountExists) {
+                console.log(`Creating associated token account for ${toAddress}`);
+                const createAccountInstruction = createAssociatedTokenAccountInstruction(
+                    fromPublicKey, // payer
+                    toTokenAccount, // associated token account
+                    toPublicKey, // owner
+                    mintPublicKey // mint
+                );
+                instructions.push(createAccountInstruction);
+            }
+            
+            // Create transfer instruction
+            const transferInstruction = createTransferInstruction(
+                fromTokenAccount, // source
+                toTokenAccount, // destination
+                fromPublicKey, // owner
+                rawAmount // amount
+            );
+            instructions.push(transferInstruction);
+        }
+        
+        // Create and send transaction
+        const message = new TransactionMessage({
+            payerKey: fromPublicKey,
+            instructions: instructions,
+            recentBlockhash: recentBlockhash,
+        });
+        
+        const transaction = new VersionedTransaction(message.compileToV0Message());
+        
+        const { hash } = await privy.walletApi.solana.signAndSendTransaction({
+            walletId: walletId,
+            caip2: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+            transaction: transaction,
+        });
+        
+        console.log(`✅ Transfer transaction sent: ${hash}`);
+        
+        // Wait for confirmation
+        try {
+            const confirmation = await connection.confirmTransaction(hash, 'confirmed');
+            if (confirmation.value.err) {
+                console.log(`❌ Transfer failed: ${confirmation.value.err}`);
+                return { success: false, error: `Transaction failed: ${confirmation.value.err}` };
+            } else {
+                console.log(`✅ Transfer confirmed!`);
+            }
+        } catch (confirmError) {
+            console.log(`⚠️  Confirmation check failed: ${confirmError.message}`);
+        }
+        
+        return { 
+            success: true, 
+            signature: hash,
+            from: fromWalletAddress,
+            to: toAddress,
+            amount: amount,
+            token: tokenSymbol,
+            timestamp: new Date().toISOString()
+        };
+        
+    } catch (error) {
+        console.error('Transfer failed:', error);
+        return { 
+            success: false, 
+            error: error.message,
             timestamp: new Date().toISOString()
         };
     }

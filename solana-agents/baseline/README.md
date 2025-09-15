@@ -1,6 +1,6 @@
 # 🤖 Solana Trading Agent
 
-A comprehensive Solana trading agent with automated swaps, scheduled execution, fund withdrawal, and real-time monitoring via web interface.
+A comprehensive Solana trading agent with automated swaps, scheduled execution, real-time monitoring, and status tracking via web interface.
 
 ## 🚀 Quick Start
 
@@ -8,43 +8,48 @@ A comprehensive Solana trading agent with automated swaps, scheduled execution, 
 # Install dependencies
 pnpm install
 
-# Start the agent
-node baseline.js
+# Start the agent (server.js is the main entry point)
+node server.js
+# or
+npm start
 ```
 
 The agent will start with:
 - 📡 **Web Server**: `http://localhost:3000`
-- 📊 **Log Interface**: `http://localhost:3000/html`
-- 💸 **Withdraw API**: `POST http://localhost:3000/withdraw`
+- 📊 **Dashboard**: `http://localhost:3000/html`
+- 📈 **Status API**: `http://localhost:3000/status`
+- 📝 **Logs API**: `http://localhost:3000/`
 
 ## 🏗️ Architecture
 
 ### Core Files
-- **`baseline.js`** - Main application with trading logic and server
-- **`wallet.js`** - Wallet operations and balance management
-- **`trading.js`** - Jupiter swap integration and market data
-- **`scheduler.js`** - Automated execution scheduling
-- **`logger.js`** - Logging system and web server
+- **`server.js`** - Main entry point, web server and API endpoints
+- **`baseline.js`** - Core trading logic and scheduling coordination
+- **`wallet.js`** - Wallet operations and balance management  
+- **`trading.js`** - Jupiter swaps, transfers, and market data
+- **`scheduler.js`** - Interval and time-based scheduling
+- **`logger.js`** - Logging and status management
 
 ## 📋 Features
 
 ### 🔄 **Automated Trading**
 - **Jupiter Integration**: Optimized swaps with 1.5% slippage tolerance
-- **Smart Scheduling**: Execute trades at intervals or specific times
+- **Smart Scheduling**: Execute trades at intervals or specific UTC times
 - **Balance Monitoring**: Automatic balance checks and validation
 - **Error Recovery**: Robust error handling and retry logic
 
-### 💸 **Fund Management**
-- **Withdraw Functions**: Transfer any token to any Solana address
-- **Safety Checks**: Balance validation and SOL rent protection
-- **API Endpoints**: REST API for programmatic withdrawals
-- **Transaction Tracking**: Complete audit trail with signatures
+### 💸 **Universal Transfers**
+- **Multi-token Support**: Transfer SOL and any SPL token
+- **Automatic Account Creation**: Creates associated token accounts as needed
+- **Safety Checks**: Balance validation and proper decimal handling
+- **Transaction Confirmation**: Complete audit trail with signatures
 
 ### 📊 **Real-time Monitoring**
-- **Web Interface**: Beautiful terminal-style log viewer
-- **Auto-refresh**: Updates every 5 seconds
-- **JSON API**: Programmatic access to all logs
-- **Mobile Responsive**: Works on all devices
+- **Modern Web Dashboard**: Beautiful glass-morphism interface with gradient backgrounds
+- **Status Tracking**: Real-time execution status with detailed timing and countdown
+- **Auto-refresh**: Updates every 10 seconds for optimal performance
+- **Enhanced Status Display**: Next execution prominently featured with last execution details
+- **JSON APIs**: Programmatic access to logs and status
 
 ## 🔧 Configuration
 
@@ -54,24 +59,55 @@ Create a `.env` file with:
 PRIVY_APP_ID=your_privy_app_id
 PRIVY_APP_SECRET=your_privy_app_secret
 WALLET_ID=your_wallet_id
-LOG_SERVER_PORT=3000  # Optional, defaults to 3000
+SERVER_PORT=3000  # Optional, defaults to 3000
+API_KEY=your_secure_api_key  # For withdrawal endpoint protection
 ```
 
 ### Trading Configuration
-Edit `baseline.js` to configure:
+Edit `server.js` to configure trading parameters (hardcoded per deployment):
 ```javascript
-// Example: Schedule SOL → USDC swap every 30 minutes
-baselineFunction(ownerAddress, 'SOL', 'USDC', 0.0001, {
-  type: 'interval',
-  value: '30m'
-});
+// In server.js - startBaselineExecution function
+const ownerAddress = "your_owner_address";
+const fromToken = 'USDC';
+const toToken = 'SOL';
+const amount = 0.01;
 
-// Example: Execute at specific times
-baselineFunction(ownerAddress, 'USDC', 'SOL', 0.01, {
-  type: 'times',
-  value: '09:30,15:30,21:00'
-});
+// Schedule configuration
+const scheduleOptions = {
+    type: 'times',
+    value: ['09:30', '15:30'], // UTC times
+    executeImmediately: false
+};
+
+// Or for interval-based:
+const scheduleOptions = {
+    type: 'interval',
+    value: 30000, // milliseconds
+    executeImmediately: true
+};
 ```
+
+## 🧪 Test Mode
+
+The system currently runs in **TEST MODE** with simplified logic for setup verification:
+
+- ✅ **Real wallet creation/retrieval**
+- ✅ **Real balance monitoring** 
+- ✅ **Real scheduling system**
+- ✅ **Real status updates with enhanced display**
+- 🧪 **Simulated trading execution** (no actual swaps)
+- 🧪 **Mock transaction results**
+
+### Test Mode Features:
+- **Safe Testing**: No real trades executed
+- **Full System Verification**: Tests all components except actual swaps
+- **Realistic Simulation**: 6-step mock trading process (~8.5 seconds)
+- **Enhanced Status Tracking**: Complete status updates with next execution countdown
+- **Schedule Testing**: Verifies both interval and time-based scheduling
+- **Modern UI**: Beautiful web dashboard for monitoring
+
+### Switching to Production:
+To enable real trading, uncomment the trading logic in `baseline.js` and comment out the test logic.
 
 ## 📡 API Endpoints
 
@@ -80,38 +116,14 @@ baselineFunction(ownerAddress, 'USDC', 'SOL', 0.01, {
 curl http://localhost:3000/
 ```
 
-### **GET /html** - Web Interface
-Open `http://localhost:3000/html` in browser
-
-### **POST /withdraw** - Withdraw Funds
+### **GET /status** - System Status (JSON)
 ```bash
-curl -X POST http://localhost:3000/withdraw \
-  -H "Content-Type: application/json" \
-  -d '{
-    "tokenSymbol": "SOL",
-    "destinationAddress": "SOLANA_ADDRESS_HERE",
-    "amount": 0.001
-  }'
+curl http://localhost:3000/status
 ```
+Returns current execution status with schedule timing information.
 
-#### Withdraw Parameters:
-- `tokenSymbol` (string): Token to withdraw ('SOL', 'USDC', etc.)
-- `destinationAddress` (string): Valid Solana address
-- `amount` (number): Amount to withdraw
-- `withdrawAll` (boolean): Set true to withdraw all available tokens
-
-#### Response:
-```json
-{
-  "success": true,
-  "signature": "TRANSACTION_SIGNATURE",
-  "amount": 0.001,
-  "token": "SOL",
-  "from": "SOURCE_WALLET",
-  "to": "DESTINATION_ADDRESS",
-  "timestamp": "2025-09-10T23:50:24.266Z"
-}
-```
+### **GET /html** - Web Dashboard
+Open `http://localhost:3000/html` in browser for real-time dashboard.
 
 ### **GET /health** - Health Check
 ```bash
@@ -123,79 +135,277 @@ curl http://localhost:3000/health
 curl -X POST http://localhost:3000/clear
 ```
 
-## 🛠️ Core Functions
+### **POST /withdraw** - Withdraw Funds (Protected)
+```bash
+curl -X POST http://localhost:3000/withdraw \
+  -H "x-api-key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 0.01}'
+```
+Requires `API_KEY` environment variable for authentication.
 
-### Trading Functions
+## 🛠️ Function Reference
+
+### **baseline.js**
+
+#### `baselineFunction(ownerAddress, fromToken, toToken, amount, scheduleOptions)`
+Main trading function with optional scheduling support.
+- **Parameters:**
+  - `ownerAddress` (string): Wallet owner address
+  - `fromToken` (string): Source token symbol (e.g., 'SOL', 'USDC')
+  - `toToken` (string): Destination token symbol
+  - `amount` (number): Amount to swap
+  - `scheduleOptions` (object, optional): Scheduling configuration
+- **Returns:** Execution result with schedule info if applicable
+
+**Schedule Options:**
 ```javascript
-import { baselineFunction, executeSwapJupiter } from './baseline.js';
-
-// Immediate swap
-await baselineFunction(ownerAddress, 'USDC', 'SOL', 0.01);
-
-// Scheduled swap
-await baselineFunction(ownerAddress, 'SOL', 'USDC', 0.001, {
+// Interval scheduling
+{
   type: 'interval',
-  value: '1h'
-});
+  value: 30000, // milliseconds
+  executeImmediately: true // optional
+}
+
+// Time-based scheduling  
+{
+  type: 'times',
+  value: ['09:30', '15:30'] // UTC times in HH:MM format
+}
 ```
 
-### Withdrawal Functions
+### **wallet.js**
+
+#### `createWallet(ownerAddress)`
+Creates a new Solana wallet using Privy.
+- **Parameters:** `ownerAddress` (string): Owner address for the wallet
+- **Returns:** `{walletId, walletAddress}`
+
+#### `getWallet(walletId)`
+Retrieves an existing wallet by ID.
+- **Parameters:** `walletId` (string): Wallet ID to retrieve
+- **Returns:** `{walletId, walletAddress}`
+
+#### `getOrCreateWallet(ownerAddress)`
+Smart wallet management - uses existing wallet from env or creates new one.
+- **Parameters:** `ownerAddress` (string): Owner address
+- **Returns:** `{walletId, walletAddress}`
+
+#### `getBalances(walletAddress)`
+Fetches all token balances for a wallet.
+- **Parameters:** `walletAddress` (string): Wallet address to check
+- **Returns:** `{allBalances: [...]}` with SOL and SPL token balances
+
+### **trading.js**
+
+#### `swap(walletId, fromTokenSymbol, toTokenSymbol, fromAmount, walletAddress, options)`
+Execute token swap using Jupiter aggregator.
+- **Parameters:**
+  - `walletId` (string): Privy wallet ID
+  - `fromTokenSymbol` (string): Source token symbol
+  - `toTokenSymbol` (string): Destination token symbol  
+  - `fromAmount` (number): Amount to swap
+  - `walletAddress` (string): Wallet address
+  - `options` (object): Swap options (slippage, priority fee, etc.)
+- **Returns:** Swap result with transaction signature and details
+
+#### `transfer(walletId, fromWalletAddress, toAddress, tokenSymbol, amount)`
+Universal transfer function for SOL and SPL tokens.
+- **Parameters:**
+  - `walletId` (string): Privy wallet ID
+  - `fromWalletAddress` (string): Source wallet address
+  - `toAddress` (string): Destination address
+  - `tokenSymbol` (string): Token to transfer ('SOL', 'USDC', etc.)
+  - `amount` (number): Amount to transfer
+- **Returns:** Transfer result with transaction signature
+
+#### `getJupiterTokens()`
+Fetches and caches Jupiter token list (5-minute cache).
+- **Returns:** Array of token information
+
+#### `getTokenMetadata(mintAddress)`
+Gets token metadata by mint address.
+- **Parameters:** `mintAddress` (string): Token mint address
+- **Returns:** Token metadata (name, symbol, decimals, logoURI)
+
+#### `getTokenMintAddress(symbol)`
+Finds mint address for a token symbol.
+- **Parameters:** `symbol` (string): Token symbol
+- **Returns:** `{success, mintAddress, tokenInfo}`
+
+#### `checkTokenAccountExists(walletAddress, mintAddress)`
+Checks if a token account exists for a wallet.
+- **Parameters:** 
+  - `walletAddress` (string): Wallet address
+  - `mintAddress` (string): Token mint address
+- **Returns:** Boolean indicating account existence
+
+#### `marketData(symbol)`
+Fetches market data for a token symbol.
+- **Parameters:** `symbol` (string): Token symbol
+- **Returns:** Market data including price and 24h change
+
+#### `price(symbol)`
+Gets current price for a token symbol.
+- **Parameters:** `symbol` (string): Token symbol
+- **Returns:** Current price or error
+
+#### `twitter(user, lastTweets)`
+Fetches recent tweets for a user and compares with previous tweets.
+- **Parameters:**
+  - `user` (string): Twitter username
+  - `lastTweets` (array): Previous tweets for comparison
+- **Returns:** `{hasNewTweet, newTweet, currentTweets}`
+
+### **scheduler.js**
+
+#### `scheduleInterval(executeFunction, intervalMs, executeImmediately)`
+Schedule function execution at regular intervals.
+- **Parameters:**
+  - `executeFunction` (function): Function to execute
+  - `intervalMs` (number): Interval in milliseconds
+  - `executeImmediately` (boolean): Execute once immediately when starting
+- **Returns:** Schedule ID for management
+
+#### `scheduleTimes(executeFunction, times)`
+Schedule function execution at specific UTC times daily.
+- **Parameters:**
+  - `executeFunction` (function): Function to execute
+  - `times` (array): Array of time strings in "HH:MM" format (UTC)
+- **Returns:** Schedule ID for management
+
+#### `stopSchedule(scheduleId)`
+Stop a specific scheduled execution.
+- **Parameters:** `scheduleId` (string): Schedule ID to stop
+- **Returns:** Boolean success status
+
+#### `stopAllSchedules()`
+Stop all active schedules.
+- **Returns:** Number of schedules stopped
+
+#### `getActiveSchedules()`
+Get list of all active schedules.
+- **Returns:** Array of schedule information
+
+#### `getScheduleInfo()`
+Get detailed schedule information with timing calculations.
+- **Returns:** Array of detailed schedule info including next execution times
+
+### **logger.js**
+
+#### `logger.log(message, level)`
+Log a message with specified level.
+- **Parameters:**
+  - `message` (string): Message to log
+  - `level` (string): Log level ('info', 'warn', 'error')
+
+#### `logger.error(message)` / `logger.warn(message)` / `logger.info(message)`
+Convenience methods for different log levels.
+
+#### `updateStatus(stage, message, success, details, scheduleInfo)`
+Update system status with execution stage and details.
+- **Parameters:**
+  - `stage` (string): Current execution stage
+  - `message` (string): Status message
+  - `success` (boolean|null): Success status
+  - `details` (object): Additional details
+  - `scheduleInfo` (object): Schedule information
+
+#### `getStatus()`
+Get current system status.
+- **Returns:** Current status object with stage, message, timing, and schedule info
+
+#### `resetStatus()`
+Reset status to idle state.
+
+#### `updateScheduleStatus(scheduleInfo)`
+Update schedule information in current status.
+- **Parameters:** `scheduleInfo` (object): Schedule timing information
+
+### **server.js**
+
+#### `startBaselineExecution()`
+Initiates baseline trading execution with hardcoded parameters.
+- **Parameters:** None (uses hardcoded configuration)
+- **Returns:** Execution result from baselineFunction
+
+#### Main Server Setup
+The server automatically:
+- Starts Express web server on specified port
+- Initializes all API endpoints
+- Begins baseline execution upon server startup
+- Handles graceful shutdown and error recovery
+
+## 📅 Scheduling System
+
+### Interval-based Execution
 ```javascript
-import { withdrawFunds, withdrawAllFunds } from './baseline.js';
+// Every 30 seconds with immediate execution
+{
+  type: 'interval',
+  value: 30000,
+  executeImmediately: true
+}
 
-// Withdraw specific amount
-const result = await withdrawFunds(
-  ownerAddress, 
-  'SOL', 
-  'DESTINATION_ADDRESS', 
-  0.001
-);
-
-// Withdraw all tokens
-const result = await withdrawAllFunds(
-  ownerAddress,
-  'USDC', 
-  'DESTINATION_ADDRESS'
-);
+// Every 5 minutes, wait for first interval
+{
+  type: 'interval', 
+  value: 300000,
+  executeImmediately: false
+}
 ```
 
-### Wallet Functions
+### Time-based Execution (UTC)
 ```javascript
-import { getBalances, getOrCreateWallet } from './baseline.js';
+// Single daily execution at 9:30 AM UTC
+{
+  type: 'times',
+  value: ['09:30']
+}
 
-// Get wallet
-const wallet = await getOrCreateWallet(ownerAddress);
-
-// Check balances
-const balances = await getBalances(wallet.walletAddress);
-console.log(balances.allBalances);
+// Multiple daily executions
+{
+  type: 'times',
+  value: ['09:30', '15:30', '21:00']
+}
 ```
 
-## 📅 Scheduling Options
+### Status Information
 
-### Interval-based
-```javascript
-// Every 30 minutes
-{ type: 'interval', value: '30m' }
+The status system provides real-time information about:
 
-// Every 2 hours 30 minutes  
-{ type: 'interval', value: '2h30m' }
+**For Interval Schedules:**
+- Time until next execution (e.g., "Next execution in: 4m 25s")
+- Interval duration in milliseconds
+- Whether immediate execution is enabled
 
-// Every 45 seconds
-{ type: 'interval', value: '45s' }
-```
+**For Time-based Schedules:**
+- Next execution time in UTC (e.g., "Next execution at: 15:30:00 UTC")
+- All configured execution times
+- Automatic rollover to next day
 
-### Time-based
-```javascript
-// Single time (24-hour format)
-{ type: 'times', value: '09:30' }
+## 🔄 Enhanced Status System
 
-// Multiple times
-{ type: 'times', value: '09:30,15:30,21:00' }
+The status system has been significantly improved to provide comprehensive monitoring:
 
-// AM/PM format
-{ type: 'times', value: '9:30 AM,3:30 PM,9:00 PM' }
-```
+### **Primary Focus: Next Execution**
+- **Prominent countdown display** with large, easy-to-read timers
+- **Real-time updates** every 5 seconds between executions
+- **Detailed schedule information** including type, interval, and configuration
+- **Current timestamp** always displayed for reference
+
+### **Secondary Info: Last Execution**
+- **Complete execution details** preserved after each run
+- **Success/failure status** with color-coded indicators
+- **Execution duration** and timestamp information
+- **Transaction details** including signatures and trade information
+- **Error details** if execution fails
+
+### **Status API Enhancements**
+- **Comprehensive JSON response** with all timing and execution data
+- **Structured data format** for easy programmatic access
+- **Real-time schedule calculations** for accurate countdown timers
+- **Historical execution data** maintained between runs
 
 ## 🛡️ Safety Features
 
@@ -204,7 +414,7 @@ console.log(balances.allBalances);
 - ✅ **Balance Validation**: Verifies sufficient funds before operations
 - ✅ **Address Validation**: Ensures valid Solana address format
 - ✅ **Slippage Protection**: 1.5% slippage tolerance on swaps
-- ✅ **Rate Limit Handling**: Graceful handling of RPC rate limits
+- ✅ **Account Creation**: Automatically creates associated token accounts
 
 ### **Error Handling**
 - ✅ **Retry Logic**: Automatic retries for failed transactions
@@ -212,87 +422,113 @@ console.log(balances.allBalances);
 - ✅ **Graceful Failures**: Proper error messages and status codes
 - ✅ **Transaction Confirmation**: All operations confirmed before success
 
-## 📊 Monitoring & Logs
+## 📊 Monitoring & Status
 
-### Web Interface Features
-- 🔄 **Auto-refresh**: Updates every 5 seconds
-- 🎨 **Terminal Theme**: Dark theme with color-coded log levels
-- 📱 **Mobile Responsive**: Works on all devices
-- 🔍 **Real-time Search**: Filter logs by content
-- 📈 **Statistics**: Total logs and last updated timestamp
+### Modern Web Dashboard Features
+- 🔄 **Auto-refresh**: Updates every 10 seconds for optimal performance
+- 🎨 **Modern Design**: Glass-morphism cards with gradient backgrounds
+- 📱 **Mobile Responsive**: Fully responsive design that works on all devices
+- 🕰️ **Enhanced Schedule Display**: Large countdown timers and detailed next execution info
+- 📈 **Status Tracking**: Current execution stage with prominent next execution display
+- 📋 **Last Execution Details**: Complete information about previous executions
+- 🎯 **Clean Typography**: Modern system fonts for better readability
+- ✨ **Smooth Animations**: Hover effects and transitions for better UX
 
-### Log Levels
-- **Info** (Green): Normal operations and status updates
-- **Warn** (Yellow): Warnings and important notices
-- **Error** (Red): Errors and failed operations
+### Enhanced Status API Response
+```json
+{
+  "status": "success",
+  "data": {
+    "stage": "waiting_next_execution",
+    "message": "Next execution in: 9m 44s",
+    "timestamp": "2025-09-15T04:27:42.715Z",
+    "success": null,
+    "details": {
+      "currentTime": "2025-09-15T04:27:42.715Z",
+      "scheduleType": "interval",
+      "scheduleId": "interval_1",
+      "intervalMs": 600000,
+      "nextExecutionIn": 584996,
+      "nextExecutionTime": "2025-09-15T04:37:27.711Z",
+      "executeImmediately": true,
+      "lastExecution": {
+        "timestamp": "2025-09-15T04:27:36.301Z",
+        "duration": "8.591s",
+        "success": true,
+        "details": {
+          "signature": "TEST_MOCK_SIGNATURE_1757910456301",
+          "fromAmount": 0.01,
+          "toAmount": 0.010249999999999999,
+          "fromToken": "USDC",
+          "toToken": "SOL",
+          "testMode": true
+        }
+      }
+    }
+  }
+}
+```
 
 ## 🚨 Troubleshooting
 
 ### Common Issues
 
-**429 Rate Limit Errors**
+**Test Mode Issues**
+- Verify all environment variables are set correctly
+- Check that wallet creation/retrieval works
+- Monitor status API for execution progress
+- Ensure scheduling parameters are valid
+
+**Rate Limit Errors** (Production Mode)
 - Reduce swap frequency in scheduled operations
 - Wait a few minutes before retrying
 - Consider using different RPC endpoints
 
 **Insufficient Balance Errors**
 - Check wallet balances via web interface
-- Ensure sufficient SOL for transaction fees
+- Ensure sufficient SOL for transaction fees (minimum 0.005 SOL)
 - Verify token symbols are correct
 
-**Address Validation Errors**
-- Ensure Solana addresses are 32+ characters
-- Use base58 encoded addresses only
-- Verify address format is correct
+**Schedule Not Executing**
+- Check status API for schedule information
+- Verify UTC times are correct
+- Ensure intervals are in milliseconds
+- Monitor server logs for execution attempts
+
+**Server Startup Issues**
+- Verify `server.js` is the entry point
+- Check that all dependencies are installed
+- Ensure environment variables are properly configured
+- Monitor console output for initialization errors
 
 ### Debug Mode
-View detailed logs at `http://localhost:3000/html` for real-time debugging.
+View detailed logs and status at `http://localhost:3000/html` for real-time debugging.
 
-## 🔗 Integration Examples
-
-### Webhook Integration
-```javascript
-// Monitor for successful swaps
-fetch('http://localhost:3000/')
-  .then(res => res.json())
-  .then(data => {
-    const successfulSwaps = data.logs.filter(log => 
-      log.message.includes('Swap completed successfully')
-    );
-    // Process successful swaps
-  });
-```
-
-### Automated Withdrawals
-```javascript
-// Withdraw profits daily
-setInterval(async () => {
-  const result = await fetch('http://localhost:3000/withdraw', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      tokenSymbol: 'USDC',
-      destinationAddress: 'YOUR_COLD_WALLET',
-      withdrawAll: true
-    })
-  });
-  console.log('Daily withdrawal:', await result.json());
-}, 24 * 60 * 60 * 1000); // 24 hours
-```
+### Test Mode Verification
+1. **Server Starts**: Check console for "🚀 Server running on port 3000"
+2. **Baseline Execution**: Look for "🎯 Trading Config" and "🕰️ Schedule" logs
+3. **Status Updates**: Monitor `/status` endpoint for execution progress with enhanced details
+4. **Mock Trading**: Verify 6-step test execution completes with mock results (~8.5s)
+5. **Schedule Timing**: Check that next execution countdown updates every 5 seconds
+6. **Web Dashboard**: Visit `/html` to see the modern interface with real-time updates
+7. **Last Execution**: Verify last execution details appear in status after first run
 
 ## 📈 Performance
 
 - **Memory Efficient**: Keeps last 1000 logs in memory
 - **Fast API**: Sub-100ms response times for most endpoints
 - **Optimized Swaps**: Jupiter integration with best route finding
-- **Minimal Dependencies**: Lightweight with essential packages only
+- **Token Caching**: 5-minute cache for Jupiter token list
+- **Optimized Updates**: 10-second dashboard refresh, 5-second status updates
+- **Modern UI**: Hardware-accelerated CSS with smooth animations
+- **Efficient Scheduling**: Continuous status updates without blocking execution
 
 ## 🔒 Security
 
 - **No Private Keys**: Uses Privy for secure key management
 - **Environment Variables**: Sensitive data in .env files
 - **Input Validation**: All API inputs validated and sanitized
-- **Rate Limiting**: Built-in protection against abuse
+- **Safe Transfers**: Automatic account creation and balance checks
 
 ## 📝 License
 
@@ -301,7 +537,7 @@ MIT License - Feel free to use and modify for your projects.
 ---
 
 **🌐 Access Points:**
-- **Web Interface**: `http://localhost:3000/html`
-- **JSON API**: `http://localhost:3000/`
-- **Withdraw API**: `POST http://localhost:3000/withdraw`
+- **Web Dashboard**: `http://localhost:3000/html`
+- **Status API**: `http://localhost:3000/status`
+- **Logs API**: `http://localhost:3000/`
 - **Health Check**: `http://localhost:3000/health`
