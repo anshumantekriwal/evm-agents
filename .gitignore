@@ -22,3 +22,6 @@ xion-frontend/.env
 frontend/package-lock.json
 /solana-agents/node_modules
 solana-agents/.env
+/solana-agents/deployer/node_modules
+solana-agents/baseline/.env
+solana-agents/deployer/.env
