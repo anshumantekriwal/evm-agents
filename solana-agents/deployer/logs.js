@@ -15,7 +15,7 @@ async function getAgentLogs(agentId, lines = 500) {
   let actualLogGroupName = null;
   try {
     const listCommand = new DescribeLogGroupsCommand({
-      logGroupNamePrefix: `/aws/apprunner/solana-agent-${agentId}/`,
+      logGroupNamePrefix: `/aws/apprunner/agent-${agentId}/`,
     });
     const listResponse = await cloudWatchLogs.send(listCommand);
 
@@ -98,7 +98,7 @@ async function getLogGroups(agentId) {
     console.log(`📋 [LOGS] Listing all log groups for agent: ${agentId}`);
 
     const command = new DescribeLogGroupsCommand({
-      logGroupNamePrefix: `/aws/apprunner/solana-agent-${agentId}/`,
+      logGroupNamePrefix: `/aws/apprunner/agent-${agentId}/`,
     });
 
     const response = await cloudWatchLogs.send(command);
@@ -137,7 +137,7 @@ async function getRecentLogs(agentId, minutes = 60) {
   });
 
   const startTime = Date.now() - (minutes * 60 * 1000);
-  const logGroupName = `/aws/apprunner/solana-agent-${agentId}/application`;
+  const logGroupName = `/aws/apprunner/agent-${agentId}/application`;
 
   try {
     console.log(`📊 [LOGS] Fetching recent logs (last ${minutes} minutes) for: ${agentId}`);

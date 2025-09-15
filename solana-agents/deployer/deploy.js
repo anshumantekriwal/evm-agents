@@ -15,6 +15,50 @@ const {
 const REGION = process.env.AWS_REGION || "us-east-1";
 const ACCOUNT_ID = process.env.AWS_ACCOUNT_ID;
 
+/**
+ * Deploy a Solana trading agent with custom configuration
+ * 
+ * @param {Object} params - Deployment parameters
+ * @param {string} params.agentId - Unique identifier for the agent
+ * @param {string} params.ownerAddress - Solana wallet owner address
+ * @param {Object} params.swapConfig - Trading configuration
+ * @param {string} params.swapConfig.fromToken - Source token symbol (e.g., 'USDC')
+ * @param {string} params.swapConfig.toToken - Destination token symbol (e.g., 'SOL')
+ * @param {number} params.swapConfig.amount - Amount to trade
+ * @param {string} params.swapConfig.scheduleType - 'interval' or 'times'
+ * @param {number|string|array} params.swapConfig.scheduleValue - Interval (ms or string like '30m') or array of UTC times
+ * @param {boolean} params.swapConfig.executeImmediately - Execute immediately on start (default: true)
+ * 
+ * @example
+ * // Interval-based trading
+ * deployAgent({
+ *   agentId: 'my-agent-1',
+ *   ownerAddress: '5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ',
+ *   swapConfig: {
+ *     fromToken: 'USDC',
+ *     toToken: 'SOL',
+ *     amount: 0.01,
+ *     scheduleType: 'interval',
+ *     scheduleValue: '30m', // or 1800000 (ms)
+ *     executeImmediately: true
+ *   }
+ * });
+ * 
+ * @example
+ * // Time-based trading
+ * deployAgent({
+ *   agentId: 'my-agent-2',
+ *   ownerAddress: '5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ',
+ *   swapConfig: {
+ *     fromToken: 'SOL',
+ *     toToken: 'USDC',
+ *     amount: 0.005,
+ *     scheduleType: 'times',
+ *     scheduleValue: ['09:30', '15:30'], // UTC times
+ *     executeImmediately: false
+ *   }
+ * });
+ */
 async function deployAgent({ agentId, ownerAddress, swapConfig }) {
   console.log(`🚀 Starting deployment for Solana agent: ${agentId}`);
   console.log(`📍 Region: ${REGION}`);
@@ -37,16 +81,17 @@ async function deployAgent({ agentId, ownerAddress, swapConfig }) {
   console.log("✅ Environment variables validated");
 
   console.log("📁 Creating build directory...");
-  const buildDir = path.join("/tmp", `solana-agent-${agentId}`);
+  const buildDir = path.join("/tmp", `agent-${agentId}`);
   fs.mkdirSync(buildDir, { recursive: true });
   console.log(`📂 Build directory created: ${buildDir}`);
 
   // Copy the solana-agents files
   console.log("📄 Copying Solana agent files...");
-  const sourceDir = path.join(__dirname, "..");
+  const sourceDir = path.join(__dirname, "..", "baseline");
 
   // Copy core files
   const filesToCopy = [
+    "server.js",
     "baseline.js",
     "logger.js", 
     "scheduler.js",
@@ -70,7 +115,7 @@ async function deployAgent({ agentId, ownerAddress, swapConfig }) {
   console.log("🔧 Updating package.json start script...");
   const packageJsonPath = path.join(buildDir, "package.json");
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
-  packageJson.scripts.start = "node baseline.js";
+  packageJson.scripts.start = "node server.js";
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
   console.log("✅ Package.json updated");
 
@@ -91,37 +136,78 @@ LOG_SERVER_PORT=3000
   fs.writeFileSync(path.join(buildDir, ".env"), envContent);
   console.log("✅ Environment file created");
 
-  // Create a customized baseline.js with the specific configuration
-  console.log("🔧 Customizing baseline configuration...");
-  let baselineContent = fs.readFileSync(path.join(buildDir, "baseline.js"), "utf8");
+  // Create a customized server.js with the specific configuration
+  console.log("🔧 Customizing server configuration...");
+  let serverContent = fs.readFileSync(path.join(buildDir, "server.js"), "utf8");
   
-  // Replace the owner address
-  baselineContent = baselineContent.replace(
-    /const ownerAddress = "[^"]*";/,
-    `const ownerAddress = "${ownerAddress}";`
-  );
-
-  // If swapConfig is provided, customize the swap configuration
+  // If swapConfig is provided, customize the trading configuration
   if (swapConfig) {
-    const { fromToken, toToken, amount, interval } = swapConfig;
+    const { 
+      fromToken, 
+      toToken, 
+      amount, 
+      scheduleType = 'interval',
+      scheduleValue,
+      executeImmediately = true 
+    } = swapConfig;
     
-    // Replace the default swap configuration
-    const swapConfigCode = `
-// Deployed agent configuration
-baselineFunction(ownerAddress, '${fromToken}', '${toToken}', ${amount}, {
-  type: 'interval',
-  value: '${interval || '30m'}'
-});`;
+    // Convert interval string to milliseconds if needed
+    let intervalMs = scheduleValue;
+    if (scheduleType === 'interval' && typeof scheduleValue === 'string') {
+      // Convert time strings like '30m', '1h', '30s' to milliseconds
+      const timeMatch = scheduleValue.match(/^(\d+)([smh])$/);
+      if (timeMatch) {
+        const [, num, unit] = timeMatch;
+        const multipliers = { s: 1000, m: 60000, h: 3600000 };
+        intervalMs = parseInt(num) * multipliers[unit];
+      }
+    }
+    
+    // Create the trading configuration code to append
+    const tradingConfigCode = `
 
-    // Replace the existing swap configuration
-    baselineContent = baselineContent.replace(
-      /\/\/ Example 2:.*?value: '[^']*'\s*}\);/s,
-      swapConfigCode
-    );
+// Deployment-specific configuration
+const tradingConfig = {
+    ownerAddress: "${ownerAddress}",
+    fromToken: '${fromToken}',
+    toToken: '${toToken}', 
+    amount: ${amount},
+    scheduleOptions: {
+        executeImmediately: ${executeImmediately},
+        type: '${scheduleType}',
+        value: ${scheduleType === 'times' ? JSON.stringify(scheduleValue) : intervalMs}, ${scheduleType === 'interval' ? '// ' + scheduleValue : '// UTC times'}
+    }
+};
+
+createServer(SERVER_PORT, tradingConfig);`;
+
+    // Append the configuration to the end of the file
+    serverContent += tradingConfigCode;
+  } else {
+    // If no swapConfig provided, append default configuration with provided owner address
+    const defaultConfigCode = `
+
+// Deployment-specific configuration
+const tradingConfig = {
+    ownerAddress: "${ownerAddress}",
+    fromToken: 'USDC',
+    toToken: 'SOL', 
+    amount: 0.01,
+    scheduleOptions: {
+        executeImmediately: true,
+        type: 'interval',
+        value: 600000, // 10 minutes in milliseconds
+    }
+};
+
+createServer(SERVER_PORT, tradingConfig);`;
+
+    // Append the configuration to the end of the file
+    serverContent += defaultConfigCode;
   }
 
-  fs.writeFileSync(path.join(buildDir, "baseline.js"), baselineContent);
-  console.log("✅ Baseline configuration customized");
+  fs.writeFileSync(path.join(buildDir, "server.js"), serverContent);
+  console.log("✅ Server configuration customized");
 
   // Create Dockerfile
   console.log("🐳 Creating Dockerfile...");
@@ -166,7 +252,7 @@ coverage
 
   console.log("🐳 Building Docker image...");
   const docker = new Docker();
-  const imageName = `solana-agent-${agentId}`;
+  const imageName = `agent-${agentId}`;
   const imageTag = `${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${imageName}:latest`;
 
   const buildStream = await docker.buildImage(
@@ -174,6 +260,7 @@ coverage
       context: buildDir,
       src: [
         "Dockerfile",
+        "server.js",
         "baseline.js",
         "logger.js",
         "scheduler.js", 
@@ -258,7 +345,7 @@ coverage
   console.log("🚀 Deploying to AWS App Runner...");
   const appRunnerClient = new AppRunnerClient({ region: REGION });
 
-  const serviceName = `solana-agent-${agentId}`;
+  const serviceName = `agent-${agentId}`;
   const createServiceResponse = await appRunnerClient.send(
     new CreateServiceCommand({
       ServiceName: serviceName,

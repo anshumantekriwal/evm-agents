@@ -5,7 +5,6 @@ import { updateStatus } from './logger.js';
 const activeSchedules = new Map();
 let nextScheduleId = 1;
 let statusUpdateInterval = null;
-let lastLoggedStatus = new Map(); // Track last logged status for each schedule
 
 /**
  * Get detailed schedule information for status display
@@ -55,7 +54,7 @@ export function getScheduleInfo() {
 /**
  * Update status with current schedule information
  */
-function updateScheduleStatus() {
+function updateScheduleStatus(shouldLog = false) {
     const schedules = getScheduleInfo();
     if (schedules.length === 0) return;
     
@@ -72,8 +71,6 @@ function updateScheduleStatus() {
         scheduleId: schedule.id
     };
     
-    let shouldLog = false;
-    
     if (schedule.type === 'interval') {
         statusMessage = `Next execution in: ${schedule.nextExecutionFormatted}`;
         details = {
@@ -83,10 +80,6 @@ function updateScheduleStatus() {
             nextExecutionTime: schedule.nextExecutionTime.toISOString(),
             executeImmediately: schedule.executeImmediately
         };
-        
-        // Smart logging for intervals: log 10 times during the wait period
-        shouldLog = shouldLogIntervalStatus(schedule.id, schedule.intervalMs, schedule.nextExecutionIn);
-        
     } else if (schedule.type === 'times') {
         statusMessage = `Next execution at: ${schedule.nextExecutionFormatted}`;
         details = {
@@ -94,12 +87,6 @@ function updateScheduleStatus() {
             configuredTimes: schedule.times,
             nextExecutionTime: schedule.nextExecution ? new Date(schedule.nextExecution).toISOString() : null
         };
-        
-        // Smart logging for times: log 10 times during the wait period
-        if (schedule.nextExecution) {
-            const timeUntilExecution = new Date(schedule.nextExecution).getTime() - now.getTime();
-            shouldLog = shouldLogTimeStatus(schedule.id, timeUntilExecution);
-        }
     }
     
     // Include last execution details if available from the actual schedule object
@@ -107,68 +94,8 @@ function updateScheduleStatus() {
         details.lastExecution = actualSchedule.lastExecution;
     }
     
-    // Always update status (for API), but only log smartly
-    updateStatus('waiting_next_execution', statusMessage, null, details, shouldLog);
-}
-
-/**
- * Determine if we should log status for interval schedules
- * Logs 10 times evenly distributed across the interval
- */
-function shouldLogIntervalStatus(scheduleId, intervalMs, nextExecutionIn) {
-    const lastLogged = lastLoggedStatus.get(scheduleId) || { lastLogTime: 0, logCount: 0, intervalStart: 0 };
-    
-    // Calculate how much time has passed in this interval cycle
-    const timeIntoInterval = intervalMs - nextExecutionIn;
-    
-    // If this is a new interval cycle, reset
-    if (timeIntoInterval < lastLogged.timeIntoInterval || !lastLogged.intervalStart) {
-        lastLogged.logCount = 0;
-        lastLogged.intervalStart = Date.now() - timeIntoInterval;
-    }
-    
-    // Calculate which log segment we should be in (0-9 for 10 logs)
-    const logSegment = Math.floor((timeIntoInterval / intervalMs) * 10);
-    
-    // Log if we've moved to a new segment
-    if (logSegment > lastLogged.logCount && lastLogged.logCount < 10) {
-        lastLogged.logCount = logSegment;
-        lastLogged.timeIntoInterval = timeIntoInterval;
-        lastLogged.lastLogTime = Date.now();
-        lastLoggedStatus.set(scheduleId, lastLogged);
-        return true;
-    }
-    
-    return false;
-}
-
-/**
- * Determine if we should log status for time-based schedules
- * Logs 10 times evenly distributed until next execution
- */
-function shouldLogTimeStatus(scheduleId, timeUntilExecution) {
-    const lastLogged = lastLoggedStatus.get(scheduleId) || { lastLogTime: 0, logCount: 0, totalWaitTime: 0 };
-    
-    // If this is a new wait period (time until execution increased), reset
-    if (timeUntilExecution > lastLogged.lastTimeUntil || !lastLogged.totalWaitTime) {
-        lastLogged.logCount = 0;
-        lastLogged.totalWaitTime = timeUntilExecution;
-    }
-    
-    // Calculate which log segment we should be in (0-9 for 10 logs)
-    const timeElapsed = lastLogged.totalWaitTime - timeUntilExecution;
-    const logSegment = Math.floor((timeElapsed / lastLogged.totalWaitTime) * 10);
-    
-    // Log if we've moved to a new segment
-    if (logSegment > lastLogged.logCount && lastLogged.logCount < 10) {
-        lastLogged.logCount = logSegment;
-        lastLogged.lastTimeUntil = timeUntilExecution;
-        lastLogged.lastLogTime = Date.now();
-        lastLoggedStatus.set(scheduleId, lastLogged);
-        return true;
-    }
-    
-    return false;
+    // Update status (this will always happen)
+    updateStatus('waiting_next_execution', statusMessage, null, details, null, shouldLog);
 }
 
 /**
@@ -177,10 +104,18 @@ function shouldLogTimeStatus(scheduleId, timeUntilExecution) {
 function startStatusUpdates() {
     if (statusUpdateInterval) return; // Already running
     
+    let logCounter = 0;
+    
     // Update status every 5 seconds
     statusUpdateInterval = setInterval(() => {
         if (activeSchedules.size > 0) {
-            updateScheduleStatus();
+            logCounter++;
+            // Log every 12th update (12 * 5 seconds = 60 seconds = 1 minute)
+            const shouldLog = logCounter >= 12;
+            if (shouldLog) {
+                logCounter = 0; // Reset counter
+            }
+            updateScheduleStatus(shouldLog);
         }
     }, 5000);
 }
@@ -225,9 +160,6 @@ export function scheduleInterval(executeFunction, intervalMs, executeImmediately
                     success: result?.success || true,
                     details: result || {}
                 };
-                
-                // Reset logging state for new cycle
-                lastLoggedStatus.delete(scheduleId);
             }
             
             console.log(`✅ Scheduled execution completed`);
@@ -306,9 +238,6 @@ export function scheduleTimes(executeFunction, times) {
                     success: result?.success || true,
                     details: result || {}
                 };
-                
-                // Reset logging state for new cycle
-                lastLoggedStatus.delete(scheduleId);
             }
             
             console.log(`✅ Scheduled execution completed`);

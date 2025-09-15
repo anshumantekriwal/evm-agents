@@ -45,23 +45,25 @@ async function testDeployer() {
 
   // Test 2: Deploy Agent (will likely fail due to AWS limits)
   console.log('📝 Test 2: Deploy Agent');
-  await makeRequest('/deploy-agent', {
-    method: 'POST',
-    body: JSON.stringify({
-      agentId: 'test-trading-bot',
-      ownerAddress: '5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ',
-      swapConfig: {
-        fromToken: 'SOL',
-        toToken: 'USDC',
-        amount: 0.0001,
-        interval: '30m'
-      }
-    })
-  });
+  // await makeRequest('/deploy-agent', {
+  //   method: 'POST',
+  //   body: JSON.stringify({
+  //     agentId: '0',
+  //     ownerAddress: '5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ',
+  //     swapConfig: {
+  //       fromToken: 'SOL',
+  //       toToken: 'USDC',
+  //       amount: 0.0001,
+  //       scheduleType: 'interval',
+  //       scheduleValue: '30m',
+  //       executeImmediately: true
+  //     }
+  //   })
+  // });
 
   // Test 3: Get Logs
   console.log('📝 Test 3: Get Agent Logs');
-  await makeRequest('/logs/test-trading-bot?lines=50');
+  await makeRequest('/logs/0?lines=50');
 
   // Test 4: Check Status
   console.log('📝 Test 4: Check Agent Status');

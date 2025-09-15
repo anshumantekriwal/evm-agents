@@ -6,9 +6,34 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 /**
- * Create and start the Express server
+ * Create and start the Express server with configurable trading parameters
+ * 
+ * @param {number} port - Server port (default: 3000)
+ * @param {object} tradingConfig - Trading configuration object
+ * @param {string} tradingConfig.ownerAddress - Wallet owner address
+ * @param {string} tradingConfig.fromToken - Source token symbol (e.g., 'USDC')
+ * @param {string} tradingConfig.toToken - Destination token symbol (e.g., 'SOL')
+ * @param {number} tradingConfig.amount - Amount to trade
+ * @param {object} tradingConfig.scheduleOptions - Schedule configuration
+ * @param {string} tradingConfig.scheduleOptions.type - 'interval' or 'times'
+ * @param {number|array} tradingConfig.scheduleOptions.value - Interval in ms or array of UTC times
+ * @param {boolean} tradingConfig.scheduleOptions.executeImmediately - Execute immediately on start
+ * 
+ * @example
+ * // Start server with custom configuration
+ * createServer(3000, {
+ *   ownerAddress: "5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ",
+ *   fromToken: 'USDC',
+ *   toToken: 'SOL',
+ *   amount: 0.01,
+ *   scheduleOptions: {
+ *     type: 'interval',
+ *     value: 600000, // 10 minutes
+ *     executeImmediately: true
+ *   }
+ * });
  */
-function createServer(port = 3000, config = {}) {
+function createServer(port = 3000, tradingConfig = {}) {
     const app = express();
     
     // Add JSON parsing middleware
@@ -553,7 +578,7 @@ function createServer(port = 3000, config = {}) {
         // Auto-start baseline execution
         console.log(`🚀 Starting baseline execution...`);
         try {
-            await startBaselineExecution();
+            await startBaselineExecution(tradingConfig);
         } catch (error) {
             console.error(`❌ Failed to start baseline execution:`, error);
         }
@@ -563,21 +588,20 @@ function createServer(port = 3000, config = {}) {
 }
 
 // Auto-start baseline execution function
-async function startBaselineExecution() {
-    // Hardcoded trading configuration (dynamic per server deployment)
-    const ownerAddress = "5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ";
-    const fromToken = 'USDC';
-    const toToken = 'SOL';
-    const amount = 0.01;
+async function startBaselineExecution(config = {}) {
+    // Trading configuration (can be passed as input or use defaults)
+    const ownerAddress = config.ownerAddress || "5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ";
+    const fromToken = config.fromToken || 'USDC';
+    const toToken = config.toToken || 'SOL';
+    const amount = config.amount || 0.01;
     
-    // Hardcoded schedule configuration
-    const scheduleOptions = {
-        // type: 'times',
-        // value: ['4:10', '4:12'], // UTC times
+    // Schedule configuration (can be passed as input or use defaults)
+    const scheduleOptions = config.scheduleOptions || {
         executeImmediately: true,
         type: 'interval',
-        value: 600000, // 30 seconds in milliseconds
-        // executeImmediately: false
+        value: 600000, // 10 minutes in milliseconds
+        // type: 'times',
+        // value: ['4:10', '4:12'], // UTC times
     };
     
     console.log(`🎯 Trading Config: ${amount} ${fromToken} → ${toToken}`);
@@ -600,8 +624,24 @@ async function startBaselineExecution() {
 
 // Main entry point - start server and baseline execution
 const SERVER_PORT = process.env.SERVER_PORT || 3000;
-const ownerAddress = "5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ";
 
-createServer(SERVER_PORT, { ownerAddress });
+// Example: Start server with custom trading configuration
+// You can modify these values or pass them as parameters
+// const tradingConfig = {
+//     ownerAddress: "5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ",
+//     fromToken: 'USDC',
+//     toToken: 'SOL', 
+//     amount: 0.01,
+//     scheduleOptions: {
+//         executeImmediately: true,
+//         type: 'interval',
+//         value: 600000, // 10 minutes in milliseconds
+//         // Alternative time-based schedule:
+//         // type: 'times',
+//         // value: ['09:30', '15:30'], // UTC times
+//     }
+// };
 
-export { createServer };
+// createServer(SERVER_PORT, tradingConfig);
+
+// export { createServer };

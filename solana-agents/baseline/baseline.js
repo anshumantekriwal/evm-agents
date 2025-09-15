@@ -42,6 +42,8 @@ async function waitForBalance(walletAddress, minimumSOL = 0.005) {
     while (true) {
         try {
             const balances = await getBalances(walletAddress);
+            console.log('All balances:', JSON.stringify(balances));
+            logger.log('All balances:', JSON.stringify(balances));
             const solBalance = balances.allBalances.find(token => token.symbol === 'SOL');
             const currentBalance = solBalance ? solBalance.uiAmount : 0;
             
@@ -153,247 +155,151 @@ export async function baselineFunction(ownerAddress, fromToken, toToken, amount,
             // =============================
             // ======= TRADING EXECUTION STARTS HERE =======
             // =============================
-            
-            // =============================
-            // ======= DUMMY TEST CODE =======
-            // =============================
-            
-            updateStatus('test_execution_start', `[TEST MODE] Starting test execution: ${amount} ${fromToken} → ${toToken}`, null, { 
-                fromToken, toToken, amount, ownerAddress, testMode: true
+
+            updateStatus('execution_start', `Starting trading execution: ${amount} ${fromToken} → ${toToken}`, null, { 
+                fromToken, toToken, amount, ownerAddress 
             });
-            logger.log(`🧪 [TEST MODE] Testing baseline setup: ${amount} ${fromToken} → ${toToken}`);
             
-            // Test 1: Wallet address validation
-            updateStatus('test_wallet_validation', '[TEST MODE] Validating wallet address...', null, { 
+            // Wait for minimum balance
+            await waitForBalance(wallet.walletAddress, 0.001);
+            
+            // Get current balances for trading
+            updateStatus('trading_balance_check', 'Checking trading balances...', null, { 
                 walletAddress: wallet.walletAddress,
-                testStep: 1,
-                testMode: true
+                fromToken 
             });
-            logger.log(`🧪 [TEST MODE] Step 1: Wallet validation - ${wallet.walletAddress.slice(0, 8)}...${wallet.walletAddress.slice(-8)}`);
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            logger.log('📊 Checking wallet balances for trading...');
+            const balances = await getBalances(wallet.walletAddress);
+            logger.log(`💰 Found ${balances.allBalances.length} tokens in wallet`);
             
-            // Test 2: Mock balance check
-            updateStatus('test_balance_check', '[TEST MODE] Simulating balance check...', null, { 
-                testStep: 2,
-                mockBalance: { SOL: 0.01, USDC: 10.5 },
-                testMode: true
+            // Check if fromToken exists and get balance
+            const fromTokenUpper = fromToken.toUpperCase();
+            const tokenObj = balances.allBalances.find(
+                token => token.symbol && token.symbol.toUpperCase() === fromTokenUpper
+            );
+
+            if (!tokenObj) {
+                updateStatus('trading_error', `No ${fromToken} found in wallet`, false, { 
+                    fromToken, 
+                    availableTokens: balances.allBalances.map(t => t.symbol) 
+                });
+                logger.log(`❌ No ${fromToken} found in wallet`);
+                return { 
+                    success: false, 
+                    error: `Wallet does not have ${fromToken}`,
+                    executionType: 'immediate',
+                    timestamp: new Date().toISOString()
+                };
+            } 
+            
+            if (tokenObj.uiAmount < amount) {
+                const errorMsg = `Insufficient ${fromToken} balance. Available: ${tokenObj.uiAmount}, required: ${amount}`;
+                updateStatus('trading_error', 'Insufficient trading balance', false, { 
+                    fromToken, 
+                    available: tokenObj.uiAmount, 
+                    required: amount 
+                });
+                logger.log(`❌ ${errorMsg}`);
+                return { 
+                    success: false, 
+                    error: errorMsg,
+                    executionType: 'immediate',
+                    timestamp: new Date().toISOString()
+                };
+            }
+            
+            logger.log(`✅ Sufficient ${fromToken} balance: ${tokenObj.uiAmount} (need: ${amount})`);
+
+            // Get destination token information
+            updateStatus('token_lookup', `Looking up ${toToken} token address...`, null, { toToken });
+            logger.log(`🔍 Looking up ${toToken} token address...`);
+            const toTokenResult = await getTokenMintAddress(toToken);
+            
+            if (!toTokenResult.success) {
+                updateStatus('trading_error', `Could not find ${toToken} token`, false, { 
+                    toToken, 
+                    error: toTokenResult.error 
+                });
+                logger.log(`❌ Could not find ${toToken} token: ${toTokenResult.error}`);
+                return { 
+                    success: false, 
+                    error: `Failed to get mint address for ${toToken}: ${toTokenResult.error}`,
+                    executionType: 'immediate',
+                    timestamp: new Date().toISOString()
+                };
+            }
+            
+            const toTokenMintAddress = toTokenResult.mintAddress;
+            logger.log(`✅ ${toToken} token found`);
+
+            // Check if destination token account exists
+            updateStatus('account_check', `Checking ${toToken} account...`, null, { 
+                toToken, 
+                mintAddress: toTokenMintAddress 
             });
-            logger.log(`🧪 [TEST MODE] Step 2: Mock balance check - SOL: 0.01, USDC: 10.5`);
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            logger.log(`🔍 Checking if you have a ${toToken} account...`);
+            const accountExists = await checkTokenAccountExists(wallet.walletAddress, toTokenMintAddress);
+            if (accountExists) {
+                logger.log(`✅ ${toToken} account ready`);
+            } else {
+                logger.log(`⚠️  First ${toToken} transaction - account will be created`);
+            }
             
-            // Test 3: Token validation simulation
-            updateStatus('test_token_validation', `[TEST MODE] Validating ${fromToken} → ${toToken} pair...`, null, { 
-                testStep: 3,
-                fromToken, toToken,
-                mockValidation: 'success',
-                testMode: true
+            // Check SOL requirements for swap fees
+            const minRequiredSOL = 0.0021; // Minimum for any Jupiter swap (2.1 mSOL)
+            if (fromTokenUpper === 'SOL' && tokenObj.uiAmount < minRequiredSOL) {
+                const needed = (minRequiredSOL - tokenObj.uiAmount).toFixed(6);
+                updateStatus('trading_error', 'Insufficient SOL for swap fees', false, { 
+                    currentBalance: tokenObj.uiAmount, 
+                    minRequired: minRequiredSOL, 
+                    needed 
+                });
+                logger.log(`❌ Not enough SOL for swap fees`);
+                logger.log(`💰 Current balance: ${tokenObj.uiAmount} SOL`);
+                logger.log(`🎯 Minimum needed: ${minRequiredSOL} SOL`);
+                logger.log(`📈 Please add ${needed} SOL to continue`);
+                return { 
+                    success: false, 
+                    error: `Insufficient SOL for Jupiter swap operations. Need ${needed} SOL more`,
+                    executionType: 'immediate',
+                    timestamp: new Date().toISOString()
+                };
+            }
+            
+            // Execute swap
+            updateStatus('swapping', `Executing swap: ${amount} ${fromToken} → ${toToken}`, null, { 
+                amount, fromToken, toToken, 
+                slippage: '1.5%', 
+                priorityFee: 'auto' 
             });
-            logger.log(`🧪 [TEST MODE] Step 3: Token pair validation - ${fromToken} → ${toToken} ✅`);
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            logger.log(`🚀 Executing swap: ${amount} ${fromToken} → ${toToken}`);
+            logger.log('⚙️  Using 1.5% slippage tolerance with auto priority fees');
             
-            // Test 4: Mock swap preparation
-            updateStatus('test_swap_preparation', '[TEST MODE] Preparing mock swap...', null, { 
-                testStep: 4,
-                amount, fromToken, toToken,
-                mockSlippage: '1.5%',
-                mockPriorityFee: 'auto',
-                testMode: true
-            });
-            logger.log(`🧪 [TEST MODE] Step 4: Swap preparation - ${amount} ${fromToken} with 1.5% slippage`);
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            // Test 5: Mock swap execution
-            updateStatus('test_swap_execution', '[TEST MODE] Executing mock swap...', null, { 
-                testStep: 5,
-                duration: '3 seconds',
-                testMode: true
-            });
-            logger.log(`🧪 [TEST MODE] Step 5: Mock swap execution (3 seconds)...`);
-            await new Promise(resolve => setTimeout(resolve, 3000));
-            
-            // Test 6: Generate mock successful result
-            const mockSwapResult = {
-                success: true,
-                signature: 'TEST_MOCK_SIGNATURE_' + Date.now(),
-                fromAmount: amount,
-                toAmount: amount * 1.025, // Simulate 2.5% gain
-                fromToken,
-                toToken,
-                testMode: true,
-                mockTransaction: true,
-                executionTime: '3.2s',
-                fees: '0.00021 SOL'
+            const swapOptions = {
+                slippageBps: 150, // 1.5% slippage tolerance
+                priorityFee: 'auto',
+                maxRetries: 2,
+                confirmTransaction: true
             };
             
-            updateStatus('test_execution_success', '[TEST MODE] Mock execution completed successfully!', true, { 
-                signature: mockSwapResult.signature,
-                amount, fromToken, toToken,
-                outputAmount: mockSwapResult.toAmount,
-                gain: '2.5%',
-                executionTime: mockSwapResult.executionTime,
-                fees: mockSwapResult.fees,
-                testMode: true
-            });
-            logger.log(`✅ [TEST MODE] Mock execution completed successfully!`);
-            logger.log(`📋 [TEST MODE] Mock Transaction: ${mockSwapResult.signature}`);
-            logger.log(`🎉 [TEST MODE] Simulated result: ${amount} ${fromToken} → ${mockSwapResult.toAmount} ${toToken} (+2.5% gain)`);
-            logger.log(`⚡ [TEST MODE] Execution time: ${mockSwapResult.executionTime}, Fees: ${mockSwapResult.fees}`);
+            const swapResult = await swap(wallet.walletId, fromToken, toToken, amount, wallet.walletAddress, swapOptions);
             
-            // Override swapResult with mock data for return
-            const swapResult = mockSwapResult;
-            
-            // =============================
-            // ======= END DUMMY TEST CODE =======
-            // =============================
-            
-            // =============================
-            // ======= REAL TRADING CODE (COMMENTED) =======
-            // =============================
-            
-            // updateStatus('execution_start', `Starting trading execution: ${amount} ${fromToken} → ${toToken}`, null, { 
-            //     fromToken, toToken, amount, ownerAddress 
-            // });
-            
-            // // Wait for minimum balance
-            // await waitForBalance(wallet.walletAddress, 0.005);
-            
-            // // Get current balances for trading
-            // updateStatus('trading_balance_check', 'Checking trading balances...', null, { 
-            //     walletAddress: wallet.walletAddress,
-            //     fromToken 
-            // });
-            // logger.log('📊 Checking wallet balances for trading...');
-            // const balances = await getBalances(wallet.walletAddress);
-            // logger.log(`💰 Found ${balances.allBalances.length} tokens in wallet`);
-            
-            // // Check if fromToken exists and get balance
-            // const fromTokenUpper = fromToken.toUpperCase();
-            // const tokenObj = balances.allBalances.find(
-            //     token => token.symbol && token.symbol.toUpperCase() === fromTokenUpper
-            // );
-
-            // if (!tokenObj) {
-            //     updateStatus('trading_error', `No ${fromToken} found in wallet`, false, { 
-            //         fromToken, 
-            //         availableTokens: balances.allBalances.map(t => t.symbol) 
-            //     });
-            //     logger.log(`❌ No ${fromToken} found in wallet`);
-            //     return { 
-            //         success: false, 
-            //         error: `Wallet does not have ${fromToken}`,
-            //         executionType: 'immediate',
-            //         timestamp: new Date().toISOString()
-            //     };
-            // } 
-            
-            // if (tokenObj.uiAmount < amount) {
-            //     const errorMsg = `Insufficient ${fromToken} balance. Available: ${tokenObj.uiAmount}, required: ${amount}`;
-            //     updateStatus('trading_error', 'Insufficient trading balance', false, { 
-            //         fromToken, 
-            //         available: tokenObj.uiAmount, 
-            //         required: amount 
-            //     });
-            //     logger.log(`❌ ${errorMsg}`);
-            //     return { 
-            //         success: false, 
-            //         error: errorMsg,
-            //         executionType: 'immediate',
-            //         timestamp: new Date().toISOString()
-            //     };
-            // }
-            
-            // logger.log(`✅ Sufficient ${fromToken} balance: ${tokenObj.uiAmount} (need: ${amount})`);
-
-            // // Get destination token information
-            // updateStatus('token_lookup', `Looking up ${toToken} token address...`, null, { toToken });
-            // logger.log(`🔍 Looking up ${toToken} token address...`);
-            // const toTokenResult = await getTokenMintAddress(toToken);
-            
-            // if (!toTokenResult.success) {
-            //     updateStatus('trading_error', `Could not find ${toToken} token`, false, { 
-            //         toToken, 
-            //         error: toTokenResult.error 
-            //     });
-            //     logger.log(`❌ Could not find ${toToken} token: ${toTokenResult.error}`);
-            //     return { 
-            //         success: false, 
-            //         error: `Failed to get mint address for ${toToken}: ${toTokenResult.error}`,
-            //         executionType: 'immediate',
-            //         timestamp: new Date().toISOString()
-            //     };
-            // }
-            
-            // const toTokenMintAddress = toTokenResult.mintAddress;
-            // logger.log(`✅ ${toToken} token found`);
-
-            // // Check if destination token account exists
-            // updateStatus('account_check', `Checking ${toToken} account...`, null, { 
-            //     toToken, 
-            //     mintAddress: toTokenMintAddress 
-            // });
-            // logger.log(`🔍 Checking if you have a ${toToken} account...`);
-            // const accountExists = await checkTokenAccountExists(wallet.walletAddress, toTokenMintAddress);
-            // if (accountExists) {
-            //     logger.log(`✅ ${toToken} account ready`);
-            // } else {
-            //     logger.log(`⚠️  First ${toToken} transaction - account will be created`);
-            // }
-            
-            // // Check SOL requirements for swap fees
-            // const minRequiredSOL = 0.0021; // Minimum for any Jupiter swap (2.1 mSOL)
-            // if (fromTokenUpper === 'SOL' && tokenObj.uiAmount < minRequiredSOL) {
-            //     const needed = (minRequiredSOL - tokenObj.uiAmount).toFixed(6);
-            //     updateStatus('trading_error', 'Insufficient SOL for swap fees', false, { 
-            //         currentBalance: tokenObj.uiAmount, 
-            //         minRequired: minRequiredSOL, 
-            //         needed 
-            //     });
-            //     logger.log(`❌ Not enough SOL for swap fees`);
-            //     logger.log(`💰 Current balance: ${tokenObj.uiAmount} SOL`);
-            //     logger.log(`🎯 Minimum needed: ${minRequiredSOL} SOL`);
-            //     logger.log(`📈 Please add ${needed} SOL to continue`);
-            //     return { 
-            //         success: false, 
-            //         error: `Insufficient SOL for Jupiter swap operations. Need ${needed} SOL more`,
-            //         executionType: 'immediate',
-            //         timestamp: new Date().toISOString()
-            //     };
-            // }
-            
-            // // Execute swap
-            // updateStatus('swapping', `Executing swap: ${amount} ${fromToken} → ${toToken}`, null, { 
-            //     amount, fromToken, toToken, 
-            //     slippage: '1.5%', 
-            //     priorityFee: 'auto' 
-            // });
-            // logger.log(`🚀 Executing swap: ${amount} ${fromToken} → ${toToken}`);
-            // logger.log('⚙️  Using 1.5% slippage tolerance with auto priority fees');
-            
-            // const swapOptions = {
-            //     slippageBps: 150, // 1.5% slippage tolerance
-            //     priorityFee: 'auto',
-            //     maxRetries: 2,
-            //     confirmTransaction: true
-            // };
-            
-            // const swapResult = await swap(wallet.walletId, fromToken, toToken, amount, wallet.walletAddress, swapOptions);
-            
-            // if (swapResult.success) {
-            //     updateStatus('trading_success', 'Trading execution completed successfully!', true, { 
-            //         signature: swapResult.signature,
-            //         amount, fromToken, toToken
-            //     });
-            //     logger.log(`✅ Trading execution completed successfully!`);
-            //     if (swapResult.signature) {
-            //         logger.log(`📋 Transaction: ${swapResult.signature}`);
-            //     }
-            // } else {
-            //     updateStatus('trading_error', 'Trading execution failed', false, { 
-            //         error: swapResult.error,
-            //         amount, fromToken, toToken
-            //     });
-            //     logger.log(`❌ Trading execution failed: ${swapResult.error || 'Unknown error'}`);
-            // }
+            if (swapResult.success) {
+                updateStatus('trading_success', 'Trading execution completed successfully!', true, { 
+                    signature: swapResult.signature,
+                    amount, fromToken, toToken
+                });
+                logger.log(`✅ Trading execution completed successfully!`);
+                if (swapResult.signature) {
+                    logger.log(`📋 Transaction: ${swapResult.signature}`);
+                }
+            } else {
+                updateStatus('trading_error', 'Trading execution failed', false, { 
+                    error: swapResult.error,
+                    amount, fromToken, toToken
+                });
+                logger.log(`❌ Trading execution failed: ${swapResult.error || 'Unknown error'}`);
+            }
             
             // =============================
             // ======= TRADING EXECUTION ENDS HERE =======
@@ -462,20 +368,7 @@ export async function baselineFunction(ownerAddress, fromToken, toToken, amount,
     }
 }
 
-// Example Usage (now handled by server.js auto-start)
 
-// Interval example (every 30 seconds, execute immediately)
-// baselineFunction(ownerAddress, 'USDC', 'SOL', 0.01, {
-//     type: 'interval',
-//     value: 30000, // 30 seconds in milliseconds
-//     executeImmediately: true
-// });
-
-// Times example (at specific UTC times)
-// baselineFunction(ownerAddress, 'USDC', 'SOL', 0.01, {
-//     type: 'times',
-//     value: ['09:30', '15:30'] // UTC times
-// });
 
 // Exports
 export {

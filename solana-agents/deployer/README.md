@@ -81,8 +81,47 @@ POST /deploy-agent
     "fromToken": "SOL",
     "toToken": "USDC", 
     "amount": 0.0001,
-    "interval": "30m"
+    "scheduleType": "interval",
+    "scheduleValue": "30m",
+    "executeImmediately": true
   }
+}
+```
+
+#### SwapConfig Parameters
+
+- **`fromToken`** (string): Source token symbol (e.g., 'SOL', 'USDC')
+- **`toToken`** (string): Destination token symbol (e.g., 'SOL', 'USDC')
+- **`amount`** (number): Amount to trade
+- **`scheduleType`** (string): Either 'interval' or 'times'
+- **`scheduleValue`** (string|number|array): Schedule configuration (see examples below)
+- **`executeImmediately`** (boolean): Execute immediately on start (default: true)
+
+#### Schedule Examples
+
+**Interval-based Trading:**
+```json
+{
+  "scheduleType": "interval",
+  "scheduleValue": "30m",        // String format: '30s', '5m', '1h'
+  "executeImmediately": true
+}
+```
+
+```json
+{
+  "scheduleType": "interval", 
+  "scheduleValue": 1800000,      // Milliseconds (30 minutes)
+  "executeImmediately": false
+}
+```
+
+**Time-based Trading:**
+```json
+{
+  "scheduleType": "times",
+  "scheduleValue": ["09:30", "15:30"],  // UTC times
+  "executeImmediately": false
 }
 ```
 
@@ -247,7 +286,9 @@ curl -X POST http://localhost:3001/deploy-agent \
       "fromToken": "SOL",
       "toToken": "USDC",
       "amount": 0.001,
-      "interval": "1h"
+      "scheduleType": "interval",
+      "scheduleValue": "1h",
+      "executeImmediately": true
     }
   }'
 ```

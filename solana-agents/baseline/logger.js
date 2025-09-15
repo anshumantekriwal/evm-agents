@@ -64,17 +64,17 @@ class Logger {
 /**
  * Status management functions
  */
-function updateStatus(stage, message, success = null, details = {}, shouldLog = true) {
+function updateStatus(stage, message, success = null, details = {}, scheduleInfo = null, shouldLog = true) {
     currentStatus = {
         stage,
         message,
         timestamp: new Date().toISOString(),
         success,
         details,
-        schedule: null // Keep for backward compatibility
+        schedule: scheduleInfo
     };
     
-    // Only log if shouldLog is true (for smart logging)
+    // Only log if shouldLog is true
     if (shouldLog) {
         const statusMessage = `[${stage.toUpperCase()}] ${message}`;
         if (success === false) {
