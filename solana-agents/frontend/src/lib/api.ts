@@ -1,9 +1,23 @@
-// Use proxy in development, direct URL in production
-const isDevelopment = import.meta.env.DEV
-const API_BASE_URL = isDevelopment 
-  ? '/api' // Use proxy in development
-  : (import.meta.env.VITE_DEPLOYER_URL || 'http://54.166.244.200')
+// Use proxy in development, Vercel proxy in production
+const isDevelopment = import.meta.env.DEV || import.meta.env.MODE === 'development'
+const isLocalhost = typeof window !== 'undefined' && (
+  window.location.hostname === 'localhost' || 
+  window.location.hostname === '127.0.0.1' ||
+  window.location.hostname.includes('localhost')
+)
+
+const API_BASE_URL = (isDevelopment && isLocalhost)
+  ? '/api' // Use Vite proxy in local development
+  : '/api/proxy' // Use Vercel serverless proxy in production
 const API_KEY = import.meta.env.VITE_API_KEY || 'Commune_dev1'
+
+console.log('API Configuration:', {
+  isDevelopment,
+  isLocalhost,
+  API_BASE_URL,
+  mode: import.meta.env.MODE,
+  hostname: typeof window !== 'undefined' ? window.location.hostname : 'server'
+})
 
 interface DeployAgentRequest {
   agentId: number
@@ -32,7 +46,16 @@ interface AgentStatusResponse {
 
 class ApiService {
   private async makeRequest(endpoint: string, options: RequestInit = {}, retries = 3): Promise<any> {
-    const url = `${API_BASE_URL}${endpoint}`
+    // Handle different proxy formats
+    let url: string
+    if (API_BASE_URL === '/api/proxy') {
+      // Vercel proxy format: /api/proxy?path=endpoint
+      const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint
+      url = `${API_BASE_URL}?path=${encodeURIComponent(cleanEndpoint)}`
+    } else {
+      // Direct or Vite proxy format
+      url = `${API_BASE_URL}${endpoint}`
+    }
     
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
@@ -41,9 +64,12 @@ class ApiService {
         
         const response = await fetch(url, {
           ...options,
+          mode: 'cors',
+          credentials: 'omit',
           headers: {
             'Content-Type': 'application/json',
             'x-api-key': API_KEY || '',
+            'Accept': 'application/json',
             ...options.headers,
           },
           signal: controller.signal,
