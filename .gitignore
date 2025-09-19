@@ -28,3 +28,5 @@ solana-agents/deployer/.env
 solana-agents/code-generation/.env
 /solana-agents/code-generation/__pycache__
 solana-agents/frontend/.env
+DEPLOY_FORMAT_FIXES.md
+BOT_PAGE_IMPLEMENTATION.md

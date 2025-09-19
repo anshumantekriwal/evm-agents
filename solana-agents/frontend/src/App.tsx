@@ -4,13 +4,15 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import { Layout } from './components/Layout'
 import { Dashboard } from './components/Dashboard'
 import { DeployBotForm } from './components/DeployBotForm'
+import { BotPage } from './components/BotPage'
 import { CheckCircle } from 'lucide-react'
 
-type Page = 'dashboard' | 'deploy' | 'settings'
+type Page = 'dashboard' | 'deploy' | 'settings' | 'bot'
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('dashboard')
   const [deploySuccess, setDeploySuccess] = useState<{ agentId: number; agentUrl: string } | null>(null)
+  const [selectedBotId, setSelectedBotId] = useState<number | null>(null)
 
   const handleDeploySuccess = (agentId: number, agentUrl: string) => {
     setDeploySuccess({ agentId, agentUrl })
@@ -19,6 +21,16 @@ function App() {
       setCurrentPage('dashboard')
       setDeploySuccess(null)
     }, 3000)
+  }
+
+  const handleViewBot = (agentId: number) => {
+    setSelectedBotId(agentId)
+    setCurrentPage('bot')
+  }
+
+  const handleBackToDashboard = () => {
+    setSelectedBotId(null)
+    setCurrentPage('dashboard')
   }
 
   const renderPage = () => {
@@ -56,9 +68,15 @@ function App() {
 
     switch (currentPage) {
       case 'dashboard':
-        return <Dashboard onDeployNew={() => setCurrentPage('deploy')} />
+        return <Dashboard onDeployNew={() => setCurrentPage('deploy')} onViewBot={handleViewBot} />
       case 'deploy':
         return <DeployBotForm onSuccess={handleDeploySuccess} />
+      case 'bot':
+        return selectedBotId ? (
+          <BotPage agentId={selectedBotId} onBack={handleBackToDashboard} />
+        ) : (
+          <Dashboard onDeployNew={() => setCurrentPage('deploy')} onViewBot={handleViewBot} />
+        )
       case 'settings':
         return (
           <div className="text-center py-12">
@@ -67,7 +85,7 @@ function App() {
           </div>
         )
       default:
-        return <Dashboard onDeployNew={() => setCurrentPage('deploy')} />
+        return <Dashboard onDeployNew={() => setCurrentPage('deploy')} onViewBot={handleViewBot} />
     }
   }
 

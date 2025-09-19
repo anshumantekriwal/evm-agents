@@ -8,8 +8,6 @@ import {
   Clock, 
   TrendingUp, 
   Zap, 
-  Play, 
-  Pause, 
   Trash2, 
   ExternalLink, 
   RefreshCw,
@@ -21,14 +19,15 @@ import { format } from 'date-fns'
 
 interface DashboardProps {
   onDeployNew: () => void
+  onViewBot: (agentId: number) => void
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ onDeployNew }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ onDeployNew, onViewBot }) => {
   const { user } = useAuth()
   const [agents, setAgents] = useState<SolanaAgent[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [refreshing, setRefreshing] = useState<string | null>(null)
+  const [refreshing, setRefreshing] = useState<number | null>(null)
 
   const loadAgents = async () => {
     if (!user) return
@@ -213,7 +212,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onDeployNew }) => {
             return (
               <div key={agent.id} className="card p-6">
                 <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center">
+                  <div 
+                    className="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => onViewBot(agent.id)}
+                  >
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${getBotTypeColor(agent.bot_type)}`}>
                       <BotIcon className="w-5 h-5" />
                     </div>
@@ -256,7 +258,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onDeployNew }) => {
                   <div className="flex items-center space-x-2">
                     {agent.aws_url && (
                       <a
-                        href={agent.aws_url}
+                        href={`${agent.aws_url}/html`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-primary-600 hover:text-primary-700"

@@ -244,7 +244,7 @@ POST /deploy-agent
 {
   "success": true,
   "agentUrl": "https://abc123.us-east-1.awsapprunner.com",
-  "agentId": "my-trading-bot-001",
+  "agentId": 0,
   "message": "Solana agent deployed successfully"
 }
 ```
@@ -276,7 +276,7 @@ GET /logs/:agentId?lines=500
     ],
     "retrievedAt": "2025-09-10T23:55:00.000Z"
   },
-  "agentId": "my-trading-bot-001"
+  "agentId": 0
 }
 ```
 
@@ -291,7 +291,7 @@ GET /status/:agentId
 ```json
 {
   "success": true,
-  "agentId": "my-trading-bot-001",
+  "agentId": 0,
   "status": "running",
   "message": "Agent is running normally"
 }
@@ -310,7 +310,7 @@ GET /agents
   "success": true,
   "agents": [
     {
-      "agentId": "my-trading-bot-001",
+      "agentId": 0,
       "status": "running",
       "deployedAt": "2025-09-10T23:45:00.000Z"
     }

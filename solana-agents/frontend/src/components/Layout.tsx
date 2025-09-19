@@ -4,8 +4,8 @@ import { Bot, LogOut, Plus, Activity, Settings } from 'lucide-react'
 
 interface LayoutProps {
   children: React.ReactNode
-  currentPage?: 'dashboard' | 'deploy' | 'settings'
-  onNavigate?: (page: 'dashboard' | 'deploy' | 'settings') => void
+  currentPage?: 'dashboard' | 'deploy' | 'settings' | 'bot'
+  onNavigate?: (page: 'dashboard' | 'deploy' | 'settings' | 'bot') => void
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children, currentPage = 'dashboard', onNavigate }) => {
