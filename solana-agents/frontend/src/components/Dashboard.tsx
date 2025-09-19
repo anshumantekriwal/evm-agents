@@ -125,6 +125,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onDeployNew, onViewBot }) 
     switch (botType) {
       case 'dca': return Clock
       case 'range': return TrendingUp
+      case 'twitter': return TrendingUp
       case 'custom': return Zap
       default: return Bot
     }
@@ -134,6 +135,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onDeployNew, onViewBot }) 
     switch (botType) {
       case 'dca': return 'bg-blue-100 text-blue-600'
       case 'range': return 'bg-green-100 text-green-600'
+      case 'twitter': return 'bg-sky-100 text-sky-600'
       case 'custom': return 'bg-purple-100 text-purple-600'
       default: return 'bg-gray-100 text-gray-600'
     }

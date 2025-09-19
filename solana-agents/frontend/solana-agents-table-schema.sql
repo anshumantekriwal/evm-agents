@@ -11,7 +11,7 @@ CREATE TABLE solana_agents (
     user_email TEXT NOT NULL,
     agent_name TEXT NOT NULL,
     prompt TEXT,
-    bot_type TEXT NOT NULL CHECK (bot_type IN ('dca', 'range', 'custom')),
+    bot_type TEXT NOT NULL CHECK (bot_type IN ('dca', 'range', 'custom', 'twitter')),
     config JSONB NOT NULL,
     aws_url TEXT,
     owner_address TEXT,

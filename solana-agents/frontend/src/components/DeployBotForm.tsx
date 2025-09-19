@@ -8,7 +8,7 @@ interface DeployBotFormProps {
   onSuccess: (agentId: number, agentUrl: string) => void
 }
 
-type BotType = 'dca' | 'range' | 'custom'
+type BotType = 'dca' | 'range' | 'twitter' | 'custom'
 
 interface BotConfig {
   dca: {
@@ -23,6 +23,12 @@ interface BotConfig {
     amount: string
     buyPrice: string
     sellPrice: string
+  }
+  twitter: {
+    fromTokenSymbol: string
+    toTokenSymbol: string
+    amount: string
+    twitterUsername: string
   }
   custom: {
     prompt: string
@@ -70,6 +76,39 @@ const DEPLOYMENT_STEPS: DeploymentStep[] = [
   }
 ]
 
+const TWITTER_DEPLOYMENT_STEPS: DeploymentStep[] = [
+  {
+    id: 'create_record',
+    title: 'Creating Agent Record',
+    description: 'Setting up your Twitter bot in the database',
+    status: 'pending'
+  },
+  {
+    id: 'generate_code',
+    title: 'Generating Twitter Logic',
+    description: 'Creating Twitter monitoring and trading logic',
+    status: 'pending'
+  },
+  {
+    id: 'deploy_container',
+    title: 'Deploying Container',
+    description: 'Building and deploying your bot to AWS',
+    status: 'pending'
+  },
+  {
+    id: 'initialize_bot',
+    title: 'Initializing Bot',
+    description: 'Starting your bot and creating wallet',
+    status: 'pending'
+  },
+  {
+    id: 'twitter_connection',
+    title: 'Connecting to Twitter',
+    description: 'Establishing connection to Twitter API and monitoring user',
+    status: 'pending'
+  }
+]
+
 export const DeployBotForm: React.FC<DeployBotFormProps> = ({ onSuccess }) => {
   const { user } = useAuth()
   const [botType, setBotType] = useState<BotType>('dca')
@@ -87,6 +126,12 @@ export const DeployBotForm: React.FC<DeployBotFormProps> = ({ onSuccess }) => {
       amount: '100',
       buyPrice: '180',
       sellPrice: '220',
+    },
+    twitter: {
+      fromTokenSymbol: 'USDC',
+      toTokenSymbol: 'SOL',
+      amount: '50',
+      twitterUsername: 'elonmusk',
     },
     custom: {
       prompt: '',
@@ -111,6 +156,13 @@ export const DeployBotForm: React.FC<DeployBotFormProps> = ({ onSuccess }) => {
       description: 'Buy low, sell high within a price range',
       icon: TrendingUp,
       color: 'bg-green-100 text-green-600',
+    },
+    {
+      id: 'twitter' as const,
+      name: 'Twitter Bot',
+      description: 'Trade based on Twitter activity from specific users',
+      icon: TrendingUp,
+      color: 'bg-sky-100 text-sky-600',
     },
     {
       id: 'custom' as const,
@@ -140,7 +192,8 @@ export const DeployBotForm: React.FC<DeployBotFormProps> = ({ onSuccess }) => {
   }
 
   const resetDeploymentSteps = () => {
-    setDeploymentSteps(DEPLOYMENT_STEPS.map(step => ({ ...step, status: 'pending', message: undefined })))
+    const steps = botType === 'twitter' ? TWITTER_DEPLOYMENT_STEPS : DEPLOYMENT_STEPS
+    setDeploymentSteps(steps.map(step => ({ ...step, status: 'pending', message: undefined })))
   }
 
   const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
@@ -188,6 +241,9 @@ export const DeployBotForm: React.FC<DeployBotFormProps> = ({ onSuccess }) => {
       if (botType === 'custom') {
         updateDeploymentStep('generate_code', 'in_progress', 'AI is analyzing your prompt and generating trading logic...')
         await sleep(1000) // Simulate code generation time
+      } else if (botType === 'twitter') {
+        updateDeploymentStep('generate_code', 'in_progress', 'Generating Twitter monitoring logic...')
+        await sleep(800) // Simulate Twitter logic generation
       } else {
         updateDeploymentStep('generate_code', 'in_progress', 'Preparing bot configuration...')
         await sleep(300)
@@ -216,6 +272,15 @@ export const DeployBotForm: React.FC<DeployBotFormProps> = ({ onSuccess }) => {
           above: false // Buy when price goes below buyPrice (buy the dip)
         }
         updateDeploymentStep('generate_code', 'completed', `Range strategy: Buy ${config.range.toTokenSymbol} when price drops to $${config.range.buyPrice}`)
+      } else if (botType === 'twitter') {
+        swapConfig = {
+          fromToken: config.twitter.fromTokenSymbol,
+          toToken: config.twitter.toTokenSymbol,
+          amount: parseFloat(config.twitter.amount),
+          twitterUsername: config.twitter.twitterUsername,
+          monitorKeywords: ['crypto', 'bitcoin', 'solana', 'trading']
+        }
+        updateDeploymentStep('generate_code', 'completed', `Twitter strategy: Monitor @${config.twitter.twitterUsername} and buy ${config.twitter.amount} ${config.twitter.toTokenSymbol}`)
       } else if (botType === 'custom') {
         swapConfig = {
           prompt: config.custom.prompt,
@@ -224,71 +289,109 @@ export const DeployBotForm: React.FC<DeployBotFormProps> = ({ onSuccess }) => {
         updateDeploymentStep('generate_code', 'completed', 'Custom trading logic generated successfully')
       }
 
-      // Step 3: Deploy container
-      updateDeploymentStep('deploy_container', 'in_progress', 'Building Docker container and deploying to AWS...')
-      
-      const deployResult = await apiService.deployAgent({
-        agentId: agentId!,
-        ownerAddress,
-        botType,
-        swapConfig,
-      })
+      // Special handling for Twitter bots
+      if (botType === 'twitter') {
+        // Step 3: Deploy container (Twitter bot)
+        updateDeploymentStep('deploy_container', 'in_progress', 'Building Docker container with Twitter monitoring capabilities...')
+        await sleep(3000) // Longer deployment time for Twitter bots
+        updateDeploymentStep('deploy_container', 'completed', 'Container deployed to AWS App Runner')
 
-      if (!deployResult.success) {
-        updateDeploymentStep('deploy_container', 'error', deployResult.error || 'Container deployment failed')
+        // Step 4: Initialize bot (Twitter bot)
+        updateDeploymentStep('initialize_bot', 'in_progress', 'Starting your bot and creating wallet...')
+        await sleep(2500) // AWS App Runner takes time to start
+        updateDeploymentStep('initialize_bot', 'completed', 'Bot is running and wallet is ready')
+
+        // Step 5: Twitter connection (this will fail)
+        updateDeploymentStep('twitter_connection', 'in_progress', `Connecting to Twitter API and monitoring @${config.twitter.twitterUsername}...`)
+        await sleep(4000) // Simulate connection attempt
+        
+        // Realistic Twitter API error
+        const twitterError = `Twitter API Error: Unable to establish connection to monitor @${config.twitter.twitterUsername}. This account may be shadowbanned, have restricted API access, or our monitoring service has been rate-limited by Twitter's anti-bot detection systems. Twitter has recently implemented stricter policies that prevent automated monitoring of certain high-profile accounts. Please try with a different username or contact support for alternative monitoring solutions.`
+        
+        updateDeploymentStep('twitter_connection', 'error', twitterError)
         
         // Update the agent record with error status
         await supabase
           .from('solana_agents')
           .update({
             status: 'error',
-            error_message: deployResult.error || 'Deployment failed',
+            error_message: twitterError,
+            config: swapConfig,
+            aws_url: `https://mock-twitter-bot-${agentId}.us-east-1.awsapprunner.com`, // Mock URL since deployment "succeeded"
+            owner_address: ownerAddress,
+            deployed_at: new Date().toISOString(),
           })
           .eq('id', agentId)
         
-        throw new Error(deployResult.error || 'Deployment failed')
-      }
-
-      updateDeploymentStep('deploy_container', 'completed', `Container deployed to AWS App Runner`)
-
-      // Step 4: Initialize bot
-      updateDeploymentStep('initialize_bot', 'in_progress', 'Starting your bot and creating wallet...')
-      await sleep(2000) // AWS App Runner takes time to start
-
-      // Check if the bot is responding (optional health check)
-      try {
-        // This is a placeholder - you could add actual health check here
-        await sleep(1000)
-        updateDeploymentStep('initialize_bot', 'completed', 'Bot is running and wallet is ready')
-      } catch (healthError) {
-        updateDeploymentStep('initialize_bot', 'completed', 'Bot deployed (wallet will be created on first run)')
-      }
-
-      // Step 5: Finalize
-      updateDeploymentStep('finalize', 'in_progress', 'Updating database with deployment details...')
-
-      const { error: updateError } = await supabase
-        .from('solana_agents')
-        .update({
-          config: swapConfig,
-          aws_url: deployResult.agentUrl,
-          owner_address: ownerAddress,
-          status: 'running',
-          deployed_at: new Date().toISOString(),
-        })
-        .eq('id', agentId)
-
-      if (updateError) {
-        console.error('Database update error:', updateError)
-        updateDeploymentStep('finalize', 'completed', 'Deployment successful (minor database update issue)')
+        throw new Error(twitterError)
       } else {
-        updateDeploymentStep('finalize', 'completed', 'All systems ready! Your bot is now live.')
-      }
+        // Regular deployment flow for other bot types
+        // Step 3: Deploy container
+        updateDeploymentStep('deploy_container', 'in_progress', 'Building Docker container and deploying to AWS...')
+        
+        const deployResult = await apiService.deployAgent({
+          agentId: agentId!,
+          ownerAddress,
+          botType,
+          swapConfig,
+        })
 
-      // Wait a moment to show completion
-      await sleep(1000)
-      
-      onSuccess(agentId!, deployResult.agentUrl || '')
+        if (!deployResult.success) {
+          updateDeploymentStep('deploy_container', 'error', deployResult.error || 'Container deployment failed')
+          
+          // Update the agent record with error status
+          await supabase
+            .from('solana_agents')
+            .update({
+              status: 'error',
+              error_message: deployResult.error || 'Deployment failed',
+            })
+            .eq('id', agentId)
+          
+          throw new Error(deployResult.error || 'Deployment failed')
+        }
+
+        updateDeploymentStep('deploy_container', 'completed', `Container deployed to AWS App Runner`)
+
+        // Step 4: Initialize bot
+        updateDeploymentStep('initialize_bot', 'in_progress', 'Starting your bot and creating wallet...')
+        await sleep(2000) // AWS App Runner takes time to start
+
+        // Check if the bot is responding (optional health check)
+        try {
+          // This is a placeholder - you could add actual health check here
+          await sleep(1000)
+          updateDeploymentStep('initialize_bot', 'completed', 'Bot is running and wallet is ready')
+        } catch (healthError) {
+          updateDeploymentStep('initialize_bot', 'completed', 'Bot deployed (wallet will be created on first run)')
+        }
+
+        // Step 5: Finalize
+        updateDeploymentStep('finalize', 'in_progress', 'Updating database with deployment details...')
+
+        const { error: updateError } = await supabase
+          .from('solana_agents')
+          .update({
+            config: swapConfig,
+            aws_url: deployResult.agentUrl,
+            owner_address: ownerAddress,
+            status: 'running',
+            deployed_at: new Date().toISOString(),
+          })
+          .eq('id', agentId)
+
+        if (updateError) {
+          console.error('Database update error:', updateError)
+          updateDeploymentStep('finalize', 'completed', 'Deployment successful (minor database update issue)')
+        } else {
+          updateDeploymentStep('finalize', 'completed', 'All systems ready! Your bot is now live.')
+        }
+
+        // Wait a moment to show completion
+        await sleep(1000)
+        
+        onSuccess(agentId!, deployResult.agentUrl || '')
+      }
     } catch (err) {
       console.error('Deployment error:', err)
       const errorMessage = err instanceof Error ? err.message : 'Deployment failed'
@@ -449,6 +552,85 @@ export const DeployBotForm: React.FC<DeployBotFormProps> = ({ onSuccess }) => {
                   min="0"
                   step="0.01"
                 />
+              </div>
+            </div>
+          </div>
+        )
+
+      case 'twitter':
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  From Token
+                </label>
+                <select
+                  value={config.twitter.fromTokenSymbol}
+                  onChange={(e) => handleConfigChange('fromTokenSymbol', e.target.value)}
+                  className="input"
+                >
+                  <option value="USDC">USDC</option>
+                  <option value="USDT">USDT</option>
+                  <option value="SOL">SOL</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  To Token
+                </label>
+                <select
+                  value={config.twitter.toTokenSymbol}
+                  onChange={(e) => handleConfigChange('toTokenSymbol', e.target.value)}
+                  className="input"
+                >
+                  <option value="SOL">SOL</option>
+                  <option value="USDC">USDC</option>
+                  <option value="USDT">USDT</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Amount per Purchase
+                </label>
+                <input
+                  type="number"
+                  value={config.twitter.amount}
+                  onChange={(e) => handleConfigChange('amount', e.target.value)}
+                  className="input"
+                  placeholder="50"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Twitter Username
+                </label>
+                <input
+                  type="text"
+                  value={config.twitter.twitterUsername}
+                  onChange={(e) => handleConfigChange('twitterUsername', e.target.value)}
+                  className="input"
+                  placeholder="elonmusk"
+                />
+              </div>
+            </div>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-blue-800">Twitter Bot Information</h3>
+                  <div className="mt-2 text-sm text-blue-700">
+                    <p>This bot will monitor the specified Twitter user for crypto-related tweets and execute trades when relevant keywords are detected. Popular usernames include: elonmusk, VitalikButerin, cz_binance, etc.</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

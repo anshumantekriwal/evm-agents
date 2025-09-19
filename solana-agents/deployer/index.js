@@ -43,12 +43,12 @@ app.post("/deploy-agent", async (req, res) => {
   });
 
   // Validate botType
-  if (!['dca', 'range', 'custom'].includes(botType)) {
+  if (!['dca', 'range', 'twitter', 'custom'].includes(botType)) {
     console.log(`❌ [DEPLOY] Invalid bot type: ${botType}`);
     return res.status(400).json({
       success: false,
-      error: "Invalid bot type. Must be 'dca', 'range', or 'custom'.",
-      validTypes: ['dca', 'range', 'custom']
+      error: "Invalid bot type. Must be 'dca', 'range', 'twitter', or 'custom'.",
+      validTypes: ['dca', 'range', 'twitter', 'custom']
     });
   }
 

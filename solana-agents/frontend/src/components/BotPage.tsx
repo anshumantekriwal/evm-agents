@@ -163,6 +163,7 @@ export const BotPage: React.FC<BotPageProps> = ({ agentId, onBack }) => {
     switch (botType) {
       case 'dca': return Clock
       case 'range': return TrendingUp
+      case 'twitter': return TrendingUp
       case 'custom': return Zap
       default: return Bot
     }
@@ -438,6 +439,39 @@ export const BotPage: React.FC<BotPageProps> = ({ agentId, onBack }) => {
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Twitter Bot Configuration */}
+      {agent.bot_type === 'twitter' && agent.config && (
+        <div className="card p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Twitter Configuration</h3>
+            <TrendingUp className="w-5 h-5 text-gray-400" />
+          </div>
+          
+          <div className="bg-sky-50 rounded-lg p-4 space-y-3">
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-600">Monitoring:</span>
+              <span className="text-sm font-medium text-sky-700">@{agent.config.twitterUsername}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-600">Trade Amount:</span>
+              <span className="text-sm font-medium">{agent.config.amount} {agent.config.fromToken} → {agent.config.toToken}</span>
+            </div>
+            {agent.config.monitorKeywords && (
+              <div>
+                <span className="text-sm text-gray-600">Keywords:</span>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {agent.config.monitorKeywords.map((keyword: string, index: number) => (
+                    <span key={index} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-sky-100 text-sky-800">
+                      {keyword}
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
           </div>

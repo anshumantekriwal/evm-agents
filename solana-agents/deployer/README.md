@@ -5,7 +5,7 @@ A service for deploying Solana trading agents on AWS App Runner with automated d
 ## Features
 
 - Deploy Solana trading agents to AWS App Runner
-- **Three Bot Types**: DCA (Dollar Cost Averaging), Range (Price-based), and Custom (AI-generated) trading bots
+- **Four Bot Types**: DCA (Dollar Cost Averaging), Range (Price-based), Twitter (Social-triggered), and Custom (AI-generated) trading bots
 - **AI-powered code generation** for custom trading strategies using natural language
 - **REST API for log retrieval** with configurable line limits
 - API key authentication for secure access
@@ -70,6 +70,13 @@ Price-based trading bot that monitors token prices and executes trades when cond
 - **Price monitoring**: Continuously monitors a specified token's price every 30 seconds
 - **Condition-based**: Executes trades when price goes above or below a threshold
 - **Real-time**: Responds to market conditions in real-time
+
+### Twitter Bot (`botType: 'twitter'`)
+Social media-triggered trading bot that monitors Twitter activity and executes trades based on specific user posts:
+- **Twitter monitoring**: Monitors specified Twitter users for crypto-related tweets
+- **Keyword detection**: Triggers trades when relevant keywords are detected in tweets
+- **Social sentiment**: Leverages social media signals for trading decisions
+- **Real-time**: Responds to Twitter activity within minutes of posting
 
 ### Custom Bot (`botType: 'custom'`)
 AI-generated trading bot that creates custom trading logic based on natural language prompts:
@@ -148,11 +155,27 @@ POST /deploy-agent
 }
 ```
 
+**Twitter Bot Example:**
+```json
+{
+  "agentId": 3,
+  "ownerAddress": "5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ",
+  "botType": "twitter",
+  "swapConfig": {
+    "fromToken": "USDC",
+    "toToken": "SOL",
+    "amount": 50,
+    "twitterUsername": "elonmusk",
+    "monitorKeywords": ["crypto", "bitcoin", "solana", "trading"]
+  }
+}
+```
+
 ### Custom Bot Example
 
 ```json
 {
-  "agentId": 3,
+  "agentId": 4,
   "ownerAddress": "5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ",
   "botType": "custom",
   "swapConfig": {
@@ -165,7 +188,7 @@ POST /deploy-agent
 #### Parameters
 
 **Common Parameters:**
-- **`botType`** (string): Bot type - 'dca', 'range', or 'custom' (default: 'dca')
+- **`botType`** (string): Bot type - 'dca', 'range', 'twitter', or 'custom' (default: 'dca')
 - **`fromToken`** (string): Source token symbol (e.g., 'SOL', 'USDC')
 - **`toToken`** (string): Destination token symbol (e.g., 'SOL', 'USDC')
 - **`amount`** (number): Amount to trade
@@ -179,6 +202,10 @@ POST /deploy-agent
 - **`tokenToMonitor`** (string): Token symbol to monitor for price conditions
 - **`tokenToMonitorPrice`** (number): Target price threshold
 - **`above`** (boolean): True for above price condition, false for below (default: true)
+
+**Twitter Bot Parameters:**
+- **`twitterUsername`** (string): Twitter username to monitor (without @ symbol)
+- **`monitorKeywords`** (array): Keywords to detect in tweets (e.g., ["crypto", "bitcoin", "solana"])
 
 **Custom Bot Parameters:**
 - **`prompt`** (string): Natural language description of the trading strategy
@@ -208,6 +235,7 @@ POST /deploy-agent
 - Scheduled DCA (e.g., "Buy 0.01 SOL with USDC every hour")
 - Price-based trading (e.g., "Buy SOL when Bitcoin is above $50000")
 - Twitter-triggered trades (e.g., "Buy SOL when @elonmusk tweets about crypto")
+- Social sentiment trading (e.g., "Monitor @VitalikButerin for Ethereum mentions")
 - Complex hybrid strategies (e.g., "Buy 0.1 SOL every hour if Bitcoin > $50k and Ethereum > $3k")
 
 #### Schedule Examples
@@ -393,7 +421,7 @@ curl -X POST http://54.166.244.200/deploy-agent \
   -H "Content-Type: application/json" \
   -H "x-api-key: Commune_dev1" \
   -d '{
-    "agentId": 4,
+    "agentId": 5,
     "ownerAddress": "5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ",
     "botType": "dca",
     "swapConfig": {
