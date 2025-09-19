@@ -1,4 +1,8 @@
-const API_BASE_URL = import.meta.env.VITE_DEPLOYER_URL || 'http://54.166.244.200'
+// Use proxy in development, direct URL in production
+const isDevelopment = import.meta.env.DEV
+const API_BASE_URL = isDevelopment 
+  ? '/api' // Use proxy in development
+  : (import.meta.env.VITE_DEPLOYER_URL || 'http://54.166.244.200')
 const API_KEY = import.meta.env.VITE_API_KEY || 'Commune_dev1'
 
 interface DeployAgentRequest {
@@ -27,24 +31,51 @@ interface AgentStatusResponse {
 }
 
 class ApiService {
-  private async makeRequest(endpoint: string, options: RequestInit = {}) {
+  private async makeRequest(endpoint: string, options: RequestInit = {}, retries = 3): Promise<any> {
     const url = `${API_BASE_URL}${endpoint}`
     
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': API_KEY || '',
-        ...options.headers,
-      },
-    })
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+        
+        const response = await fetch(url, {
+          ...options,
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': API_KEY || '',
+            ...options.headers,
+          },
+          signal: controller.signal,
+        })
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      throw new Error(`API Error (${response.status}): ${errorText}`)
+        clearTimeout(timeoutId)
+
+        if (!response.ok) {
+          const errorText = await response.text()
+          throw new Error(`API Error (${response.status}): ${errorText}`)
+        }
+
+        return response.json()
+      } catch (error) {
+        console.warn(`API request attempt ${attempt} failed:`, error)
+        
+        if (attempt === retries) {
+          if (error instanceof Error) {
+            if (error.name === 'AbortError') {
+              throw new Error('Request timeout - please check your network connection')
+            }
+            if (error.message.includes('Failed to fetch') || error.message.includes('Load failed')) {
+              throw new Error('Network connection failed - please check if the API server is accessible')
+            }
+          }
+          throw error
+        }
+        
+        // Wait before retrying (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt - 1) * 1000))
+      }
     }
-
-    return response.json()
   }
 
   async deployAgent(request: DeployAgentRequest): Promise<DeployAgentResponse> {
