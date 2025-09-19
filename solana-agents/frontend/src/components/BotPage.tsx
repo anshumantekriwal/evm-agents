@@ -14,11 +14,7 @@ import {
   AlertCircle,
   CheckCircle,
   XCircle,
-  Activity,
   Wallet,
-  Calendar,
-  DollarSign,
-  BarChart3,
   Terminal,
   Globe,
   Copy,
@@ -53,7 +49,7 @@ interface BotLogs {
     }>
     retrievedAt: string
   }
-  agentId: number
+  agentId?: number
 }
 
 export const BotPage: React.FC<BotPageProps> = ({ agentId, onBack }) => {
@@ -115,8 +111,30 @@ export const BotPage: React.FC<BotPageProps> = ({ agentId, onBack }) => {
     setLogsLoading(true)
     try {
       const logsData = await apiService.getAgentLogs(agentId)
-      if (logsData.success) {
-        setLogs(logsData as BotLogs)
+      if (logsData.success && logsData.logs) {
+        // Handle different possible response structures
+        if (Array.isArray(logsData.logs)) {
+          // Simple array of logs
+          setLogs({
+            logs: {
+              logGroupName: `agent-${agentId}`,
+              totalEvents: logsData.logs.length,
+              logs: logsData.logs.map((log: any) => ({
+                timestamp: log.timestamp || new Date().toISOString(),
+                message: log.message || log.toString(),
+                logStreamName: log.logStreamName || `stream-${agentId}`
+              })),
+              retrievedAt: new Date().toISOString()
+            },
+            agentId: agentId
+          })
+        } else if (logsData.logs && typeof logsData.logs === 'object' && 'logs' in logsData.logs) {
+          // Structured logs response
+          setLogs({
+            logs: logsData.logs as any,
+            agentId: agentId
+          })
+        }
       }
     } catch (err) {
       console.warn('Logs fetch failed:', err)
@@ -446,7 +464,7 @@ export const BotPage: React.FC<BotPageProps> = ({ agentId, onBack }) => {
       )}
 
       {/* Twitter Bot Configuration */}
-      {agent.bot_type === 'twitter' && agent.config && (
+      {(agent.bot_type as string) === 'twitter' && agent.config && (
         <div className="card p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Twitter Configuration</h3>
