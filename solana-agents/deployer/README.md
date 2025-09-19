@@ -100,7 +100,7 @@ POST /deploy-agent
 
 ```json
 {
-  "agentId": "my-trading-bot-001",
+  "agentId": 0,
   "ownerAddress": "5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ",
   "botType": "dca",
   "swapConfig": {
@@ -117,7 +117,7 @@ POST /deploy-agent
 **DCA Bot Example:**
 ```json
 {
-  "agentId": "my-dca-bot",
+  "agentId": 1,
   "ownerAddress": "5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ",
   "botType": "dca",
   "swapConfig": {
@@ -125,7 +125,7 @@ POST /deploy-agent
     "toToken": "SOL",
     "amount": 0.01,
     "scheduleType": "interval",
-    "scheduleValue": "30m",
+    "scheduleValue": "1h",
     "executeImmediately": true
   }
 }
@@ -134,7 +134,7 @@ POST /deploy-agent
 **Range Bot Example:**
 ```json
 {
-  "agentId": "my-range-bot",
+  "agentId": 2,
   "ownerAddress": "5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ",
   "botType": "range",
   "swapConfig": {
@@ -152,7 +152,7 @@ POST /deploy-agent
 
 ```json
 {
-  "agentId": "my-custom-ai-bot",
+  "agentId": 3,
   "ownerAddress": "5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ",
   "botType": "custom",
   "swapConfig": {
@@ -389,12 +389,13 @@ The deployer includes comprehensive error handling for:
 ### Deploy a Simple Trading Bot
 
 ```bash
-curl -X POST http://localhost:3001/deploy-agent \
+curl -X POST http://54.166.244.200/deploy-agent \
   -H "Content-Type: application/json" \
   -H "x-api-key: Commune_dev1" \
   -d '{
-    "agentId": "sol-usdc-bot",
+    "agentId": 4,
     "ownerAddress": "5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ",
+    "botType": "dca",
     "swapConfig": {
       "fromToken": "SOL",
       "toToken": "USDC",

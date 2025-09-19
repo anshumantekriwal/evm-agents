@@ -198,21 +198,24 @@ export const DeployBotForm: React.FC<DeployBotFormProps> = ({ onSuccess }) => {
       
       if (botType === 'dca') {
         swapConfig = {
-          fromTokenSymbol: config.dca.fromTokenSymbol,
-          toTokenSymbol: config.dca.toTokenSymbol,
+          fromToken: config.dca.fromTokenSymbol,
+          toToken: config.dca.toTokenSymbol,
           amount: parseFloat(config.dca.amount),
-          intervalHours: parseInt(config.dca.intervalHours),
+          scheduleType: 'interval',
+          scheduleValue: `${config.dca.intervalHours}h`,
+          executeImmediately: true
         }
         updateDeploymentStep('generate_code', 'completed', `DCA strategy: ${config.dca.amount} ${config.dca.fromTokenSymbol} → ${config.dca.toTokenSymbol} every ${config.dca.intervalHours}h`)
       } else if (botType === 'range') {
         swapConfig = {
-          fromTokenSymbol: config.range.fromTokenSymbol,
-          toTokenSymbol: config.range.toTokenSymbol,
+          fromToken: config.range.fromTokenSymbol,
+          toToken: config.range.toTokenSymbol,
           amount: parseFloat(config.range.amount),
-          buyPrice: parseFloat(config.range.buyPrice),
-          sellPrice: parseFloat(config.range.sellPrice),
+          tokenToMonitor: config.range.toTokenSymbol, // Monitor the token we're buying
+          tokenToMonitorPrice: parseFloat(config.range.buyPrice),
+          above: false // Buy when price goes below buyPrice (buy the dip)
         }
-        updateDeploymentStep('generate_code', 'completed', `Range strategy: Buy at $${config.range.buyPrice}, sell at $${config.range.sellPrice}`)
+        updateDeploymentStep('generate_code', 'completed', `Range strategy: Buy ${config.range.toTokenSymbol} when price drops to $${config.range.buyPrice}`)
       } else if (botType === 'custom') {
         swapConfig = {
           prompt: config.custom.prompt,

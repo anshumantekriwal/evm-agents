@@ -61,11 +61,11 @@ Custom bots are deployed via the **deployer service** with natural language prom
 
 ```bash
 # Deploy a custom bot (via deployer API)
-curl -X POST "http://localhost:8080/deploy-agent" \
+curl -X POST "http://54.166.244.200/deploy-agent" \
   -H "Content-Type: application/json" \
-  -H "x-api-key: your-api-key" \
+  -H "x-api-key: Commune_dev1" \
   -d '{
-    "agentId": "my-custom-bot",
+    "agentId": 0,
     "ownerAddress": "your-solana-address",
     "botType": "custom",
     "swapConfig": {
