@@ -14,9 +14,19 @@ export default async function handler(req, res) {
   const API_BASE_URL = 'http://54.166.244.200'
   const { path, ...query } = req.query
   
-  // Construct the target URL
-  const targetPath = Array.isArray(path) ? path.join('/') : (path || '')
-  const targetUrl = `${API_BASE_URL}/${targetPath}`
+  // Handle different types of proxy requests
+  let targetUrl
+  
+  if (Array.isArray(path) && path[0] === 'agent-status') {
+    // Handle agent status requests: /api/proxy?path=agent-status/encoded-url
+    const encodedAgentUrl = path[1]
+    const decodedAgentUrl = decodeURIComponent(encodedAgentUrl)
+    targetUrl = `https://${decodedAgentUrl}`
+  } else {
+    // Handle regular API requests
+    const targetPath = Array.isArray(path) ? path.join('/') : (path || '')
+    targetUrl = `${API_BASE_URL}/${targetPath}`
+  }
   
   // Add query parameters
   const queryString = new URLSearchParams(query).toString()

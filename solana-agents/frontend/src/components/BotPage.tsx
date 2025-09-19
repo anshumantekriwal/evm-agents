@@ -90,10 +90,9 @@ export const BotPage: React.FC<BotPageProps> = ({ agentId, onBack }) => {
 
     setStatusLoading(true)
     try {
-      const response = await fetch(`${agent.aws_url}/status`)
-      if (response.ok) {
-        const statusData = await response.json()
-        setStatus(statusData.data || statusData)
+      const statusResult = await apiService.getAgentStatus(agent.aws_url)
+      if (statusResult.success && statusResult.status) {
+        setStatus(statusResult.status)
       } else {
         console.warn('Status endpoint not available yet')
         setStatus({ status: 'starting', message: 'Bot is starting up...' })
