@@ -1,6 +1,7 @@
 import express from 'express';
 import { logger, getStatus } from './logger.js';
-import { baselineFunction } from './baseline.js';
+import { baselineFunction as dcaBaselineFunction } from './baseline-dca.js';
+import { baselineFunction as rangeBaselineFunction } from './baseline-range.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -14,13 +15,24 @@ dotenv.config();
  * @param {string} tradingConfig.fromToken - Source token symbol (e.g., 'USDC')
  * @param {string} tradingConfig.toToken - Destination token symbol (e.g., 'SOL')
  * @param {number} tradingConfig.amount - Amount to trade
+ * @param {string} botType - Type of bot: 'dca', 'range', or 'custom' (default: 'dca')
+ * 
+ * DCA Bot specific:
  * @param {object} tradingConfig.scheduleOptions - Schedule configuration
  * @param {string} tradingConfig.scheduleOptions.type - 'interval' or 'times'
  * @param {number|array} tradingConfig.scheduleOptions.value - Interval in ms or array of UTC times
  * @param {boolean} tradingConfig.scheduleOptions.executeImmediately - Execute immediately on start
  * 
+ * Range Bot specific:
+ * @param {string} tradingConfig.tokenToMonitor - Token symbol to monitor for price conditions
+ * @param {number} tradingConfig.tokenToMonitorPrice - Target price threshold
+ * @param {boolean} tradingConfig.above - True for above price condition, false for below
+ * 
+ * Custom Bot specific:
+ * @param {string} tradingConfig.prompt - Natural language prompt (for reference only, code should be pre-generated)
+ * 
  * @example
- * // Start server with custom configuration
+ * // Start DCA bot server
  * createServer(3000, {
  *   ownerAddress: "5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ",
  *   fromToken: 'USDC',
@@ -31,9 +43,21 @@ dotenv.config();
  *     value: 600000, // 10 minutes
  *     executeImmediately: true
  *   }
- * });
+ * }, 'dca');
+ * 
+ * @example
+ * // Start Range bot server
+ * createServer(3000, {
+ *   ownerAddress: "5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ",
+ *   fromToken: 'USDC',
+ *   toToken: 'SOL',
+ *   amount: 0.01,
+ *   tokenToMonitor: 'SOL',
+ *   tokenToMonitorPrice: 100,
+ *   above: true
+ * }, 'range');
  */
-function createServer(port = 3000, tradingConfig = {}) {
+function createServer(port = 3000, tradingConfig = {}, botType) {
     const app = express();
     
     // Add JSON parsing middleware
@@ -576,9 +600,9 @@ function createServer(port = 3000, tradingConfig = {}) {
         console.log(`💸 Withdrawal API: POST http://localhost:${port}/withdraw (requires API_KEY)`);
         
         // Auto-start baseline execution
-        console.log(`🚀 Starting baseline execution...`);
+        console.log(`🚀 Starting ${botType.toUpperCase()} bot execution...`);
         try {
-            await startBaselineExecution(tradingConfig);
+            await startBaselineExecution(tradingConfig, botType);
         } catch (error) {
             console.error(`❌ Failed to start baseline execution:`, error);
         }
@@ -588,27 +612,67 @@ function createServer(port = 3000, tradingConfig = {}) {
 }
 
 // Auto-start baseline execution function
-async function startBaselineExecution(config = {}) {
+async function startBaselineExecution(config = {}, botType = 'dca') {
     // Trading configuration (can be passed as input or use defaults)
     const ownerAddress = config.ownerAddress || "5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ";
     const fromToken = config.fromToken || 'USDC';
     const toToken = config.toToken || 'SOL';
     const amount = config.amount || 0.01;
     
-    // Schedule configuration (can be passed as input or use defaults)
-    const scheduleOptions = config.scheduleOptions || {
-        executeImmediately: true,
-        type: 'interval',
-        value: 600000, // 10 minutes in milliseconds
-        // type: 'times',
-        // value: ['4:10', '4:12'], // UTC times
-    };
-    
     console.log(`🎯 Trading Config: ${amount} ${fromToken} → ${toToken}`);
-    // console.log(`🕰️ Schedule: ${scheduleOptions.type} - ${scheduleOptions.value.join(', ')} UTC`);
+    console.log(`🤖 Bot Type: ${botType.toUpperCase()}`);
     
-    // Start baseline execution - all scheduling logic handled in baseline.js
-    const result = await baselineFunction(ownerAddress, fromToken, toToken, amount, scheduleOptions);
+    let result;
+    
+    if (botType === 'dca') {
+        // DCA Bot execution
+        const scheduleOptions = config.scheduleOptions || {
+            executeImmediately: true,
+            type: 'interval',
+            value: 600000, // 10 minutes in milliseconds
+        };
+        
+        console.log(`🕰️ Schedule: ${scheduleOptions.type} - ${scheduleOptions.value}`);
+        result = await dcaBaselineFunction(ownerAddress, fromToken, toToken, amount, scheduleOptions);
+        
+    } else if (botType === 'range') {
+        // Range Bot execution
+        const tokenToMonitor = config.tokenToMonitor || 'SOL';
+        const tokenToMonitorPrice = config.tokenToMonitorPrice || 100;
+        const above = config.above !== undefined ? config.above : true;
+        
+        console.log(`📊 Price Monitoring: ${tokenToMonitor} ${above ? 'above' : 'below'} $${tokenToMonitorPrice}`);
+        result = await rangeBaselineFunction(ownerAddress, fromToken, toToken, amount, tokenToMonitor, tokenToMonitorPrice, above);
+        
+    } else if (botType === 'custom') {
+        // Custom Bot execution - use pre-generated function from baseline.js
+        const prompt = config.prompt;
+        
+        if (!prompt) {
+            throw new Error('Custom bot requires a prompt in the configuration');
+        }
+        
+        console.log(`🤖 Custom Bot Prompt: ${prompt}`);
+        console.log(`🚀 Executing custom baseline function...`);
+        
+        // Import the generated function from baseline.js (should be pre-generated by deployer)
+        try {
+            const { baselineFunction: customBaselineFunction } = await import('./baseline.js');
+            
+            if (!customBaselineFunction) {
+                throw new Error('No baselineFunction found in baseline.js. Make sure the deployer generated the code properly.');
+            }
+            
+            // Execute with hardcoded owner address and minimal config
+            result = await customBaselineFunction(ownerAddress, {});
+            
+        } catch (importError) {
+            throw new Error(`Failed to import custom baseline function: ${importError.message}`);
+        }
+        
+    } else {
+        throw new Error(`Unsupported bot type: ${botType}`);
+    }
     
     if (result.success) {
         console.log(`✅ Baseline execution started successfully`);
@@ -627,21 +691,38 @@ const SERVER_PORT = process.env.SERVER_PORT || 3000;
 
 // Example: Start server with custom trading configuration
 // You can modify these values or pass them as parameters
-// const tradingConfig = {
+// const dcaTradingConfig = {
 //     ownerAddress: "5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ",
 //     fromToken: 'USDC',
 //     toToken: 'SOL', 
-//     amount: 0.01,
+//     amount: 0.001,
 //     scheduleOptions: {
-//         executeImmediately: true,
+//         executeImmediately: false,
 //         type: 'interval',
-//         value: 600000, // 10 minutes in milliseconds
+//         value: 300000, // 5 minutes in milliseconds
 //         // Alternative time-based schedule:
 //         // type: 'times',
 //         // value: ['09:30', '15:30'], // UTC times
 //     }
 // };
 
-// createServer(SERVER_PORT, tradingConfig);
+// const rangeTradingConfig = {
+//     ownerAddress: "5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ",
+//     fromToken: 'USDC',
+//     toToken: 'SOL', 
+//     amount: 0.001,
+//     tokenToMonitor: 'SOL',
+//     tokenToMonitorPrice: 100,
+//     above: true
+// };
 
-// export { createServer };
+// const customTradingConfig = {
+//     prompt: "Buy 0.1 SOL with USDC every hour if Bitcoin is above $50000",
+//     history: [] // Optional conversation history
+// };
+
+// createServer(SERVER_PORT, dcaTradingConfig, 'dca');
+// createServer(SERVER_PORT, rangeTradingConfig, 'range');
+// createServer(SERVER_PORT, customTradingConfig, 'custom');
+
+export { createServer };

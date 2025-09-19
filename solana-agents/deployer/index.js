@@ -32,19 +32,31 @@ app.use((req, res, next) => {
 
 // Deploy Solana Agent
 app.post("/deploy-agent", async (req, res) => {
-  const { agentId, ownerAddress, swapConfig } = req.body;
+  const { agentId, ownerAddress, botType = 'dca', swapConfig } = req.body;
 
   console.log(`🚀 [DEPLOY] Starting deployment for Solana agent: ${agentId}`);
   console.log(`📋 [DEPLOY] Agent details:`, {
     agentId,
+    botType,
     hasOwnerAddress: !!ownerAddress,
     hasSwapConfig: !!swapConfig,
   });
+
+  // Validate botType
+  if (!['dca', 'range', 'custom'].includes(botType)) {
+    console.log(`❌ [DEPLOY] Invalid bot type: ${botType}`);
+    return res.status(400).json({
+      success: false,
+      error: "Invalid bot type. Must be 'dca', 'range', or 'custom'.",
+      validTypes: ['dca', 'range', 'custom']
+    });
+  }
 
   try {
     const agentUrl = await deployAgent({
       agentId,
       ownerAddress,
+      botType,
       swapConfig,
     });
     console.log(

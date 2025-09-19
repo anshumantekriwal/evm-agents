@@ -25,3 +25,5 @@ solana-agents/.env
 /solana-agents/deployer/node_modules
 solana-agents/baseline/.env
 solana-agents/deployer/.env
+solana-agents/code-generation/.env
+/solana-agents/code-generation/__pycache__

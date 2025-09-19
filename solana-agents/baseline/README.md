@@ -1,6 +1,32 @@
-# 🤖 Solana Trading Agent
+# 🤖 Solana Trading Agents
 
-A comprehensive Solana trading agent with automated swaps, scheduled execution, real-time monitoring, and status tracking via web interface.
+A comprehensive suite of Solana trading agents with automated swaps, price monitoring, scheduled execution, real-time monitoring, and status tracking via web interface.
+
+## 🎯 Bot Types
+
+### 📈 **DCA Bot** (`baseline-dca.js`)
+Dollar Cost Averaging bot for scheduled, regular trading:
+- **Schedule-based execution**: Trades at regular intervals or specific times
+- **Flexible timing**: Support for intervals (30m, 1h) or UTC times
+- **Immediate execution**: Optional immediate start
+- **Perfect for**: Regular investment strategies, automated DCA
+
+### 🎯 **Range Bot** (`baseline-range.js`)  
+Price-based trading bot that monitors market conditions:
+- **Real-time price monitoring**: Checks prices every 30 seconds
+- **Condition-based execution**: Trades when price thresholds are met
+- **Above/below triggers**: Configurable price conditions
+- **Perfect for**: Market timing, price-based strategies, limit orders
+
+## 🤔 Choosing Your Bot Type
+
+| Feature | DCA Bot | Range Bot |
+|---------|---------|-----------|
+| **Execution Trigger** | Time/Schedule | Price Conditions |
+| **Frequency** | Configurable intervals | Every 30 seconds (monitoring) |
+| **Use Case** | Regular investing | Market timing |
+| **Configuration** | Schedule options | Price thresholds |
+| **Best For** | DCA strategies, automated investing | Limit orders, price alerts |
 
 ## 🚀 Quick Start
 
@@ -24,17 +50,20 @@ The agent will start with:
 
 ### Core Files
 - **`server.js`** - Main entry point, web server and API endpoints
-- **`baseline.js`** - Core trading logic and scheduling coordination
+- **`baseline-dca.js`** - DCA bot with scheduled trading logic
+- **`baseline-range.js`** - Range bot with price monitoring logic
 - **`wallet.js`** - Wallet operations and balance management  
 - **`trading.js`** - Jupiter swaps, transfers, and market data
-- **`scheduler.js`** - Interval and time-based scheduling
+- **`scheduler.js`** - Interval and time-based scheduling (DCA bot)
 - **`logger.js`** - Logging and status management
 
 ## 📋 Features
 
 ### 🔄 **Automated Trading**
 - **Jupiter Integration**: Optimized swaps with 1.5% slippage tolerance
-- **Smart Scheduling**: Execute trades at intervals or specific UTC times
+- **Dual Bot Types**: DCA (scheduled) and Range (price-based) trading strategies
+- **Smart Scheduling**: Execute trades at intervals or specific UTC times (DCA)
+- **Price Monitoring**: Real-time price tracking with 30-second intervals (Range)
 - **Balance Monitoring**: Automatic balance checks and validation
 - **Error Recovery**: Robust error handling and retry logic
 
@@ -64,26 +93,37 @@ API_KEY=your_secure_api_key  # For withdrawal endpoint protection
 ```
 
 ### Trading Configuration
-Edit `server.js` to configure trading parameters (hardcoded per deployment):
+Edit `server.js` to configure trading parameters and bot type:
+
+**DCA Bot Configuration:**
 ```javascript
 // In server.js - startBaselineExecution function
-const ownerAddress = "your_owner_address";
-const fromToken = 'USDC';
-const toToken = 'SOL';
-const amount = 0.01;
-
-// Schedule configuration
-const scheduleOptions = {
-    type: 'times',
-    value: ['09:30', '15:30'], // UTC times
-    executeImmediately: false
+const botType = 'dca';
+const config = {
+    ownerAddress: "your_owner_address",
+    fromToken: 'USDC',
+    toToken: 'SOL',
+    amount: 0.01,
+    scheduleOptions: {
+        type: 'interval',
+        value: 30000, // milliseconds (30 seconds)
+        executeImmediately: true
+    }
 };
+```
 
-// Or for interval-based:
-const scheduleOptions = {
-    type: 'interval',
-    value: 30000, // milliseconds
-    executeImmediately: true
+**Range Bot Configuration:**
+```javascript
+// In server.js - startBaselineExecution function  
+const botType = 'range';
+const config = {
+    ownerAddress: "your_owner_address",
+    fromToken: 'USDC',
+    toToken: 'SOL',
+    amount: 0.01,
+    tokenToMonitor: 'SOL',        // Token to watch
+    tokenToMonitorPrice: 100,     // Target price ($100)
+    above: true                   // Execute when SOL > $100
 };
 ```
 
@@ -146,10 +186,10 @@ Requires `API_KEY` environment variable for authentication.
 
 ## 🛠️ Function Reference
 
-### **baseline.js**
+### **baseline-dca.js**
 
 #### `baselineFunction(ownerAddress, fromToken, toToken, amount, scheduleOptions)`
-Main trading function with optional scheduling support.
+DCA bot with scheduled trading execution.
 - **Parameters:**
   - `ownerAddress` (string): Wallet owner address
   - `fromToken` (string): Source token symbol (e.g., 'SOL', 'USDC')
@@ -172,6 +212,29 @@ Main trading function with optional scheduling support.
   type: 'times',
   value: ['09:30', '15:30'] // UTC times in HH:MM format
 }
+```
+
+### **baseline-range.js**
+
+#### `baselineFunction(ownerAddress, fromToken, toToken, amount, tokenToMonitor, tokenToMonitorPrice, above)`
+Range bot with price-based trading execution (runs every 30 seconds).
+- **Parameters:**
+  - `ownerAddress` (string): Wallet owner address
+  - `fromToken` (string): Source token symbol (e.g., 'SOL', 'USDC')
+  - `toToken` (string): Destination token symbol
+  - `amount` (number): Amount to swap
+  - `tokenToMonitor` (string): Token symbol to monitor for price conditions
+  - `tokenToMonitorPrice` (number): Target price threshold
+  - `above` (boolean): True for above price condition, false for below
+- **Returns:** Execution result with continuous monitoring info
+
+**Price Monitoring Examples:**
+```javascript
+// Execute when SOL price goes above $100
+baselineFunction(ownerAddress, 'USDC', 'SOL', 0.01, 'SOL', 100, true);
+
+// Execute when BTC price drops below $50,000
+baselineFunction(ownerAddress, 'SOL', 'BTC', 1, 'BTC', 50000, false);
 ```
 
 ### **wallet.js**
@@ -324,10 +387,12 @@ Update schedule information in current status.
 
 ### **server.js**
 
-#### `startBaselineExecution()`
-Initiates baseline trading execution with hardcoded parameters.
-- **Parameters:** None (uses hardcoded configuration)
-- **Returns:** Execution result from baselineFunction
+#### `startBaselineExecution(config, botType)`
+Initiates baseline trading execution with specified bot type and configuration.
+- **Parameters:** 
+  - `config` (object): Trading configuration
+  - `botType` (string): Bot type - 'dca' or 'range'
+- **Returns:** Execution result from respective baselineFunction
 
 #### Main Server Setup
 The server automatically:
@@ -336,9 +401,11 @@ The server automatically:
 - Begins baseline execution upon server startup
 - Handles graceful shutdown and error recovery
 
-## 📅 Scheduling System
+## 📅 Bot Execution Systems
 
-### Interval-based Execution
+### DCA Bot - Scheduling System
+
+#### Interval-based Execution
 ```javascript
 // Every 30 seconds with immediate execution
 {
@@ -355,7 +422,7 @@ The server automatically:
 }
 ```
 
-### Time-based Execution (UTC)
+#### Time-based Execution (UTC)
 ```javascript
 // Single daily execution at 9:30 AM UTC
 {
@@ -370,16 +437,40 @@ The server automatically:
 }
 ```
 
+### Range Bot - Price Monitoring System
+
+#### Continuous Price Monitoring
+```javascript
+// Monitor SOL price, execute when above $100
+baselineFunction(ownerAddress, 'USDC', 'SOL', 0.01, 'SOL', 100, true);
+
+// Monitor ETH price, execute when below $2000
+baselineFunction(ownerAddress, 'SOL', 'ETH', 0.5, 'ETH', 2000, false);
+```
+
+**Key Features:**
+- **30-second intervals**: Checks price every 30 seconds automatically
+- **Real-time execution**: Trades immediately when price condition is met
+- **Continuous monitoring**: Runs indefinitely until stopped
+- **Price threshold logic**: Supports both above and below conditions
+
 ### Status Information
 
 The status system provides real-time information about:
 
-**For Interval Schedules:**
+**For DCA Bot (Scheduled Execution):**
 - Time until next execution (e.g., "Next execution in: 4m 25s")
 - Interval duration in milliseconds
 - Whether immediate execution is enabled
+- Schedule type and configuration
 
-**For Time-based Schedules:**
+**For Range Bot (Price Monitoring):**
+- Current monitored token price
+- Target price threshold and condition (above/below)
+- Time since last price check
+- Execution status (waiting/condition met/skipped)
+
+**For Time-based Schedules (DCA only):**
 - Next execution time in UTC (e.g., "Next execution at: 15:30:00 UTC")
 - All configured execution times
 - Automatic rollover to next day

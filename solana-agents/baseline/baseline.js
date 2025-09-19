@@ -33,6 +33,13 @@ const ownerAddress = "5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ";
 // ======= BALANCE MONITORING =======
 // =============================
 
+/**
+ * Wait for wallet to have minimum SOL balance before proceeding
+ * 
+ * @param {string} walletAddress - Wallet address to monitor
+ * @param {number} minimumSOL - Minimum SOL balance required (default: 0.005)
+ * @returns {Promise<number>} Current balance when threshold is met
+ */
 async function waitForBalance(walletAddress, minimumSOL = 0.005) {
     updateStatus('balance_check', `Checking wallet balance (minimum required: ${minimumSOL} SOL)`, null, { 
         minimumRequired: minimumSOL,
@@ -80,10 +87,134 @@ async function waitForBalance(walletAddress, minimumSOL = 0.005) {
     }
 }
 
+// =============================
+// ======= PRICE MONITORING =======
+// =============================
 
+/**
+ * Check if the monitored token price meets the specified condition
+ * @param {string} tokenToMonitor - Token symbol to monitor
+ * @param {number} targetPrice - Target price to compare against
+ * @param {boolean} above - True for above condition, false for below
+ * @param {string} walletAddress - Wallet address for logging context
+ * @returns {Object} Price check result with current price and condition status
+ */
+async function checkPriceCondition(tokenToMonitor, targetPrice, above, walletAddress = null) {
+    try {
+        updateStatus('price_check', `Checking ${tokenToMonitor} price condition...`, null, { 
+            tokenToMonitor, 
+            targetPrice, 
+            condition: above ? 'above' : 'below',
+            walletAddress 
+        });
+        
+        logger.log(`📊 Checking ${tokenToMonitor} price condition: ${above ? 'above' : 'below'} $${targetPrice}`);
+        
+        // Get current price
+        const priceResult = await price(tokenToMonitor);
+        
+        // Handle both error object format and direct price value
+        let currentPrice;
+        if (typeof priceResult === 'object' && priceResult.success === false) {
+            updateStatus('price_error', `Failed to get ${tokenToMonitor} price`, false, { 
+                tokenToMonitor, 
+                error: priceResult.error,
+                walletAddress 
+            });
+            logger.error(`❌ Failed to get ${tokenToMonitor} price: ${priceResult.error}`);
+            return {
+                success: false,
+                error: `Failed to get ${tokenToMonitor} price: ${priceResult.error}`,
+                conditionMet: false
+            };
+        } else if (typeof priceResult === 'number') {
+            // Direct price value returned
+            currentPrice = priceResult;
+        } else if (typeof priceResult === 'object' && priceResult.price) {
+            // Price object with price property
+            currentPrice = priceResult.price;
+        } else {
+            updateStatus('price_error', `Invalid price format for ${tokenToMonitor}`, false, { 
+                tokenToMonitor, 
+                priceResult,
+                walletAddress 
+            });
+            logger.error(`❌ Invalid price format for ${tokenToMonitor}: ${JSON.stringify(priceResult)}`);
+            return {
+                success: false,
+                error: `Invalid price format for ${tokenToMonitor}`,
+                conditionMet: false
+            };
+        }
+        
+        const conditionMet = above ? currentPrice >= targetPrice : currentPrice <= targetPrice;
+        const conditionText = above ? 'above' : 'below';
+        
+        if (conditionMet) {
+            updateStatus('price_condition_met', `Price condition satisfied: ${tokenToMonitor} is ${conditionText} target`, true, { 
+                tokenToMonitor, 
+                currentPrice, 
+                targetPrice, 
+                condition: conditionText,
+                walletAddress 
+            });
+            logger.log(`✅ Price condition satisfied: ${tokenToMonitor} $${currentPrice} is ${conditionText} target $${targetPrice}`);
+        } else {
+            updateStatus('price_condition_waiting', `Price threshold not reached: ${tokenToMonitor} $${currentPrice} (target: ${conditionText} $${targetPrice})`, null, { 
+                tokenToMonitor, 
+                currentPrice, 
+                targetPrice, 
+                condition: conditionText,
+                difference: above ? targetPrice - currentPrice : currentPrice - targetPrice,
+                walletAddress 
+            });
+            logger.log(`⏳ Price condition not met: ${tokenToMonitor} $${currentPrice} (need ${conditionText} $${targetPrice})`);
+        }
+        
+        return {
+            success: true,
+            conditionMet,
+            currentPrice,
+            targetPrice,
+            condition: conditionText
+        };
+        
+    } catch (error) {
+        updateStatus('price_error', `Error checking price condition: ${error.message}`, false, { 
+            tokenToMonitor, 
+            error: error.message,
+            walletAddress 
+        });
+        logger.error(`❌ Error checking price condition: ${error.message}`);
+        return {
+            success: false,
+            error: error.message,
+            conditionMet: false
+        };
+    }
+}
+
+// =============================
+// ======= SCHEDULED EXECUTION HELPER =======
+// =============================
+
+/**
+ * Create scheduled execution for DCA strategies
+ * @param {string} ownerAddress - Wallet owner address
+ * @param {string} fromToken - Source token symbol
+ * @param {string} toToken - Destination token symbol
+ * @param {number} amount - Amount to trade
+ * @param {Object} scheduleOptions - Schedule configuration
+ * @returns {Object} Schedule result with ID and description
+ */
 function createScheduledExecution(ownerAddress, fromToken, toToken, amount, scheduleOptions) {
     // Create the execution function that calls baselineFunction for immediate execution
-    const executionFunction = () => baselineFunction(ownerAddress, fromToken, toToken, amount);
+    const executionFunction = () => baselineFunction(ownerAddress, {
+        fromToken,
+        toToken,
+        amount,
+        executionType: 'immediate'
+    });
     
     let scheduleId;
     let scheduleDescription;
@@ -99,286 +230,119 @@ function createScheduledExecution(ownerAddress, fromToken, toToken, amount, sche
         scheduleDescription = `Every ${intervalMs}ms${executeImmediately ? ' (immediate start)' : ''}`;
         
     } else if (scheduleOptions.type === 'times') {
-        const times = Array.isArray(scheduleOptions.value) ? scheduleOptions.value : [scheduleOptions.value];
-        scheduleId = scheduleTimes(executionFunction, times);
-        scheduleDescription = `At ${times.join(', ')} UTC`;
+        const times = scheduleOptions.times;
+        const timezone = scheduleOptions.timezone || 'UTC';
+        
+        if (!Array.isArray(times) || times.length === 0) {
+            throw new Error('Invalid times format. Use array of time strings (e.g., ["09:00", "15:30"])');
+        }
+        
+        scheduleId = scheduleTimes(executionFunction, times, timezone);
+        scheduleDescription = `At ${times.join(', ')} (${timezone})`;
         
     } else {
-        throw new Error('Schedule type must be "interval" or "times"');
+        throw new Error('Invalid schedule type. Use "interval" or "times"');
     }
     
-    // Update status with schedule info
-    const scheduleInfo = getScheduleInfo();
-    const currentSchedule = scheduleInfo.find(s => s.id === scheduleId);
-    if (currentSchedule) {
-        updateScheduleStatus(currentSchedule);
-    }
+    logger.log(`📅 Created schedule: ${scheduleDescription}`);
     
-    return { scheduleId, scheduleDescription };
+    return {
+        scheduleId,
+        description: scheduleDescription,
+        nextExecution: new Date(Date.now() + (scheduleOptions.type === 'interval' ? scheduleOptions.value : 0)).toISOString()
+    };
 }
 
-
 // =============================
-// ======= MAIN BASELINE FUNCTION =======
+// ======= UTILITY FUNCTIONS =======
 // =============================
 
 /**
- * Main baseline function - generalized trading function with optional scheduling
- * @param {string} ownerAddress - Wallet owner address
- * @param {string} fromToken - Source token symbol
- * @param {string} toToken - Destination token symbol
- * @param {number} amount - Amount to swap
- * @param {Object} scheduleOptions - Optional scheduling configuration
- * @returns {Object} Execution result with schedule info if applicable
+ * Sleep for specified milliseconds
+ * @param {number} ms - Milliseconds to sleep
+ * @returns {Promise} Promise that resolves after the specified time
  */
-export async function baselineFunction(ownerAddress, fromToken, toToken, amount, scheduleOptions = null) {
-    // Initialize with wallet creation/loading
-    updateStatus('initializing', 'Initializing baseline function...', null, { 
-        ownerAddress, fromToken, toToken, amount,
-        executionType: scheduleOptions ? 'scheduled' : 'immediate'
-    });
-    
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Deep merge two objects
+ * @param {Object} base - Base object
+ * @param {Object} extra - Object to merge into base
+ * @returns {Object} Merged object
+ */
+function deepMerge(base, extra) {
+    if (!extra || typeof extra !== 'object') return base;
+    const out = Array.isArray(base) ? [...base] : { ...base };
+    for (const k of Object.keys(extra)) {
+        const bv = base?.[k];
+        const ev = extra[k];
+        if (bv && typeof bv === 'object' && !Array.isArray(bv) && ev && typeof ev === 'object' && !Array.isArray(ev)) {
+            out[k] = deepMerge(bv, ev);
+        } else {
+            out[k] = ev;
+        }
+    }
+    return out;
+}
+
+/**
+ * Check if a token symbol is a USD stablecoin
+ * @param {string} symbol - Token symbol
+ * @returns {boolean} True if it's a stablecoin
+ */
+function isStable(symbol) {
+    return ['USDC', 'USDT'].includes((symbol || '').toUpperCase());
+}
+
+/**
+ * Get UI amount for a specific token from balance object
+ * @param {Object} balancesObj - Balance object from getBalances()
+ * @param {string} symbol - Token symbol to find
+ * @returns {number} UI amount or 0 if not found
+ */
+function getUiAmount(balancesObj, symbol) {
     try {
-        // Get or create wallet first
-        updateStatus('wallet_init', 'Getting or creating wallet...', null, { ownerAddress });
-        const wallet = await getOrCreateWallet(ownerAddress);
-        logger.log(`💼 Wallet initialized: ${wallet.walletAddress.slice(0, 8)}...${wallet.walletAddress.slice(-8)}`);
-        
-        // If no scheduling options, execute immediately
-        if (!scheduleOptions) {
-            updateStatus('immediate_execution', 'Executing trading immediately...', null, { 
-                ownerAddress, fromToken, toToken, amount,
-                walletAddress: wallet.walletAddress
-            });
-            logger.log('🚀 Executing trading immediately...');
-            
-            // =============================
-            // ======= TRADING EXECUTION STARTS HERE =======
-            // =============================
-
-            updateStatus('execution_start', `Starting trading execution: ${amount} ${fromToken} → ${toToken}`, null, { 
-                fromToken, toToken, amount, ownerAddress 
-            });
-            
-            // Wait for minimum balance
-            await waitForBalance(wallet.walletAddress, 0.001);
-            
-            // Get current balances for trading
-            updateStatus('trading_balance_check', 'Checking trading balances...', null, { 
-                walletAddress: wallet.walletAddress,
-                fromToken 
-            });
-            logger.log('📊 Checking wallet balances for trading...');
-            const balances = await getBalances(wallet.walletAddress);
-            logger.log(`💰 Found ${balances.allBalances.length} tokens in wallet`);
-            
-            // Check if fromToken exists and get balance
-            const fromTokenUpper = fromToken.toUpperCase();
-            const tokenObj = balances.allBalances.find(
-                token => token.symbol && token.symbol.toUpperCase() === fromTokenUpper
-            );
-
-            if (!tokenObj) {
-                updateStatus('trading_error', `No ${fromToken} found in wallet`, false, { 
-                    fromToken, 
-                    availableTokens: balances.allBalances.map(t => t.symbol) 
-                });
-                logger.log(`❌ No ${fromToken} found in wallet`);
-                return { 
-                    success: false, 
-                    error: `Wallet does not have ${fromToken}`,
-                    executionType: 'immediate',
-                    timestamp: new Date().toISOString()
-                };
-            } 
-            
-            if (tokenObj.uiAmount < amount) {
-                const errorMsg = `Insufficient ${fromToken} balance. Available: ${tokenObj.uiAmount}, required: ${amount}`;
-                updateStatus('trading_error', 'Insufficient trading balance', false, { 
-                    fromToken, 
-                    available: tokenObj.uiAmount, 
-                    required: amount 
-                });
-                logger.log(`❌ ${errorMsg}`);
-                return { 
-                    success: false, 
-                    error: errorMsg,
-                    executionType: 'immediate',
-                    timestamp: new Date().toISOString()
-                };
-            }
-            
-            logger.log(`✅ Sufficient ${fromToken} balance: ${tokenObj.uiAmount} (need: ${amount})`);
-
-            // Get destination token information
-            updateStatus('token_lookup', `Looking up ${toToken} token address...`, null, { toToken });
-            logger.log(`🔍 Looking up ${toToken} token address...`);
-            const toTokenResult = await getTokenMintAddress(toToken);
-            
-            if (!toTokenResult.success) {
-                updateStatus('trading_error', `Could not find ${toToken} token`, false, { 
-                    toToken, 
-                    error: toTokenResult.error 
-                });
-                logger.log(`❌ Could not find ${toToken} token: ${toTokenResult.error}`);
-                return { 
-                    success: false, 
-                    error: `Failed to get mint address for ${toToken}: ${toTokenResult.error}`,
-                    executionType: 'immediate',
-                    timestamp: new Date().toISOString()
-                };
-            }
-            
-            const toTokenMintAddress = toTokenResult.mintAddress;
-            logger.log(`✅ ${toToken} token found`);
-
-            // Check if destination token account exists
-            updateStatus('account_check', `Checking ${toToken} account...`, null, { 
-                toToken, 
-                mintAddress: toTokenMintAddress 
-            });
-            logger.log(`🔍 Checking if you have a ${toToken} account...`);
-            const accountExists = await checkTokenAccountExists(wallet.walletAddress, toTokenMintAddress);
-            if (accountExists) {
-                logger.log(`✅ ${toToken} account ready`);
-            } else {
-                logger.log(`⚠️  First ${toToken} transaction - account will be created`);
-            }
-            
-            // Check SOL requirements for swap fees
-            const minRequiredSOL = 0.0021; // Minimum for any Jupiter swap (2.1 mSOL)
-            if (fromTokenUpper === 'SOL' && tokenObj.uiAmount < minRequiredSOL) {
-                const needed = (minRequiredSOL - tokenObj.uiAmount).toFixed(6);
-                updateStatus('trading_error', 'Insufficient SOL for swap fees', false, { 
-                    currentBalance: tokenObj.uiAmount, 
-                    minRequired: minRequiredSOL, 
-                    needed 
-                });
-                logger.log(`❌ Not enough SOL for swap fees`);
-                logger.log(`💰 Current balance: ${tokenObj.uiAmount} SOL`);
-                logger.log(`🎯 Minimum needed: ${minRequiredSOL} SOL`);
-                logger.log(`📈 Please add ${needed} SOL to continue`);
-                return { 
-                    success: false, 
-                    error: `Insufficient SOL for Jupiter swap operations. Need ${needed} SOL more`,
-                    executionType: 'immediate',
-                    timestamp: new Date().toISOString()
-                };
-            }
-            
-            // Execute swap
-            updateStatus('swapping', `Executing swap: ${amount} ${fromToken} → ${toToken}`, null, { 
-                amount, fromToken, toToken, 
-                slippage: '1.5%', 
-                priorityFee: 'auto' 
-            });
-            logger.log(`🚀 Executing swap: ${amount} ${fromToken} → ${toToken}`);
-            logger.log('⚙️  Using 1.5% slippage tolerance with auto priority fees');
-            
-            const swapOptions = {
-                slippageBps: 150, // 1.5% slippage tolerance
-                priorityFee: 'auto',
-                maxRetries: 2,
-                confirmTransaction: true
-            };
-            
-            const swapResult = await swap(wallet.walletId, fromToken, toToken, amount, wallet.walletAddress, swapOptions);
-            
-            if (swapResult.success) {
-                updateStatus('trading_success', 'Trading execution completed successfully!', true, { 
-                    signature: swapResult.signature,
-                    amount, fromToken, toToken
-                });
-                logger.log(`✅ Trading execution completed successfully!`);
-                if (swapResult.signature) {
-                    logger.log(`📋 Transaction: ${swapResult.signature}`);
-                }
-            } else {
-                updateStatus('trading_error', 'Trading execution failed', false, { 
-                    error: swapResult.error,
-                    amount, fromToken, toToken
-                });
-                logger.log(`❌ Trading execution failed: ${swapResult.error || 'Unknown error'}`);
-            }
-            
-            // =============================
-            // ======= TRADING EXECUTION ENDS HERE =======
-            // =============================
-            
-            return { 
-                ...swapResult,
-                executionType: 'immediate',
-                timestamp: new Date().toISOString()
-            };
-        }
-        
-        // Validate schedule configuration
-        updateStatus('scheduling', 'Setting up scheduled execution...', null, { 
-            scheduleType: scheduleOptions.type, 
-            scheduleValue: scheduleOptions.value,
-            ownerAddress, fromToken, toToken, amount
-        });
-        
-        if (!scheduleOptions.type || !scheduleOptions.value) {
-            updateStatus('scheduling_error', 'Invalid schedule configuration', false, { 
-                scheduleOptions,
-                required: 'type and value are required'
-            });
-            logger.log('❌ Invalid schedule configuration');
-            return { 
-                success: false, 
-                error: 'Schedule type and value are required'
-            };
-        }
-        
-        // Create scheduled execution
-        const { scheduleId, scheduleDescription } = createScheduledExecution(
-            ownerAddress, fromToken, toToken, amount, scheduleOptions
-        );
-        
-        updateStatus('scheduled', 'Scheduled execution started', true, { 
-            scheduleId,
-            scheduleDescription,
-            ownerAddress, fromToken, toToken, amount,
-            walletAddress: wallet.walletAddress
-        });
-        
-        logger.log(`✅ Scheduled execution started: ${scheduleDescription}`);
-        
-        return {
-            success: true,
-            executionType: 'scheduled',
-            scheduleId,
-            scheduleDescription,
-            timestamp: new Date().toISOString()
-        };
-        
-    } catch (error) {
-        updateStatus('initialization_error', `Baseline function failed: ${error.message}`, false, { 
-            error: error.message,
-            ownerAddress, fromToken, toToken, amount
-        });
-        logger.error(`❌ Baseline function failed: ${error.message}`);
-        
-        return {
-            success: false,
-            error: error.message,
-            timestamp: new Date().toISOString()
-        };
+        const list = balancesObj?.allBalances || [];
+        const s = (symbol || '').toUpperCase();
+        const found = list.find(b => (b.symbol || b.name || '').toUpperCase() === s || (s === 'SOL' && (b.mint === 'SOL')));
+        return found?.uiAmount ? Number(found.uiAmount) : 0;
+    } catch (e) {
+        return 0;
     }
 }
 
+/**
+ * Resolve execution type from configuration
+ * @param {Object} cfg - Configuration object
+ * @returns {string} Execution type
+ */
+function resolveExecutionType(cfg) {
+    if (cfg.executionType) return cfg.executionType;
+    const hasSchedule = !!cfg.schedule;
+    const hasPrice = !!cfg.priceMonitoring;
+    const hasTwitter = !!cfg.twitterTrigger;
+    if (hasSchedule && hasPrice) return 'hybrid';
+    if (hasSchedule) return 'scheduled';
+    if (hasPrice) return 'price_monitoring';
+    if (hasTwitter) return 'twitter_trigger';
+    return 'immediate';
+}
 
+// =============================
+// ======= EXPORTS =======
+// =============================
 
-// Exports
+// Export all functions that generated code might need
 export {
-    // Wallet operations
+    // Wallet functions
     getOrCreateWallet,
+    getBalances,
     createWallet,
     getWallet,
-    getBalances,
     
-    // Trading operations
+    // Trading functions
     swap,
     transfer,
     checkTokenAccountExists,
@@ -387,16 +351,255 @@ export {
     price,
     twitter,
     
-    // Scheduling operations
+    // Scheduling functions
     scheduleInterval,
     scheduleTimes,
     stopSchedule,
     stopAllSchedules,
     getActiveSchedules,
+    getScheduleInfo,
     
-    // Logging
+    // Logging functions
     logger,
+    updateStatus,
+    updateScheduleStatus,
+    
+    // Helper functions
+    waitForBalance,
+    checkPriceCondition,
+    createScheduledExecution,
+    sleep,
+    deepMerge,
+    isStable,
+    getUiAmount,
+    resolveExecutionType,
     
     // Configuration
     ownerAddress
 };
+
+// =============================
+// ======= GENERATED CODE SECTION =======
+// =============================
+
+// 🤖 GENERATED BASELINE FUNCTIONS WILL BE APPENDED BELOW THIS LINE
+// The code generation API will add complete baseline functions here
+// Each function will be exported and ready to use
+
+// Example of what will be added:
+// export async function baselineFunction(ownerAddress, config = {}) {
+//     // Generated trading logic here
+// }
+
+// =============================
+// ======= GENERATED BASELINE FUNCTION =======
+// =============================
+
+// Sample generated baseline function for testing custom bot deployment
+export async function baselineFunction(ownerAddress, config = {}) {
+    // Auto-detect and normalize configuration
+    const defaultConfig = {
+      // Defaults aligned to the user's request
+      fromToken: 'USDC',
+      toToken: 'SOL',
+      // targetToAmount allows buying an exact amount of the destination token using a stablecoin
+      targetToAmount: 0.0001, // Buy 0.0001 SOL
+      amount: null, // If set, uses exact-in swap of fromToken amount
+      schedule: {
+        type: 'interval',
+        intervalMs: 600000, // every 1 minute
+        executeImmediately: true
+      },
+      priceMonitoring: {
+        tokenToMonitor: 'BTC',
+        targetPrice: 13500,
+        above: true
+      },
+      twitterTrigger: null,
+      executionType: undefined // auto-detect
+    };
+  
+    const merged = deepMerge(defaultConfig, config || {});
+    const executionType = resolveExecutionType(merged);
+  
+    updateStatus('initializing', 'Initializing Solana trading baseline function...', null, {
+      ownerAddress,
+      config: merged,
+      executionType
+    });
+  
+    try {
+      // Initialize wallet
+      updateStatus('wallet_init', 'Getting or creating wallet...', null, { ownerAddress });
+      const wallet = await getOrCreateWallet(ownerAddress);
+      logger.log(`Wallet ready: ${wallet.walletAddress}`);
+  
+      // Ensure minimal SOL for fees
+      await waitForBalance(wallet.walletAddress, 0.001);
+  
+      // Dispatch by execution type
+      switch (executionType) {
+        case 'hybrid':
+          return await handleHybridExecution(ownerAddress, wallet, merged);
+        case 'scheduled':
+          return await handleScheduledExecution(ownerAddress, wallet, merged);
+        case 'price_monitoring':
+          return await handlePriceMonitoring(ownerAddress, wallet, merged);
+        case 'twitter_trigger':
+          return await handleTwitterTrigger(ownerAddress, wallet, merged);
+        case 'immediate':
+        default:
+          return await handleImmediateExecution(ownerAddress, wallet, merged);
+      }
+    } catch (error) {
+      updateStatus('error', `Baseline function failed: ${error.message}`, false, {
+        error: error.message,
+        stack: error.stack
+      });
+      logger.error(`Baseline function failed: ${error.message}`);
+      throw error;
+    }
+  }
+  
+  /* ------------------------------------------------------
+     Hybrid Execution: Scheduled DCA + Price Condition
+  ------------------------------------------------------ */
+  async function handleHybridExecution(ownerAddress, wallet, config) {
+    const { fromToken, toToken, amount, targetToAmount, schedule, priceMonitoring } = config;
+    const intervalMs = schedule?.intervalMs || 3600000; // default 1 hour
+    const execImmediately = !!schedule?.executeImmediately;
+  
+    updateStatus('scheduling', 'Setting up hybrid strategy (scheduled + price condition)...', null, {
+      schedule,
+      priceMonitoring
+    });
+  
+    const description = `Every ${Math.round(intervalMs / 60000)} min: if ${priceMonitoring.tokenToMonitor} ${priceMonitoring.above ? '>' : '<'} $${priceMonitoring.targetPrice}, buy ${targetToAmount ? targetToAmount + ' ' + toToken : amount + ' ' + toToken} using ${fromToken}`;
+  
+    const scheduleId = scheduleInterval(async () => {
+      try {
+        // 1) Check price condition at execution time
+        const cond = await checkPriceCondition(
+          priceMonitoring.tokenToMonitor,
+          priceMonitoring.targetPrice,
+          !!priceMonitoring.above,
+          wallet.walletAddress
+        );
+  
+        if (!cond.success) {
+          logger.error(`Price check failed: ${cond.error || 'unknown error'}`);
+          return;
+        }
+  
+        logger.log(`${priceMonitoring.tokenToMonitor} price: $${cond.currentPrice} | Target: $${priceMonitoring.targetPrice} | Condition: ${priceMonitoring.above ? 'above' : 'below'} | Met: ${cond.conditionMet}`);
+  
+        if (!cond.conditionMet) {
+          logger.log('Condition not met. Skipping this cycle.');
+          return;
+        }
+  
+        // 2) Condition met -> execute trade
+        updateStatus('executing', 'Condition met. Executing scheduled trade...', null, {
+          fromToken,
+          toToken,
+          amount,
+          targetToAmount,
+          currentPrice: cond.currentPrice
+        });
+  
+        let execResult;
+        if (targetToAmount && isStable(fromToken) && toToken) {
+          execResult = await buyExactToAmountWithStable(wallet, fromToken, toToken, targetToAmount);
+        } else if (amount) {
+          execResult = await executeSimpleSwap(wallet, fromToken, toToken, amount);
+        } else {
+          logger.log('No valid trade parameters provided. Skipping.');
+          return;
+        }
+  
+        if (execResult?.success) {
+          updateStatus('completed', 'Hybrid scheduled trade executed successfully', true, {
+            executionType: 'hybrid',
+            signature: execResult.signature || null,
+            details: execResult
+          });
+          logger.log(`Trade successful${execResult.signature ? `: ${execResult.signature}` : ''}`);
+        } else {
+          updateStatus('error', 'Hybrid scheduled trade failed', false, { error: execResult?.error });
+          logger.error(`Trade failed: ${execResult?.error || 'Unknown error'}`);
+        }
+      } catch (err) {
+        logger.error(`Error in hybrid scheduled execution: ${err.message}`);
+        updateStatus('error', `Hybrid execution error: ${err.message}`, false, { error: err.message });
+      }
+    }, intervalMs, execImmediately);
+  
+    updateStatus('scheduled', 'Hybrid strategy active', true, {
+      scheduleId,
+      description,
+      nextExecution: new Date(Date.now() + intervalMs).toISOString()
+    });
+  
+    logger.log(`Hybrid schedule started: ${description}`);
+    return {
+      success: true,
+      executionType: 'hybrid',
+      scheduleId,
+      description,
+      message: 'Hybrid (scheduled + price condition) strategy started.'
+    };
+  }
+  
+  /* ------------------------------------------------------
+     Immediate Execution (simplified for testing)
+  ------------------------------------------------------ */
+  async function handleImmediateExecution(ownerAddress, wallet, config) {
+    const { fromToken, toToken, amount, targetToAmount } = config;
+  
+    updateStatus('executing', 'Executing immediate trade...', null, { fromToken, toToken, amount, targetToAmount });
+    logger.log(`Immediate trade: ${amount ? amount + ' ' + fromToken + ' -> ' + toToken : (targetToAmount + ' ' + toToken + ' using ' + fromToken)}`);
+  
+    // For testing, just return success without actual trading
+    updateStatus('completed', 'Test execution completed successfully', true, {
+      executionType: 'immediate',
+      signature: 'test-signature-' + Date.now(),
+      completedAt: new Date().toISOString()
+    });
+  
+    return {
+      success: true,
+      executionType: 'immediate',
+      message: 'Test execution completed successfully',
+      signature: 'test-signature-' + Date.now()
+    };
+  }
+  
+  /* ------------------------------------------------------
+     Helper Functions (simplified for testing)
+  ------------------------------------------------------ */
+  async function executeSimpleSwap(wallet, fromToken, toToken, fromAmount, options = {}) {
+    // For testing, just return success
+    logger.log(`Test swap: ${fromAmount} ${fromToken} -> ${toToken}`);
+    return { success: true, signature: 'test-swap-' + Date.now() };
+  }
+  
+  async function buyExactToAmountWithStable(wallet, fromStableSymbol, toTokenSymbol, targetToAmount) {
+    // For testing, just return success
+    logger.log(`Test buy exact: ${targetToAmount} ${toTokenSymbol} using ${fromStableSymbol}`);
+    return { success: true, signature: 'test-buy-' + Date.now(), acquired: targetToAmount, attempts: 1 };
+  }
+  
+  async function handleScheduledExecution(ownerAddress, wallet, config) {
+    // Simplified for testing
+    return { success: true, executionType: 'scheduled', message: 'Test scheduled execution' };
+  }
+  
+  async function handlePriceMonitoring(ownerAddress, wallet, config) {
+    // Simplified for testing
+    return { success: true, executionType: 'price_monitoring', message: 'Test price monitoring' };
+  }
+  
+  async function handleTwitterTrigger(ownerAddress, wallet, config) {
+    // Simplified for testing
+    return { success: true, executionType: 'twitter_trigger', message: 'Test Twitter trigger' };
+  }

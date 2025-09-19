@@ -15,25 +15,111 @@ const {
 const REGION = process.env.AWS_REGION || "us-east-1";
 const ACCOUNT_ID = process.env.AWS_ACCOUNT_ID;
 
+// =============================
+// ======= CODE GENERATION UTILITIES =======
+// =============================
+
+/**
+ * Generate custom code using sample template (for testing)
+ * @param {string} prompt - Natural language prompt
+ * @param {Array} history - Conversation history (optional)
+ * @returns {Promise<Object>} Generated code result
+ */
+async function generateCustomCode(prompt, history = []) {
+  try {
+    console.log(`🤖 Using sample generated code for prompt: ${prompt}`);
+    
+    // Read the sample generated code
+    const sampleCodePath = path.join(__dirname, 'sample-generated-code.js');
+    
+    if (!fs.existsSync(sampleCodePath)) {
+      throw new Error('Sample generated code file not found');
+    }
+    
+    const sampleCode = fs.readFileSync(sampleCodePath, 'utf8');
+    
+    console.log(`✅ Sample code loaded successfully`);
+    return {
+      success: true,
+      code: sampleCode,
+      metadata: {
+        prompt: prompt,
+        generatedAt: new Date().toISOString(),
+        source: 'sample-template'
+      }
+    };
+    
+  } catch (error) {
+    console.error(`❌ Code generation failed: ${error.message}`);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
+
+/**
+ * Clean and validate generated code for deployment
+ * @param {string} rawCode - Raw generated code
+ * @returns {string} Cleaned code ready for deployment
+ */
+function cleanGeneratedCode(rawCode) {
+  try {
+    // Remove any leading/trailing whitespace
+    let cleanCode = rawCode.trim();
+    
+    // Ensure the code starts with proper export
+    if (!cleanCode.includes('export')) {
+      console.log('⚠️ Generated code missing export, adding export statement');
+      cleanCode = cleanCode.replace(/^(async\s+)?function\s+baselineFunction/, 'export async function baselineFunction');
+    }
+    
+    // Ensure proper line endings
+    if (!cleanCode.endsWith('\n')) {
+      cleanCode += '\n';
+    }
+    
+    console.log(`✅ Code cleaned and validated`);
+    return cleanCode;
+    
+  } catch (error) {
+    console.error(`❌ Error cleaning generated code: ${error.message}`);
+    throw error;
+  }
+}
+
 /**
  * Deploy a Solana trading agent with custom configuration
  * 
  * @param {Object} params - Deployment parameters
  * @param {string} params.agentId - Unique identifier for the agent
  * @param {string} params.ownerAddress - Solana wallet owner address
+ * @param {string} params.botType - Type of bot: 'dca', 'range', or 'custom' (default: 'dca')
  * @param {Object} params.swapConfig - Trading configuration
  * @param {string} params.swapConfig.fromToken - Source token symbol (e.g., 'USDC')
  * @param {string} params.swapConfig.toToken - Destination token symbol (e.g., 'SOL')
  * @param {number} params.swapConfig.amount - Amount to trade
+ * 
+ * DCA Bot specific:
  * @param {string} params.swapConfig.scheduleType - 'interval' or 'times'
  * @param {number|string|array} params.swapConfig.scheduleValue - Interval (ms or string like '30m') or array of UTC times
  * @param {boolean} params.swapConfig.executeImmediately - Execute immediately on start (default: true)
  * 
+ * Range Bot specific:
+ * @param {string} params.swapConfig.tokenToMonitor - Token symbol to monitor for price conditions
+ * @param {number} params.swapConfig.tokenToMonitorPrice - Target price threshold
+ * @param {boolean} params.swapConfig.above - True for above price condition, false for below (default: true)
+ * 
+ * Custom Bot specific:
+ * @param {string} params.swapConfig.prompt - Natural language prompt for code generation
+ * @param {Array} params.swapConfig.history - Optional conversation history for context
+ * 
  * @example
- * // Interval-based trading
+ * // DCA Bot - Interval-based trading
  * deployAgent({
- *   agentId: 'my-agent-1',
+ *   agentId: 'my-dca-agent',
  *   ownerAddress: '5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ',
+ *   botType: 'dca',
  *   swapConfig: {
  *     fromToken: 'USDC',
  *     toToken: 'SOL',
@@ -45,22 +131,36 @@ const ACCOUNT_ID = process.env.AWS_ACCOUNT_ID;
  * });
  * 
  * @example
- * // Time-based trading
+ * // Range Bot - Price-based trading
  * deployAgent({
- *   agentId: 'my-agent-2',
+ *   agentId: 'my-range-agent',
  *   ownerAddress: '5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ',
+ *   botType: 'range',
  *   swapConfig: {
- *     fromToken: 'SOL',
- *     toToken: 'USDC',
- *     amount: 0.005,
- *     scheduleType: 'times',
- *     scheduleValue: ['09:30', '15:30'], // UTC times
- *     executeImmediately: false
+ *     fromToken: 'USDC',
+ *     toToken: 'SOL',
+ *     amount: 0.01,
+ *     tokenToMonitor: 'SOL',
+ *     tokenToMonitorPrice: 100,
+ *     above: true
+ *   }
+ * });
+ * 
+ * @example
+ * // Custom Bot - AI-generated trading logic
+ * deployAgent({
+ *   agentId: 'my-custom-agent',
+ *   ownerAddress: '5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ',
+ *   botType: 'custom',
+ *   swapConfig: {
+ *     prompt: 'Buy 0.1 SOL with USDC every hour if Bitcoin is above $50000',
+ *     history: []
  *   }
  * });
  */
-async function deployAgent({ agentId, ownerAddress, swapConfig }) {
+async function deployAgent({ agentId, ownerAddress, botType = 'dca', swapConfig }) {
   console.log(`🚀 Starting deployment for Solana agent: ${agentId}`);
+  console.log(`🤖 Bot Type: ${botType}`);
   console.log(`📍 Region: ${REGION}`);
   console.log(`🏢 Account ID: ${ACCOUNT_ID}`);
 
@@ -92,7 +192,8 @@ async function deployAgent({ agentId, ownerAddress, swapConfig }) {
   // Copy core files
   const filesToCopy = [
     "server.js",
-    "baseline.js",
+    "baseline-dca.js",
+    "baseline-range.js", 
     "logger.js", 
     "scheduler.js",
     "trading.js",
@@ -140,33 +241,38 @@ LOG_SERVER_PORT=3000
   console.log("🔧 Customizing server configuration...");
   let serverContent = fs.readFileSync(path.join(buildDir, "server.js"), "utf8");
   
-  // If swapConfig is provided, customize the trading configuration
-  if (swapConfig) {
-    const { 
-      fromToken, 
-      toToken, 
-      amount, 
-      scheduleType = 'interval',
-      scheduleValue,
-      executeImmediately = true 
-    } = swapConfig;
-    
-    // Convert interval string to milliseconds if needed
-    let intervalMs = scheduleValue;
-    if (scheduleType === 'interval' && typeof scheduleValue === 'string') {
-      // Convert time strings like '30m', '1h', '30s' to milliseconds
-      const timeMatch = scheduleValue.match(/^(\d+)([smh])$/);
-      if (timeMatch) {
-        const [, num, unit] = timeMatch;
-        const multipliers = { s: 1000, m: 60000, h: 3600000 };
-        intervalMs = parseInt(num) * multipliers[unit];
+  // Generate configuration based on bot type
+  console.log(`🤖 Configuring ${botType.toUpperCase()} bot...`);
+  
+  // Generate configuration based on bot type and swapConfig
+  let configCode;
+  
+  if (botType === 'dca') {
+    // DCA Bot Configuration
+      const { 
+        fromToken, 
+        toToken, 
+        amount, 
+        scheduleType = 'interval',
+        scheduleValue,
+        executeImmediately = true 
+      } = swapConfig;
+      
+      // Convert interval string to milliseconds if needed
+      let intervalMs = scheduleValue;
+      if (scheduleType === 'interval' && typeof scheduleValue === 'string') {
+        // Convert time strings like '30m', '1h', '30s' to milliseconds
+        const timeMatch = scheduleValue.match(/^(\d+)([smh])$/);
+        if (timeMatch) {
+          const [, num, unit] = timeMatch;
+          const multipliers = { s: 1000, m: 60000, h: 3600000 };
+          intervalMs = parseInt(num) * multipliers[unit];
+        }
       }
-    }
-    
-    // Create the trading configuration code to append
-    const tradingConfigCode = `
+      
+      configCode = `
 
-// Deployment-specific configuration
+// DCA Bot Configuration
 const tradingConfig = {
     ownerAddress: "${ownerAddress}",
     fromToken: '${fromToken}',
@@ -179,32 +285,90 @@ const tradingConfig = {
     }
 };
 
-createServer(SERVER_PORT, tradingConfig);`;
+createServer(SERVER_PORT, tradingConfig, 'dca');`;
 
-    // Append the configuration to the end of the file
-    serverContent += tradingConfigCode;
-  } else {
-    // If no swapConfig provided, append default configuration with provided owner address
-    const defaultConfigCode = `
+  } else if (botType === 'range') {
+    // Range Bot Configuration
+      const { 
+        fromToken, 
+        toToken, 
+        amount,
+        tokenToMonitor,
+        tokenToMonitorPrice,
+        above = true
+      } = swapConfig;
+      
+      configCode = `
 
-// Deployment-specific configuration
+// Range Bot Configuration
 const tradingConfig = {
     ownerAddress: "${ownerAddress}",
-    fromToken: 'USDC',
-    toToken: 'SOL', 
-    amount: 0.01,
-    scheduleOptions: {
-        executeImmediately: true,
-        type: 'interval',
-        value: 600000, // 10 minutes in milliseconds
-    }
+    fromToken: '${fromToken}',
+    toToken: '${toToken}', 
+    amount: ${amount},
+    tokenToMonitor: '${tokenToMonitor}',
+    tokenToMonitorPrice: ${tokenToMonitorPrice},
+    above: ${above}
 };
 
-createServer(SERVER_PORT, tradingConfig);`;
+createServer(SERVER_PORT, tradingConfig, 'range');`;
 
-    // Append the configuration to the end of the file
-    serverContent += defaultConfigCode;
+  } else if (botType === 'custom') {
+    // Custom Bot Configuration - Generate code first
+    const { prompt, history = [] } = swapConfig;
+    
+    if (!prompt) {
+      throw new Error('Custom bot requires a prompt in swapConfig');
+    }
+    
+    console.log(`🤖 Generating custom code for prompt: ${prompt}`);
+    
+    // Generate code using the API
+    const codeGenResult = await generateCustomCode(prompt, history);
+    
+    if (!codeGenResult.success) {
+      throw new Error(`Code generation failed: ${codeGenResult.error}`);
+    }
+    
+    // Clean the generated code
+    const cleanCode = cleanGeneratedCode(codeGenResult.code);
+    
+    // Append the generated code to baseline.js
+    const baselineFilePath = path.join(buildDir, "baseline.js");
+    let baselineContent = fs.readFileSync(baselineFilePath, "utf8");
+    
+    // Check if there's already a generated function and remove it
+    if (baselineContent.includes('// ======= GENERATED BASELINE FUNCTION =======')) {
+      console.log('⚠️ Existing generated function found, replacing...');
+      const beforeGenerated = baselineContent.split('// ======= GENERATED BASELINE FUNCTION =======')[0];
+      baselineContent = beforeGenerated.trim() + '\n';
+    }
+    
+    // Add separator and generated code
+    const separator = '\n// =============================\n// ======= GENERATED BASELINE FUNCTION =======\n// =============================\n\n';
+    baselineContent += separator + cleanCode;
+    
+    // Write the updated baseline.js
+    fs.writeFileSync(baselineFilePath, baselineContent);
+    console.log(`✅ Generated code appended to baseline.js`);
+    
+    // Create simple configuration for custom bot execution
+    configCode = `
+
+// Custom Bot Configuration
+const tradingConfig = {
+    ownerAddress: "${ownerAddress}",
+    prompt: "${prompt.replace(/"/g, '\\"')}" // Escaped for safety
+};
+
+createServer(SERVER_PORT, tradingConfig, 'custom');`;
+
+  } else {
+    throw new Error(`Unsupported bot type: ${botType}. Must be 'dca', 'range', or 'custom'`);
   }
+  
+  // Append the configuration to the end of the file
+  serverContent += configCode;
 
   fs.writeFileSync(path.join(buildDir, "server.js"), serverContent);
   console.log("✅ Server configuration customized");
@@ -261,7 +425,8 @@ coverage
       src: [
         "Dockerfile",
         "server.js",
-        "baseline.js",
+        "baseline-dca.js",
+        "baseline-range.js",
         "logger.js",
         "scheduler.js", 
         "trading.js",

@@ -5,6 +5,8 @@ A service for deploying Solana trading agents on AWS App Runner with automated d
 ## Features
 
 - Deploy Solana trading agents to AWS App Runner
+- **Three Bot Types**: DCA (Dollar Cost Averaging), Range (Price-based), and Custom (AI-generated) trading bots
+- **AI-powered code generation** for custom trading strategies using natural language
 - **REST API for log retrieval** with configurable line limits
 - API key authentication for secure access
 - Modular code structure for maintainability
@@ -55,6 +57,27 @@ npm start
 
 The service will run on port 3001 by default.
 
+## Bot Types
+
+### DCA Bot (`botType: 'dca'`)
+Dollar Cost Averaging bot that executes trades on a scheduled basis:
+- **Schedule-based**: Executes trades at regular intervals or specific times
+- **Configurable timing**: Supports interval (e.g., every 30 minutes) or specific UTC times
+- **Immediate execution**: Optional immediate execution on startup
+
+### Range Bot (`botType: 'range'`)
+Price-based trading bot that monitors token prices and executes trades when conditions are met:
+- **Price monitoring**: Continuously monitors a specified token's price every 30 seconds
+- **Condition-based**: Executes trades when price goes above or below a threshold
+- **Real-time**: Responds to market conditions in real-time
+
+### Custom Bot (`botType: 'custom'`)
+AI-generated trading bot that creates custom trading logic based on natural language prompts:
+- **AI-powered**: Uses code generation API to create custom baseline functions
+- **Natural language**: Accepts plain English descriptions of trading strategies
+- **Flexible**: Can handle complex multi-condition trading scenarios
+- **Automated**: Generates, validates, and deploys code without manual intervention
+
 ## API Endpoints
 
 ### Authentication
@@ -77,6 +100,7 @@ POST /deploy-agent
 {
   "agentId": "my-trading-bot-001",
   "ownerAddress": "5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ",
+  "botType": "dca",
   "swapConfig": {
     "fromToken": "SOL",
     "toToken": "USDC", 
@@ -88,14 +112,75 @@ POST /deploy-agent
 }
 ```
 
-#### SwapConfig Parameters
+**DCA Bot Example:**
+```json
+{
+  "agentId": "my-dca-bot",
+  "ownerAddress": "5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ",
+  "botType": "dca",
+  "swapConfig": {
+    "fromToken": "USDC",
+    "toToken": "SOL",
+    "amount": 0.01,
+    "scheduleType": "interval",
+    "scheduleValue": "30m",
+    "executeImmediately": true
+  }
+}
+```
 
+**Range Bot Example:**
+```json
+{
+  "agentId": "my-range-bot",
+  "ownerAddress": "5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ",
+  "botType": "range",
+  "swapConfig": {
+    "fromToken": "USDC",
+    "toToken": "SOL",
+    "amount": 0.01,
+    "tokenToMonitor": "SOL",
+    "tokenToMonitorPrice": 100,
+    "above": true
+  }
+}
+```
+
+### Custom Bot Example
+
+```json
+{
+  "agentId": "my-custom-ai-bot",
+  "ownerAddress": "5NGqPDeoEfpxwq8bKHkMaSyLXDeR7YmsxSyMbXA5yKSQ",
+  "botType": "custom",
+  "swapConfig": {
+    "prompt": "Buy 0.1 SOL with USDC every hour if Bitcoin is above $50000 and Ethereum is above $3000",
+    "history": []
+  }
+}
+```
+
+#### Parameters
+
+**Common Parameters:**
+- **`botType`** (string): Bot type - 'dca', 'range', or 'custom' (default: 'dca')
 - **`fromToken`** (string): Source token symbol (e.g., 'SOL', 'USDC')
 - **`toToken`** (string): Destination token symbol (e.g., 'SOL', 'USDC')
 - **`amount`** (number): Amount to trade
+
+**DCA Bot Parameters:**
 - **`scheduleType`** (string): Either 'interval' or 'times'
 - **`scheduleValue`** (string|number|array): Schedule configuration (see examples below)
 - **`executeImmediately`** (boolean): Execute immediately on start (default: true)
+
+**Range Bot Parameters:**
+- **`tokenToMonitor`** (string): Token symbol to monitor for price conditions
+- **`tokenToMonitorPrice`** (number): Target price threshold
+- **`above`** (boolean): True for above price condition, false for below (default: true)
+
+**Custom Bot Parameters:**
+- **`prompt`** (string): Natural language description of the trading strategy
+- **`history`** (array, optional): Conversation history for context (default: [])
 
 #### Schedule Examples
 

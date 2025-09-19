@@ -1,0 +1,338 @@
+2025-09-18 23:09:37,843 - __main__ - INFO - Generating Solana code for prompt: Buy 10 SOL using USDT every 1 hr if Bitcoin is over 135k USD...
+2025-09-18 23:09:38,827 - __main__ - ERROR - Error generating Solana code: '\n  "code"'
+Traceback (most recent call last):
+  File "/Users/anshumantekriwal/Desktop/evm-agents/solana-agents/code-generation/api.py", line 73, in generate_code
+    result = code(prompt=request.prompt)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/Desktop/evm-agents/solana-agents/code-generation/coder.py", line 260, in code
+    formatted_prompt = prompt_template.format(
+                       ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 703, in format
+    return self.format_prompt(**kwargs).to_string()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 726, in format_prompt
+    messages = self.format_messages(**kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 1211, in format_messages
+    message = message_template.format_messages(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 559, in format_messages
+    return [self.format(**kwargs)]
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 592, in format
+    text = self.prompt.format(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/prompt.py", line 201, in format
+    return DEFAULT_FORMATTER_MAPPING[self.template_format](self.template, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 190, in format
+    return self.vformat(format_string, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/utils/formatting.py", line 33, in vformat
+    return super().vformat(format_string, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 194, in vformat
+    result, _ = self._vformat(format_string, args, kwargs, used_args, 2)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 234, in _vformat
+    obj, arg_used = self.get_field(field_name, args, kwargs)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 299, in get_field
+    obj = self.get_value(first, args, kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 256, in get_value
+    return kwargs[key]
+           ~~~~~~^^^^^
+KeyError: '\n  "code"'
+2025-09-18 23:09:40,478 - __main__ - INFO - Generating Solana code for prompt: Buy 10 SOL using USDT every 1 hr if Bitcoin is over 135k USD...
+2025-09-18 23:09:40,480 - __main__ - ERROR - Error generating Solana code: '\n  "code"'
+Traceback (most recent call last):
+  File "/Users/anshumantekriwal/Desktop/evm-agents/solana-agents/code-generation/api.py", line 73, in generate_code
+    result = code(prompt=request.prompt)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/Desktop/evm-agents/solana-agents/code-generation/coder.py", line 260, in code
+    formatted_prompt = prompt_template.format(
+                       ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 703, in format
+    return self.format_prompt(**kwargs).to_string()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 726, in format_prompt
+    messages = self.format_messages(**kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 1211, in format_messages
+    message = message_template.format_messages(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 559, in format_messages
+    return [self.format(**kwargs)]
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 592, in format
+    text = self.prompt.format(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/prompt.py", line 201, in format
+    return DEFAULT_FORMATTER_MAPPING[self.template_format](self.template, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 190, in format
+    return self.vformat(format_string, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/utils/formatting.py", line 33, in vformat
+    return super().vformat(format_string, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 194, in vformat
+    result, _ = self._vformat(format_string, args, kwargs, used_args, 2)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 234, in _vformat
+    obj, arg_used = self.get_field(field_name, args, kwargs)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 299, in get_field
+    obj = self.get_value(first, args, kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 256, in get_value
+    return kwargs[key]
+           ~~~~~~^^^^^
+KeyError: '\n  "code"'
+2025-09-18 23:09:41,239 - __main__ - INFO - Generating Solana code for prompt: Buy 10 SOL using USDT every 1 hr if Bitcoin is over 135k USD...
+2025-09-18 23:09:41,240 - __main__ - ERROR - Error generating Solana code: '\n  "code"'
+Traceback (most recent call last):
+  File "/Users/anshumantekriwal/Desktop/evm-agents/solana-agents/code-generation/api.py", line 73, in generate_code
+    result = code(prompt=request.prompt)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/Desktop/evm-agents/solana-agents/code-generation/coder.py", line 260, in code
+    formatted_prompt = prompt_template.format(
+                       ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 703, in format
+    return self.format_prompt(**kwargs).to_string()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 726, in format_prompt
+    messages = self.format_messages(**kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 1211, in format_messages
+    message = message_template.format_messages(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 559, in format_messages
+    return [self.format(**kwargs)]
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 592, in format
+    text = self.prompt.format(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/prompt.py", line 201, in format
+    return DEFAULT_FORMATTER_MAPPING[self.template_format](self.template, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 190, in format
+    return self.vformat(format_string, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/utils/formatting.py", line 33, in vformat
+    return super().vformat(format_string, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 194, in vformat
+    result, _ = self._vformat(format_string, args, kwargs, used_args, 2)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 234, in _vformat
+    obj, arg_used = self.get_field(field_name, args, kwargs)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 299, in get_field
+    obj = self.get_value(first, args, kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 256, in get_value
+    return kwargs[key]
+           ~~~~~~^^^^^
+KeyError: '\n  "code"'
+2025-09-18 23:09:41,927 - __main__ - INFO - Generating Solana code for prompt: Buy 10 SOL using USDT every 1 hr if Bitcoin is over 135k USD...
+2025-09-18 23:09:41,929 - __main__ - ERROR - Error generating Solana code: '\n  "code"'
+Traceback (most recent call last):
+  File "/Users/anshumantekriwal/Desktop/evm-agents/solana-agents/code-generation/api.py", line 73, in generate_code
+    result = code(prompt=request.prompt)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/Desktop/evm-agents/solana-agents/code-generation/coder.py", line 260, in code
+    formatted_prompt = prompt_template.format(
+                       ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 703, in format
+    return self.format_prompt(**kwargs).to_string()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 726, in format_prompt
+    messages = self.format_messages(**kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 1211, in format_messages
+    message = message_template.format_messages(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 559, in format_messages
+    return [self.format(**kwargs)]
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 592, in format
+    text = self.prompt.format(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/prompt.py", line 201, in format
+    return DEFAULT_FORMATTER_MAPPING[self.template_format](self.template, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 190, in format
+    return self.vformat(format_string, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/utils/formatting.py", line 33, in vformat
+    return super().vformat(format_string, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 194, in vformat
+    result, _ = self._vformat(format_string, args, kwargs, used_args, 2)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 234, in _vformat
+    obj, arg_used = self.get_field(field_name, args, kwargs)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 299, in get_field
+    obj = self.get_value(first, args, kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 256, in get_value
+    return kwargs[key]
+           ~~~~~~^^^^^
+KeyError: '\n  "code"'
+2025-09-18 23:10:18,622 - __main__ - INFO - Generating Solana code for prompt: Buy 10 SOL using USDT every 1 hr if Bitcoin is over 135k USD...
+2025-09-18 23:10:18,624 - __main__ - ERROR - Error generating Solana code: '\n  "code"'
+Traceback (most recent call last):
+  File "/Users/anshumantekriwal/Desktop/evm-agents/solana-agents/code-generation/api.py", line 73, in generate_code
+    result = code(prompt=request.prompt)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/Desktop/evm-agents/solana-agents/code-generation/coder.py", line 260, in code
+    formatted_prompt = prompt_template.format(
+                       ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 703, in format
+    return self.format_prompt(**kwargs).to_string()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 726, in format_prompt
+    messages = self.format_messages(**kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 1211, in format_messages
+    message = message_template.format_messages(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 559, in format_messages
+    return [self.format(**kwargs)]
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 592, in format
+    text = self.prompt.format(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/prompt.py", line 201, in format
+    return DEFAULT_FORMATTER_MAPPING[self.template_format](self.template, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 190, in format
+    return self.vformat(format_string, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/utils/formatting.py", line 33, in vformat
+    return super().vformat(format_string, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 194, in vformat
+    result, _ = self._vformat(format_string, args, kwargs, used_args, 2)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 234, in _vformat
+    obj, arg_used = self.get_field(field_name, args, kwargs)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 299, in get_field
+    obj = self.get_value(first, args, kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 256, in get_value
+    return kwargs[key]
+           ~~~~~~^^^^^
+KeyError: '\n  "code"'
+2025-09-18 23:10:19,414 - __main__ - INFO - Generating Solana code for prompt: Buy 10 SOL using USDT every 1 hr if Bitcoin is over 135k USD...
+2025-09-18 23:10:19,415 - __main__ - ERROR - Error generating Solana code: '\n  "code"'
+Traceback (most recent call last):
+  File "/Users/anshumantekriwal/Desktop/evm-agents/solana-agents/code-generation/api.py", line 73, in generate_code
+    result = code(prompt=request.prompt)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/Desktop/evm-agents/solana-agents/code-generation/coder.py", line 260, in code
+    formatted_prompt = prompt_template.format(
+                       ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 703, in format
+    return self.format_prompt(**kwargs).to_string()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 726, in format_prompt
+    messages = self.format_messages(**kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 1211, in format_messages
+    message = message_template.format_messages(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 559, in format_messages
+    return [self.format(**kwargs)]
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 592, in format
+    text = self.prompt.format(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/prompt.py", line 201, in format
+    return DEFAULT_FORMATTER_MAPPING[self.template_format](self.template, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 190, in format
+    return self.vformat(format_string, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/utils/formatting.py", line 33, in vformat
+    return super().vformat(format_string, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 194, in vformat
+    result, _ = self._vformat(format_string, args, kwargs, used_args, 2)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 234, in _vformat
+    obj, arg_used = self.get_field(field_name, args, kwargs)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 299, in get_field
+    obj = self.get_value(first, args, kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 256, in get_value
+    return kwargs[key]
+           ~~~~~~^^^^^
+KeyError: '\n  "code"'
+2025-09-18 23:10:25,005 - __main__ - INFO - Generating Solana code for prompt: Buy 10 SOL using USDT every 1 hr if Bitcoin is over 135k USD...
+2025-09-18 23:10:25,651 - __main__ - ERROR - Error generating Solana code: '\n  "code"'
+Traceback (most recent call last):
+  File "/Users/anshumantekriwal/Desktop/evm-agents/solana-agents/code-generation/api.py", line 73, in generate_code
+    result = code(prompt=request.prompt)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/Desktop/evm-agents/solana-agents/code-generation/coder.py", line 260, in code
+    formatted_prompt = prompt_template.format(
+                       ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 703, in format
+    return self.format_prompt(**kwargs).to_string()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 726, in format_prompt
+    messages = self.format_messages(**kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 1211, in format_messages
+    message = message_template.format_messages(**kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 559, in format_messages
+    return [self.format(**kwargs)]
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/chat.py", line 592, in format
+    text = self.prompt.format(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/prompts/prompt.py", line 201, in format
+    return DEFAULT_FORMATTER_MAPPING[self.template_format](self.template, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 190, in format
+    return self.vformat(format_string, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/artificial-intelligence/lib/python3.11/site-packages/langchain_core/utils/formatting.py", line 33, in vformat
+    return super().vformat(format_string, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 194, in vformat
+    result, _ = self._vformat(format_string, args, kwargs, used_args, 2)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 234, in _vformat
+    obj, arg_used = self.get_field(field_name, args, kwargs)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 299, in get_field
+    obj = self.get_value(first, args, kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/anshumantekriwal/.pyenv/versions/3.11.13/lib/python3.11/string.py", line 256, in get_value
+    return kwargs[key]
+           ~~~~~~^^^^^
+KeyError: '\n  "code"'
+2025-09-18 23:11:06,356 - __main__ - INFO - Generating Solana code for prompt: Buy 10 SOL using USDT every 1 hr if Bitcoin is over 135k USD...
+2025-09-18 23:13:24,296 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-18 23:15:49,348 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-18 23:15:49,389 - __main__ - INFO - Solana code generation completed successfully
+2025-09-18 23:33:30,308 - __main__ - INFO - Generating Solana code for prompt: Swap 1 SOL to USDC immediately...
+2025-09-18 23:35:11,427 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-18 23:37:41,446 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-18 23:37:41,519 - __main__ - INFO - Solana code generation completed successfully
+2025-09-18 23:37:41,521 - __main__ - INFO - Generating Solana code for prompt: Swap 0.1 SOL to USDC immediately...
+2025-09-18 23:38:52,268 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-18 23:41:12,234 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-18 23:41:12,270 - __main__ - INFO - Solana code generation completed successfully
+2025-09-18 23:43:53,210 - __main__ - INFO - Generating Solana code for prompt: Swap 0.05 SOL to USDC immediately...
+2025-09-18 23:44:48,935 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-18 23:46:49,356 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-09-18 23:46:49,363 - __main__ - INFO - Solana code generation completed successfully
