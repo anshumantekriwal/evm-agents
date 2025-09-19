@@ -75,8 +75,10 @@ Price-based trading bot that monitors token prices and executes trades when cond
 AI-generated trading bot that creates custom trading logic based on natural language prompts:
 - **AI-powered**: Uses code generation API to create custom baseline functions
 - **Natural language**: Accepts plain English descriptions of trading strategies
-- **Flexible**: Can handle complex multi-condition trading scenarios
+- **Flexible**: Can handle complex multi-condition trading scenarios (scheduled + price monitoring + Twitter triggers)
 - **Automated**: Generates, validates, and deploys code without manual intervention
+- **Intelligent execution**: Automatically detects execution patterns (immediate, scheduled, price-monitoring, hybrid)
+- **No runtime dependencies**: Generated code is baked into the container for maximum reliability
 
 ## API Endpoints
 
@@ -181,6 +183,32 @@ POST /deploy-agent
 **Custom Bot Parameters:**
 - **`prompt`** (string): Natural language description of the trading strategy
 - **`history`** (array, optional): Conversation history for context (default: [])
+
+## Custom Bot Architecture
+
+### Deployment Flow
+1. **Code Generation**: Deployer calls AI code generation API at `https://evm-agents-vb2f.onrender.com/code` with user's natural language prompt
+2. **Code Validation**: Generated code is cleaned, validated, and checked for proper exports
+3. **File Integration**: Generated `baselineFunction` is appended to `baseline.js` in build directory
+4. **Containerization**: Docker container is built with the custom code baked in
+5. **Deployment**: Container is deployed to AWS App Runner with no external dependencies
+
+### Execution Flow
+1. **Server Startup**: Custom bot server starts with `botType: 'custom'`
+2. **Function Import**: Pre-generated `baselineFunction` is imported from `baseline.js`
+3. **Strategy Execution**: Function executes with intelligent pattern detection:
+   - **Immediate**: Executes trade immediately
+   - **Scheduled**: Sets up recurring trades (DCA)
+   - **Price Monitoring**: Monitors price conditions every minute
+   - **Twitter Trigger**: Monitors Twitter for keyword triggers
+   - **Hybrid**: Combines multiple execution patterns
+
+### Supported Trading Strategies
+- Simple swaps (e.g., "Swap 0.1 SOL to USDC immediately")
+- Scheduled DCA (e.g., "Buy 0.01 SOL with USDC every hour")
+- Price-based trading (e.g., "Buy SOL when Bitcoin is above $50000")
+- Twitter-triggered trades (e.g., "Buy SOL when @elonmusk tweets about crypto")
+- Complex hybrid strategies (e.g., "Buy 0.1 SOL every hour if Bitcoin > $50k and Ethereum > $3k")
 
 #### Schedule Examples
 

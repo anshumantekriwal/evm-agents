@@ -2,7 +2,7 @@
 
 ## Overview
 
-This API provides intelligent code generation capabilities for Solana-based trading agents. It automatically detects trading patterns and generates complete baseline functions that can handle immediate execution, scheduled trading (DCA), price monitoring, Twitter triggers, and hybrid strategies.
+This API provides intelligent code generation capabilities for Solana-based trading agents. It automatically detects trading patterns and generates complete baseline functions that can handle immediate execution, scheduled trading (DCA), price monitoring, Twitter triggers, and hybrid strategies. The generated code is integrated with the deployer service to create fully functional custom trading bots from natural language descriptions.
 
 ## Features
 
@@ -17,9 +17,17 @@ This API provides intelligent code generation capabilities for Solana-based trad
 
 ## Architecture
 
+### Code Generation Flow
 ```
 User Prompt → Pattern Detection → Code Generation → Validation → Guardrails → Complete Baseline Function
 ```
+
+### Integration with Deployer
+```
+Deployer Service → Code Generation API → Generated Function → Baseline.js Integration → Container Deployment
+```
+
+The code generation API is called by the deployer service during custom bot deployment. The generated baseline function is automatically integrated into the baseline.js file and deployed as a self-contained trading bot.
 
 ### Components
 

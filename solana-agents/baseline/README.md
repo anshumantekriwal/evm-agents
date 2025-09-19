@@ -18,15 +18,24 @@ Price-based trading bot that monitors market conditions:
 - **Above/below triggers**: Configurable price conditions
 - **Perfect for**: Market timing, price-based strategies, limit orders
 
+### 🤖 **Custom Bot** (`baseline.js` + generated code)
+AI-generated trading bot with custom strategies from natural language:
+- **AI-powered code generation**: Creates trading logic from plain English descriptions
+- **Intelligent execution detection**: Automatically determines execution pattern (immediate, scheduled, price-monitoring, hybrid)
+- **Multi-strategy support**: Combines DCA, price monitoring, Twitter triggers, and more
+- **No runtime dependencies**: Generated code is pre-compiled into the container
+- **Perfect for**: Complex strategies, natural language trading, hybrid approaches
+
 ## 🤔 Choosing Your Bot Type
 
-| Feature | DCA Bot | Range Bot |
-|---------|---------|-----------|
-| **Execution Trigger** | Time/Schedule | Price Conditions |
-| **Frequency** | Configurable intervals | Every 30 seconds (monitoring) |
-| **Use Case** | Regular investing | Market timing |
-| **Configuration** | Schedule options | Price thresholds |
-| **Best For** | DCA strategies, automated investing | Limit orders, price alerts |
+| Feature | DCA Bot | Range Bot | Custom Bot |
+|---------|---------|-----------|-----------|
+| **Execution Trigger** | Time/Schedule | Price Conditions | AI-determined (any combination) |
+| **Frequency** | Configurable intervals | Every 30 seconds (monitoring) | Dynamic based on strategy |
+| **Use Case** | Regular investing | Market timing | Complex multi-condition strategies |
+| **Configuration** | Schedule options | Price thresholds | Natural language prompt |
+| **Best For** | DCA strategies, automated investing | Limit orders, price alerts | Hybrid strategies, custom logic |
+| **Complexity** | Simple | Medium | High (AI-generated) |
 
 ## 🚀 Quick Start
 
@@ -46,24 +55,59 @@ The agent will start with:
 - 📈 **Status API**: `http://localhost:3000/status`
 - 📝 **Logs API**: `http://localhost:3000/`
 
+### 🤖 Custom Bot Usage
+
+Custom bots are deployed via the **deployer service** with natural language prompts:
+
+```bash
+# Deploy a custom bot (via deployer API)
+curl -X POST "http://localhost:8080/deploy-agent" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: your-api-key" \
+  -d '{
+    "agentId": "my-custom-bot",
+    "ownerAddress": "your-solana-address",
+    "botType": "custom",
+    "swapConfig": {
+      "prompt": "Buy 0.1 SOL with USDC every hour if Bitcoin is above $50000"
+    }
+  }'
+```
+
+**Example Custom Bot Prompts:**
+- `"Swap 0.05 SOL to USDC immediately"`
+- `"Buy 0.01 SOL with USDC every 30 minutes"`
+- `"Buy SOL when Bitcoin price is above $60000"`
+- `"Buy 0.1 SOL every hour if Bitcoin > $50k and Ethereum > $3k"`
+- `"Buy SOL when @elonmusk tweets about cryptocurrency"`
+
 ## 🏗️ Architecture
 
 ### Core Files
 - **`server.js`** - Main entry point, web server and API endpoints
 - **`baseline-dca.js`** - DCA bot with scheduled trading logic
 - **`baseline-range.js`** - Range bot with price monitoring logic
+- **`baseline.js`** - Custom bot infrastructure + AI-generated functions
 - **`wallet.js`** - Wallet operations and balance management  
 - **`trading.js`** - Jupiter swaps, transfers, and market data
-- **`scheduler.js`** - Interval and time-based scheduling (DCA bot)
+- **`scheduler.js`** - Interval and time-based scheduling
 - **`logger.js`** - Logging and status management
+
+### Custom Bot Architecture
+- **Code Generation**: AI generates `baselineFunction` from natural language prompts
+- **Intelligent Detection**: Automatically determines execution pattern (immediate, scheduled, price-monitoring, hybrid)
+- **Pre-compilation**: Generated code is baked into the container during deployment
+- **Zero Dependencies**: No runtime API calls - all logic is self-contained
 
 ## 📋 Features
 
 ### 🔄 **Automated Trading**
 - **Jupiter Integration**: Optimized swaps with 1.5% slippage tolerance
-- **Dual Bot Types**: DCA (scheduled) and Range (price-based) trading strategies
-- **Smart Scheduling**: Execute trades at intervals or specific UTC times (DCA)
-- **Price Monitoring**: Real-time price tracking with 30-second intervals (Range)
+- **Three Bot Types**: DCA (scheduled), Range (price-based), and Custom (AI-generated) trading strategies
+- **Smart Scheduling**: Execute trades at intervals or specific UTC times
+- **Price Monitoring**: Real-time price tracking with configurable intervals
+- **Twitter Integration**: Monitor Twitter for keyword-based triggers
+- **Hybrid Strategies**: Combine multiple execution patterns in one bot
 - **Balance Monitoring**: Automatic balance checks and validation
 - **Error Recovery**: Robust error handling and retry logic
 

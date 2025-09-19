@@ -2,6 +2,17 @@ const fs = require("fs");
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 const Docker = require("dockerode");
+
+// Use native fetch if available, otherwise fall back to node-fetch
+let fetch;
+try {
+  fetch = globalThis.fetch;
+  if (!fetch) {
+    fetch = require("node-fetch");
+  }
+} catch (error) {
+  fetch = require("node-fetch");
+}
 const {
   ECRClient,
   CreateRepositoryCommand,
@@ -20,32 +31,48 @@ const ACCOUNT_ID = process.env.AWS_ACCOUNT_ID;
 // =============================
 
 /**
- * Generate custom code using sample template (for testing)
+ * Generate custom code using AI code generation API
  * @param {string} prompt - Natural language prompt
  * @param {Array} history - Conversation history (optional)
  * @returns {Promise<Object>} Generated code result
  */
 async function generateCustomCode(prompt, history = []) {
   try {
-    console.log(`🤖 Using sample generated code for prompt: ${prompt}`);
+    console.log(`🤖 Generating custom code for prompt: ${prompt}`);
     
-    // Read the sample generated code
-    const sampleCodePath = path.join(__dirname, 'sample-generated-code.js');
+    // Call the code generation API
+    const codeGenEndpoint = 'https://evm-agents-vb2f.onrender.com/code';
     
-    if (!fs.existsSync(sampleCodePath)) {
-      throw new Error('Sample generated code file not found');
+    const response = await fetch(codeGenEndpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        prompt: prompt,
+        history: history
+      }),
+    });
+    
+    if (!response.ok) {
+      console.error(`API Error: ${response.status} ${response.statusText}`);
+      throw new Error(`Code generation API returned ${response.status}: ${response.statusText}`);
     }
     
-    const sampleCode = fs.readFileSync(sampleCodePath, 'utf8');
+    const result = await response.json();
     
-    console.log(`✅ Sample code loaded successfully`);
+    if (!result.code) {
+      throw new Error('No code returned from generation API');
+    }
+    
+    console.log(`✅ Code generation successful`);
     return {
       success: true,
-      code: sampleCode,
-      metadata: {
+      code: result.code,
+      metadata: result.metadata || {
         prompt: prompt,
         generatedAt: new Date().toISOString(),
-        source: 'sample-template'
+        source: 'ai-api'
       }
     };
     
@@ -193,7 +220,8 @@ async function deployAgent({ agentId, ownerAddress, botType = 'dca', swapConfig 
   const filesToCopy = [
     "server.js",
     "baseline-dca.js",
-    "baseline-range.js", 
+    "baseline-range.js",
+    "baseline.js",
     "logger.js", 
     "scheduler.js",
     "trading.js",
@@ -427,6 +455,7 @@ coverage
         "server.js",
         "baseline-dca.js",
         "baseline-range.js",
+        "baseline.js",
         "logger.js",
         "scheduler.js", 
         "trading.js",
