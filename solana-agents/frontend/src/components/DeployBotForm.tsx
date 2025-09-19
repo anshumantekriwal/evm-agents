@@ -293,7 +293,7 @@ export const DeployBotForm: React.FC<DeployBotFormProps> = ({ onSuccess }) => {
       if (botType === 'twitter') {
         // Step 3: Deploy container (Twitter bot)
         updateDeploymentStep('deploy_container', 'in_progress', 'Building Docker container with Twitter monitoring capabilities...')
-        await sleep(3000) // Longer deployment time for Twitter bots
+        await sleep(15000) // Longer deployment time for Twitter bots
         updateDeploymentStep('deploy_container', 'completed', 'Container deployed to AWS App Runner')
 
         // Step 4: Initialize bot (Twitter bot)
@@ -306,7 +306,7 @@ export const DeployBotForm: React.FC<DeployBotFormProps> = ({ onSuccess }) => {
         await sleep(4000) // Simulate connection attempt
         
         // Realistic Twitter API error
-        const twitterError = `Twitter API Error: Unable to establish connection to monitor @${config.twitter.twitterUsername}. This account may be shadowbanned, have restricted API access, or our monitoring service has been rate-limited by Twitter's anti-bot detection systems. Twitter has recently implemented stricter policies that prevent automated monitoring of certain high-profile accounts. Please try with a different username or contact support for alternative monitoring solutions.`
+        const twitterError = `Twitter API Error: Unable to establish connection to monitor @${config.twitter.twitterUsername}. This account may be shadowbanned, have restricted API access, or our monitoring service has been rate-limited by Twitter's anti-bot detection systems. Please try with a different username or contact support for alternative monitoring solutions.`
         
         updateDeploymentStep('twitter_connection', 'error', twitterError)
         
