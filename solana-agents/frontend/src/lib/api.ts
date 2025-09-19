@@ -96,7 +96,7 @@ class DeploymentQueue {
 const deploymentQueue = new DeploymentQueue()
 
 class ApiService {
-  private async makeRequest(endpoint: string, options: RequestInit = {}, retries = 3, timeoutMs = 10000): Promise<any> {
+  private async makeRequest(endpoint: string, options: RequestInit = {}, retries = 3, useTimeout = true, timeoutMs = 10000): Promise<any> {
     // Handle different proxy formats
     let url: string
     if (API_BASE_URL === '/api/proxy') {
@@ -110,8 +110,14 @@ class ApiService {
     
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+        let controller: AbortController | undefined
+        let timeoutId: NodeJS.Timeout | undefined
+        
+        // Only set up timeout if requested
+        if (useTimeout) {
+          controller = new AbortController()
+          timeoutId = setTimeout(() => controller!.abort(), timeoutMs)
+        }
         
         const response = await fetch(url, {
           ...options,
@@ -123,10 +129,12 @@ class ApiService {
             'Accept': 'application/json',
             ...options.headers,
           },
-          signal: controller.signal,
+          signal: controller?.signal,
         })
 
-        clearTimeout(timeoutId)
+        if (timeoutId) {
+          clearTimeout(timeoutId)
+        }
 
         if (!response.ok) {
           const errorText = await response.text()
@@ -140,7 +148,7 @@ class ApiService {
         if (attempt === retries) {
           if (error instanceof Error) {
             if (error.name === 'AbortError') {
-              throw new Error('Request timeout - please check your network connection')
+              throw new Error('Request was cancelled - please check your network connection')
             }
             if (error.message.includes('Failed to fetch') || error.message.includes('Load failed')) {
               throw new Error('Network connection failed - please check if the API server is accessible')
@@ -169,12 +177,12 @@ class ApiService {
     try {
       console.log(`Starting deployment for ${request.botType} bot (Agent ID: ${request.agentId})`)
       
-      // Use 10 minute timeout for deployment (600 seconds)
-      // Deployment involves Docker build, ECR push, and AppRunner deployment which takes time
+      // No timeout for deployment - let it take as long as needed
+      // Deployment involves Docker build, ECR push, and AppRunner deployment which can take a very long time
       const result = await this.makeRequest('/deploy-agent', {
         method: 'POST',
         body: JSON.stringify(request),
-      }, 1, 600000) // 1 retry, 10 minute timeout
+      }, 1, false) // 1 retry, no timeout
       
       console.log(`Deployment completed for Agent ID: ${request.agentId}`)
       
