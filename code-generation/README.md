@@ -2,9 +2,11 @@
 
 > **Note**: This is the EVM version of the code generation system. For the newer Solana implementation with enhanced AI capabilities, see [`solana-agents/code-generation/`](../solana-agents/code-generation/).
 
+> **🔧 Recent Updates**: Critical improvements applied! See [`FIXES_APPLIED.md`](./FIXES_APPLIED.md) for details. See [`IMPROVEMENTS_AND_ISSUES.md`](./IMPROVEMENTS_AND_FIXES.md) for comprehensive analysis and future improvements.
+
 ## Overview
 
-This API provides code generation capabilities for EVM-based trading agents, specifically designed for Polygon mainnet (Chain ID 137). It follows the same pattern as the Kadena trading agent system but is adapted for EVM blockchains.
+This API provides code generation capabilities for EVM-based trading agents, specifically designed for Polygon mainnet (Chain ID 137). It uses AI to generate production-ready JavaScript code with built-in validation and bug prevention.
 
 ## Features
 

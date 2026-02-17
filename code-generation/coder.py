@@ -1,24 +1,25 @@
 import os
 import json
-from typing import Dict, Any
-from langchain_openai import ChatOpenAI
-from langchain.prompts import ChatPromptTemplate
 import re
-import json
-import esprima
+from typing import Dict, Any, Tuple
+from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from langchain.schema import HumanMessage, SystemMessage
-from langchain_openai import ChatOpenAI
-
-# Set your OpenAI API key
+import esprima
 from dotenv import load_dotenv
 from variables import TRANSACTIONS_CODE, TRANSACTIONS_USAGE, HELPER_FUNCTIONS, BASELINE_JS, CODER_PROMPT, STATUS_FORMAT
 
 # Load environment variables from .env file
 load_dotenv()
 
-# Get OpenAI API key from environment variables
-os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+# Validate OpenAI API key
+api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
+    raise ValueError(
+        "OPENAI_API_KEY environment variable is required. "
+        "Please set it in your .env file."
+    )
+os.environ["OPENAI_API_KEY"] = api_key
 
 
 def _syntax_check(js_code: str) -> str | None:
@@ -182,8 +183,47 @@ def validate_code_output(parsed_output):
     return True, "Output validation passed"
 
 
+def _validate_deployment_compatibility(code: str) -> Tuple[bool, str]:
+    """
+    Validate that generated code is compatible with deployment system.
+    Checks for common issues that would cause deployment failures.
+    """
+    print("🔍 Validating deployment compatibility...")
+    
+    # Check 1: Correct export signature
+    if 'export async function baselineFunction(ownerAddress)' not in code:
+        return False, "Missing required export: 'export async function baselineFunction(ownerAddress)'"
+    
+    # Check 2: No default exports
+    if 'export default' in code:
+        return False, "Default exports not supported by deployment system"
+    
+    # Check 3: No ethers v5 API usage
+    if 'ethers.utils' in code:
+        return False, "Code uses ethers v5 API (ethers.utils.*). Use ethers v6 API instead (ethers.Interface)"
+    
+    # Check 4: Hex values for transaction amounts
+    if re.search(r'value:\s*["\']0["\'](?![x])', code):
+        return False, "Transaction value should be '0x0' (hex), not '0' (decimal)"
+    
+    # Check 5: Status updates present
+    if 'updateStatus' not in code:
+        return False, "Missing updateStatus() calls for monitoring"
+    
+    # Check 6: Logging present
+    if 'log(' not in code:
+        return False, "Missing log() calls for debugging"
+    
+    # Check 7: Correct trades array reference
+    if re.search(r'trades:\s*\[.*?Array\.isArray\(trades\)', code):
+        return False, "Using undefined 'trades' variable. Should use 'currentStatus.trades'"
+    
+    print("✅ Deployment compatibility validated")
+    return True, "Code is deployment-ready"
+
+
 def code(prompt: str) -> Dict[str, Any]:
-    model = ChatOpenAI(model="o4-mini")
+    model = ChatOpenAI(model="gpt-4o-mini")
 
     prompt_template = ChatPromptTemplate.from_messages([
         ("system", CODER_PROMPT),
@@ -219,7 +259,24 @@ def code(prompt: str) -> Dict[str, Any]:
     syntax_err = _syntax_check(code_str)
     # 2. Shallow lint
     lint_err = _lint_check(code_str)
-    # 3. Always run guardrail
-    final = _invoke_guardrail(result, syntax_err, lint_err)
+    
+    # 3. Only run guardrail if there are actual errors
+    if syntax_err or lint_err:
+        print("⚠️  Errors detected, running guardrail correction...")
+        final = _invoke_guardrail(result, syntax_err, lint_err)
+    else:
+        print("✅ No errors detected, skipping guardrail")
+        final = result
+    
+    # 4. Validate deployment compatibility
+    is_valid, validation_msg = _validate_deployment_compatibility(final['code'])
+    if not is_valid:
+        print(f"❌ Deployment validation failed: {validation_msg}")
+        return {
+            "error": f"Generated code failed deployment validation: {validation_msg}",
+            "code": final['code'],
+            "validation_error": validation_msg
+        }
+    
     print("🎉 Strategy generation completed successfully!")
     return final 

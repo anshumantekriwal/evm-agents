@@ -355,7 +355,7 @@ export async function baselineFunction(ownerAddress) {
               lastMessage: `Trade executed. TX hash: ${hash}`,
               nextStep: "Waiting for next scheduled trade",
               trades: [
-                ...(Array.isArray(trades) ? trades : []),
+                ...(Array.isArray(currentStatus.trades) ? currentStatus.trades : []),
                 { hash, timestamp: new Date().toISOString() },
               ],
             });

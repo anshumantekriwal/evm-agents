@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import fs from "fs";
 import path from "path";
+import dotenv from "dotenv";
 import {
   baselineFunction,
   getCurrentStatus,
@@ -9,6 +10,8 @@ import {
   setOnLog,
   withdrawToOwner,
 } from "./baseline.js";
+
+dotenv.config();
 
 const app = express();
 
@@ -24,6 +27,26 @@ app.use(
 
 app.use(express.json());
 const PORT = process.env.PORT || 3000;
+
+// Authentication middleware
+function authenticateAPIKey(req, res, next) {
+  const apiKey = req.headers['x-api-key'];
+  
+  if (!process.env.API_KEY) {
+    console.warn('⚠️  WARNING: API_KEY not set in environment. Withdrawal endpoint is unprotected!');
+    return next(); // Allow through if no API key is configured (development mode)
+  }
+  
+  if (apiKey !== process.env.API_KEY) {
+    console.log(`❌ Unauthorized withdrawal attempt from ${req.ip}`);
+    return res.status(401).json({ 
+      success: false, 
+      error: 'Unauthorized: Invalid or missing API key' 
+    });
+  }
+  
+  next();
+}
 
 // File paths for persistence
 const LOGS_FILE = path.join(process.cwd(), "logs.json");
@@ -110,8 +133,8 @@ app.get("/logs", (req, res) => {
   res.json(logs);
 });
 
-// Endpoint: Withdraw funds
-app.post("/withdraw", async (req, res) => {
+// Endpoint: Withdraw funds (protected with API key authentication)
+app.post("/withdraw", authenticateAPIKey, async (req, res) => {
   try {
     const { tokenAddress, amount } = req.body;
     if (!tokenAddress || !amount) {
@@ -121,9 +144,12 @@ app.post("/withdraw", async (req, res) => {
       });
     }
 
+    console.log(`💰 Processing withdrawal request: ${amount} of ${tokenAddress}`);
     const result = await withdrawToOwner(tokenAddress, amount);
+    console.log(`✅ Withdrawal successful: ${result.hash}`);
     res.json({ success: true, ...result });
   } catch (error) {
+    console.error(`❌ Withdrawal failed: ${error.message}`);
     res.status(500).json({ success: false, error: error.message });
   }
 });

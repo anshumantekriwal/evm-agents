@@ -2,6 +2,8 @@
 
 > **Note**: This is the EVM version of the agent deployer. For the newer Solana implementation with custom bot support and AI code generation, see [`solana-agents/deployer/`](../solana-agents/deployer/).
 
+> **🔧 Recent Updates**: Critical bugs have been fixed! See [`FIXES_APPLIED.md`](./FIXES_APPLIED.md) for details. See [`ARCHITECTURE_AND_ISSUES.md`](./ARCHITECTURE_AND_ISSUES.md) for complete architecture documentation and remaining known issues.
+
 A service for deploying EVM agents on AWS App Runner with automated deployment and configuration.
 
 ## Features

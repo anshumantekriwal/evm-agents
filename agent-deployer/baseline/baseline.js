@@ -23,6 +23,30 @@ const supabase = createClient(
 
 dotenv.config();
 
+// Constants
+const LIFI_API_BASE = "https://li.quest/v1";
+const POLYGON_CHAIN_ID = "137";
+
+// ERC20 ABI (minimal)
+const ERC20_ABI = [
+  {
+    constant: false,
+    inputs: [
+      { name: "_to", type: "address" },
+      { name: "_value", type: "uint256" },
+    ],
+    name: "transfer",
+    outputs: [{ name: "", type: "bool" }],
+    type: "function",
+  },
+];
+
+// Privy client
+const privy = new PrivyClient(
+  process.env.PRIVY_APP_ID,
+  process.env.PRIVY_APP_SECRET
+);
+
 // Global status object
 let currentStatus = {
   phase: "initializing",
@@ -141,28 +165,6 @@ export async function withdrawToOwner(tokenAddress, amount) {
     throw error;
   }
 }
-
-// Add ERC20_ABI (minimal)
-const ERC20_ABI = [
-  {
-    constant: false,
-    inputs: [
-      { name: "_to", type: "address" },
-      { name: "_value", type: "uint256" },
-    ],
-    name: "transfer",
-    outputs: [{ name: "", type: "bool" }],
-    type: "function",
-  },
-];
-
-const privy = new PrivyClient(
-  process.env.PRIVY_APP_ID,
-  process.env.PRIVY_APP_SECRET
-);
-
-const LIFI_API_BASE = "https://li.quest/v1";
-const POLYGON_CHAIN_ID = "137";
 
 /**
  * Creates a wallet and returns wallet details

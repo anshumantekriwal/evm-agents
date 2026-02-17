@@ -35,7 +35,7 @@ OUTPUT_FORMAT = {
 
 def improve_prompt(prompt: str, history: List[str] = None) -> Dict[str, Any]:
 
-    model = ChatOpenAI(model="o4-mini")
+    model = ChatOpenAI(model="gpt-4o-mini")
 
     if history is None:
         history = []

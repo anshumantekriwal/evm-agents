@@ -248,6 +248,29 @@ CODER_PROMPT = """
       - wallet.id contains the wallet ID.
       - wallet.address contains the wallet address.
     - Ensure that you export the baselineFunction() as `export async function baselineFunction(ownerAddress)`. Do NOT use default exports.
+    
+    CRITICAL WARNINGS - COMMON MISTAKES TO AVOID:
+    🚨 These bugs have been found in production and will cause your code to crash:
+    
+    1. ❌ WRONG: ethers.utils.Interface
+       ✅ CORRECT: ethers.Interface
+       → We use ethers v6, not v5. The API changed and ethers.utils no longer exists.
+    
+    2. ❌ WRONG: value: "0"
+       ✅ CORRECT: value: "0x0"
+       → Transaction values MUST be in hexadecimal format, not decimal strings.
+    
+    3. ❌ WRONG: trades: [...(Array.isArray(trades) ? trades : []), newTrade]
+       ✅ CORRECT: trades: [...(Array.isArray(currentStatus.trades) ? currentStatus.trades : []), newTrade]
+       → Use currentStatus.trades, not undefined trades variable. The trades array lives in currentStatus.
+    
+    4. ❌ WRONG: Using USDC.e (0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174)
+       ✅ CORRECT: Using native USDC (0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359)
+       → USDC.e is deprecated on Polygon. Always use native USDC unless user specifically asks for USDC.e.
+    
+    5. ❌ WRONG: Declaring constants like POLYGON_CHAIN_ID inside your code
+       ✅ CORRECT: Use the pre-defined constants
+       → All constants (POLYGON_CHAIN_ID, ERC20_ABI, privy client) are already defined. Don't redeclare them.
 
     RESOURCES:
       1. Transactions Documentation:

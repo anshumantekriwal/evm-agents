@@ -22,17 +22,23 @@ async function deployAgent({ agentId, ownerAddress, baselineFunction }) {
   console.log(`🏢 Account ID: ${ACCOUNT_ID}`);
 
   // Validate required environment variables
-  if (!REGION) {
-    throw new Error("AWS_REGION environment variable is required");
-  }
-  if (!ACCOUNT_ID) {
-    throw new Error("AWS_ACCOUNT_ID environment variable is required");
-  }
-  if (!process.env.AWS_ACCESS_KEY_ID) {
-    throw new Error("AWS_ACCESS_KEY_ID environment variable is required");
-  }
-  if (!process.env.AWS_SECRET_ACCESS_KEY) {
-    throw new Error("AWS_SECRET_ACCESS_KEY environment variable is required");
+  const requiredEnvVars = [
+    "AWS_REGION",
+    "AWS_ACCOUNT_ID",
+    "AWS_ACCESS_KEY_ID",
+    "AWS_SECRET_ACCESS_KEY",
+    "PRIVY_APP_ID",
+    "PRIVY_APP_SECRET",
+    "VITE_SUPABASE_URL",
+    "VITE_SUPABASE_ANON_KEY",
+  ];
+
+  const missingVars = requiredEnvVars.filter((varName) => !process.env[varName]);
+  
+  if (missingVars.length > 0) {
+    throw new Error(
+      `Missing required environment variables: ${missingVars.join(", ")}`
+    );
   }
 
   console.log("✅ Environment variables validated");
@@ -267,6 +273,16 @@ CMD ["npm", "start"]
   console.log("🎉 EVM Agent deployment completed successfully!");
   console.log(`🌐 Service URL: ${serviceUrl}`);
   console.log(`📊 Service ARN: ${createSvc.Service.ServiceArn}`);
+
+  // Cleanup build directory
+  console.log("🧹 Cleaning up build directory...");
+  try {
+    fs.rmSync(buildDir, { recursive: true, force: true });
+    console.log(`✅ Build directory cleaned up: ${buildDir}`);
+  } catch (cleanupErr) {
+    console.warn(`⚠️  Failed to cleanup build directory: ${cleanupErr.message}`);
+    // Don't throw - cleanup failure shouldn't fail deployment
+  }
 
   return serviceUrl;
 }
